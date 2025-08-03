@@ -1,0 +1,13 @@
+{
+  "routes": [
+    {
+      "route": "/*",
+      "headers": {
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "Content-Security-Policy": "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; object-src 'none';",
+        "Referrer-Policy": "no-referrer"
+      }
+    }
+  ]
+}
