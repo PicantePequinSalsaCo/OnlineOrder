@@ -16,60 +16,38 @@
       font-family: 'Segoe UI', sans-serif;
       color: #fff;
     }
-    html, body, table {
-  margin: 0;
-  padding: 0;
-  height: 100vh;
-}
-
-td {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 30px 60px;
-  font-size: 2em;
-  font-weight: bold;
-  text-align: center;
-  text-shadow: 2px 2px 4px #000;
-  color: #ffccbc;
-}
-iframe {
+   <table style="
+  background-color: rgba(0, 0, 0, 0.75);
+  border-collapse: collapse;
+  box-shadow: 0 0 12px rgba(255, 87, 34, 0.7);
+  border: 3px solid #4C6E2A;
   width: 100%;
-  max-width: 640px;
-  height: auto;
-  max-height: 75vh;
-  border: none;
-  box-shadow: 0 0 10px rgba(255, 87, 34, 0.5);
-  margin-top: 20px;
-}
-@media (max-width: 768px) {
-  td {
-    padding: 20px 30px;
-    font-size: 1.5em;
-  }
-  iframe {
-    max-height: auto;
-    max-height: 65vh;
-  }
-}
-  </style>
-</head>
-<body>
-  <table>
-    <tr>
-      <td>
-        🌶️ Online Order 🌶️<br><br>
-        <iframe
-          src="https://forms.office.com/Pages/ResponsePage.aspx?id=80PabvD7K06ZeLVD2d0x47RUJTLvrEhIvvHWsvuGX4VUN0hBNk45T1M1MkI2WVlZNUg2TElNQVNQQS4u&embed=true"
-          allowfullscreen
-          webkitallowfullscreen
-          mozallowfullscreen
-          msallowfullscreen>
-        </iframe>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
+  height: 100vh;">
+  <tr>
+    <td style="
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 30px 60px;
+      font-size: 2em;
+      font-weight: bold;
+      text-align: center;
+      text-shadow: 2px 2px 4px #000;
+      color: #ffccbc;">
+      🌶️ Online Order 🌶️<br><br>
+      <iframe
+        src="https://forms.office.com/Pages/ResponsePage.aspx?id=80PabvD7K06ZeLVD2d0x47RUJTLvrEhIvvHWsvuGX4VUN0hBNk45T1M1MkI2WVlZNUg2TElNQVNQQS4u&embed=true"
+        allowfullscreen
+        style="
+          width: 100%;
+          max-width: 640px;
+          height: 75vh;
+          border: none;
+          box-shadow: 0 0 25px rgba(255, 87, 34, 0.5);
+          margin: 20px auto 0;
+          display: block;">
+      </iframe>
+    </td>
+  </tr>
+</table>
