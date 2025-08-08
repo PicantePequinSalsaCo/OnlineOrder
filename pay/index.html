@@ -90,7 +90,7 @@
 
   <script>
     const path = window.location.pathname;
-    const orderId = path.split('/').pop();
+    const orderId = path.split('/pay/').pop();
     const targetUrl = `https://picantepequinsalsaco.com/pay/${orderId}`;
 
     const maxRetries = 30;
