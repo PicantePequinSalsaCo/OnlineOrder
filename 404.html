@@ -115,7 +115,7 @@
           statusEl.textContent = "Salsa found! Redirecting to your order... 🌶️";
           setTimeout(() => {
             window.location.href = redirectUrl;
-          }, 1000);
+          }, 3000);
         } else {
           throw new Error("Not ready");
         }
@@ -127,14 +127,14 @@
           statusEl.textContent = "Still blending... Redirecting to the kitchen.";
           setTimeout(() => {
             window.location.href = fallbackUrl;
-          }, 2000);
+          }, 3000);
         }
       }
     }
 
     window.onload = () => {
       statusEl.textContent = `Looking for ${orderId}... 🌶️`;
-      setTimeout(checkAndRedirect, 1000);
+      setTimeout(checkAndRedirect, 3000);
     };
   }
 </script>
