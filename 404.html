@@ -130,7 +130,7 @@
       statusEl.textContent = "Invalid or missing order ID. 🌶️";
       retryBtn.style.display = "inline-block";
     } else {
-      statusEl.textContent = `Blending your order ${orderId}... 🫙`;
+      statusEl.textContent = `Blending your order ${orderId}...`;
       // ⏳ Always show animation first
       setTimeout(checkAndRedirect, 2000); // Delay before first check
     }
