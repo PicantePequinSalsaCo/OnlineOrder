@@ -23,7 +23,17 @@
   justify-content: center;
   position: relative;
 }
-
+    
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
 
     .ingredient {
       position: absolute;
@@ -109,7 +119,8 @@
   </style>
 </head>
 <body>
-<div class="status" id="status">Blending your salsa...</div>
+<div class="container">
+  <div class="status" id="status">Blending your salsa...</div>
   <!-- Falling ingredients aligned with the jar -->
   <div class="ingredient" style="left: 46%; animation-delay: 0.0s;">🌶️</div>
   <div class="ingredient" style="left: 50%; animation-delay: 0.75s;">🧅</div>
@@ -118,6 +129,7 @@
 
   <!-- Enlarged blender jar -->
   <div class="blender"></div>
+</div>
 <script>
   const path = window.location.pathname;
   const match = path.match(/\/pay\/(ORD-\d{12}-\d{3})/);
