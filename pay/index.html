@@ -96,7 +96,7 @@
 
   if (!orderId) {
     // No valid order ID in the path — show fallback UI
-    statusEl.textContent = "Invalid or missing order ID. 🌶️";
+    statusEl.textContent = "Invalid or missing order ID. 🌶️<br>Please Try Your Payment Link Again. You can also visit https://picantepequinsalsaco.com/pay/your order number";
     retryBtn.style.display = "inline-block";
   } else {
     const targetUrl = `https://picantepequinsalsaco.com/pay/${orderId}/`;
@@ -111,7 +111,7 @@
           statusEl.textContent = "Salsa ready! Redirecting... 🌶️";
           setTimeout(() => {
             window.location.href = targetUrl;
-          }, 1000);
+          }, 2000);
         } else {
           throw new Error("Not ready");
         }
@@ -128,7 +128,7 @@
 
     window.onload = () => {
       statusEl.textContent = `Looking for ${orderId}... 🌶️`;
-      setTimeout(checkAndRedirect, 1000); // Optional delay before first check
+      setTimeout(checkAndRedirect, 2000); // Optional delay before first check
     };
   }
 </script>
