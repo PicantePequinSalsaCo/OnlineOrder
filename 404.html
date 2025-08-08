@@ -94,47 +94,47 @@
   const statusEl = document.getElementById("status");
   const retryBtn = document.getElementById("retry");
 
-  if (!orderId) {
-    statusEl.textContent = "Invalid or missing order ID. 🌶️";
-    retryBtn.style.display = "inline-block";
-  } else {
-    const targetFolderUrl = `/pay/${orderId}/index.html`;
-    const redirectUrl = `/pay/${orderId}/`; // 👈 Redirect to the original link
-    const fallbackUrl = `/pay/`;            // 👈 Blender fallback
-    const maxRetries = 30;
-    const retryInterval = 1000;
-    let attempts = 0;
+  const targetFolderUrl = `/pay/${orderId}/index.html`;
+  const redirectUrl = `/pay/${orderId}/`;
+  const fallbackUrl = `/pay/`;
+  const maxRetries = 30;
+  const retryInterval = 1000;
+  let attempts = 0;
 
-    async function checkAndRedirect() {
-      try {
-        const response = await fetch(targetFolderUrl, { method: 'HEAD' });
-        if (response.ok) {
-          statusEl.textContent = "Salsa found! Redirecting to your order... 🌶️";
-          setTimeout(() => {
-            window.location.href = redirectUrl;
-          }, 1000);
-        } else {
-          throw new Error("Not ready");
-        }
-      } catch (err) {
-        attempts++;
-        if (attempts < maxRetries) {
-          setTimeout(checkAndRedirect, retryInterval);
-        } else {
-          statusEl.textContent = "Still blending... Redirecting to the kitchen.";
-          setTimeout(() => {
-            window.location.href = fallbackUrl;
-          }, 2000);
-        }
+  async function checkAndRedirect() {
+    try {
+      const response = await fetch(targetFolderUrl, { method: 'HEAD' });
+      if (response.ok) {
+        statusEl.textContent = "Salsa ready! Redirecting... 🌶️";
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 1000); // Give the animation a moment to finish
+      } else {
+        throw new Error("Not ready");
+      }
+    } catch (err) {
+      attempts++;
+      if (attempts < maxRetries) {
+        setTimeout(checkAndRedirect, retryInterval);
+      } else {
+        statusEl.textContent = "Still blending... Redirecting to the kitchen.";
+        setTimeout(() => {
+          window.location.href = fallbackUrl;
+        }, 2000);
       }
     }
-
-    window.onload = () => {
-      statusEl.textContent = `Looking for ${orderId}... 🌶️`;
-      setTimeout(checkAndRedirect, 1000);
-    };
   }
-</script>
-  
+
+  window.onload = () => {
+    if (!orderId) {
+      statusEl.textContent = "Invalid or missing order ID. 🌶️";
+      retryBtn.style.display = "inline-block";
+    } else {
+      statusEl.textContent = `Blending your order ${orderId}... 🫙`;
+      // ⏳ Always show animation first
+      setTimeout(checkAndRedirect, 2000); // Delay before first check
+    }
+  };
+</script> 
 </body>
 </html>
