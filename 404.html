@@ -127,7 +127,9 @@
 
   window.onload = () => {
     if (!orderId) {
-      statusEl.textContent = "Whoa There! Hold Your Fresno Peppers 🌶️<br>It looks like we haven't Cooked Up what You're Looking For.<br>Try visiting our main site https://picantepequinsalsaco.com";
+     statusEl.innerHTML = `Whoa There! Hold Your Fresno Peppers 🌶️<br>
+     It looks like we haven't Cooked Up what You're Looking For.<br>
+     Try visiting our <a href="https://picantepequinsalsaco.com" target="_blank">main site</a>.`;
       retryBtn.style.display = "inline-block";
     } else {
       statusEl.textContent = `Redirecting you to our Main Site`;
