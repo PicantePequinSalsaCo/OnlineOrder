@@ -127,14 +127,19 @@
 
   window.onload = () => {
     if (!orderId) {
-      statusEl.textContent = "Invalid or missing order ID. 🌶️";
+      statusEl.textContent = "Whoa There! Hold Your Fresno Peppers 🌶️<br>It looks like we haven't Cooked Up what You're Looking For.<br>Try visiting our main site https://picantepequinsalsaco.com";
       retryBtn.style.display = "inline-block";
     } else {
-      statusEl.textContent = `Blending your order ${orderId}...`;
+      statusEl.textContent = `Redirecting you to our Main Site`;
       // ⏳ Always show animation first
-      setTimeout(checkAndRedirect, 2000); // Delay before first check
+      setTimeout(checkAndRedirect, 4000); // Delay before first check
     }
   };
+
+  function checkAndRedirect() {
+  const targetUrl = 'https://picantepequinsalsaco.com';
+  window.location.href = targetUrl;
+}
 </script> 
 </body>
 </html>
