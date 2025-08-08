@@ -24,17 +24,6 @@
   position: relative;
 }
     
-.container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-}
-
     .ingredient {
       position: absolute;
       top: -50px;
@@ -86,40 +75,9 @@
       width: 100%;
     }
     
-@media (max-width: 480px) {
-  .status {
-    font-size: 1.5em;
-    bottom: 250px;
-    padding: 0 1rem;
-  }
-
-  .blender {
-    width: 150px;
-    height: 220px;
-  }
-
-  .blender::before {
-    width: 120px;
-    height: 30px;
-    left: 15px;
-    top: -30px;
-  }
-
-  .ingredient {
-    font-size: 1.5em;
-  }
-
-  body {
-    overflow-y: auto;
-    padding-top: 2rem;
-    justify-content: flex-start;
-  }
-}
-
   </style>
 </head>
 <body>
-<div class="container">
   <div class="status" id="status">Blending your salsa...</div>
   <!-- Falling ingredients aligned with the jar -->
   <div class="ingredient" style="left: 46%; animation-delay: 0.0s;">🌶️</div>
@@ -129,7 +87,6 @@
 
   <!-- Enlarged blender jar -->
   <div class="blender"></div>
-</div>
 <script>
   const path = window.location.pathname;
   const match = path.match(/\/pay\/(ORD-\d{12}-\d{3})/);
