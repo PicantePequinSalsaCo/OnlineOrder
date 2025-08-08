@@ -91,9 +91,13 @@
   const match = path.match(/\/pay\/(ORD-\d{12}-\d{3})/);
   const orderId = match ? match[1] : null;
 
+  const statusEl = document.getElementById("status");
+  const retryBtn = document.getElementById("retry");
+
   if (!orderId) {
-    document.getElementById("status").textContent = "Invalid or missing order ID. 🌶️";
-    document.getElementById("retry").style.display = "inline-block";
+    // No valid order ID in the path — show fallback UI
+    statusEl.textContent = "Invalid or missing order ID. 🌶️";
+    retryBtn.style.display = "inline-block";
   } else {
     const targetUrl = `https://picantepequinsalsaco.com/pay/${orderId}/`;
     const maxRetries = 30;
@@ -102,9 +106,9 @@
 
     async function checkAndRedirect() {
       try {
-        const response = await fetch(targetUrl, { method: 'HEAD' });
+        const response = await fetch(`${targetUrl}index.html`, { method: 'HEAD' });
         if (response.ok) {
-          document.getElementById("status").textContent = "Salsa ready! Redirecting... 🌶️";
+          statusEl.textContent = "Salsa ready! Redirecting... 🌶️";
           setTimeout(() => {
             window.location.href = targetUrl;
           }, 1000);
@@ -116,16 +120,18 @@
         if (attempts < maxRetries) {
           setTimeout(checkAndRedirect, retryInterval);
         } else {
-          document.getElementById("status").textContent = "Still blending... Your Salsa is almost ready!";
-          document.getElementById("retry").style.display = "inline-block";
+          statusEl.textContent = "Still blending... Your Salsa is almost ready!";
+          retryBtn.style.display = "inline-block";
         }
       }
     }
 
     window.onload = () => {
+      statusEl.textContent = `Looking for ${orderId}... 🌶️`;
       setTimeout(checkAndRedirect, 1000); // Optional delay before first check
     };
   }
 </script>
+  
 </body>
 </html>
