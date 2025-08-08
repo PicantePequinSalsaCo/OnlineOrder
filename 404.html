@@ -132,16 +132,11 @@
      Try visiting our <a href="https://picantepequinsalsaco.com" target="_blank">main site</a>.`;
       retryBtn.style.display = "inline-block";
     } else {
-      statusEl.textContent = `Redirecting you to our Main Site`;
+      statusEl.textContent = `Salsa ready! Redirecting... 🌶️`;
       // ⏳ Always show animation first
       setTimeout(checkAndRedirect, 4000); // Delay before first check
     }
   };
-
-  function checkAndRedirect() {
-  const targetUrl = 'https://picantepequinsalsaco.com';
-  window.location.href = targetUrl;
-}
 </script> 
 </body>
 </html>
