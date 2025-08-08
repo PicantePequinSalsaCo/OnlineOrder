@@ -103,7 +103,7 @@
   } else {
     const targetFolderUrl = `/pay/${orderId}/index.html`;
     const redirectUrl = `/pay/${orderId}/`; // 👈 Redirect to the original link
-    const fallbackUrl = `/pay/`;            // 👈 Blender fallback
+    const fallbackUrl = redirectUrl;            // 👈 Blender fallback
     const maxRetries = 60;
     const retryInterval = 1000;
     let attempts = 0;
