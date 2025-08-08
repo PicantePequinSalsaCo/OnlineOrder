@@ -96,7 +96,9 @@
 
   if (!orderId) {
     // No valid order ID in the path — show fallback UI
-    statusEl.textContent = "Invalid or missing order ID. 🌶️<br>Please Try Your Payment Link Again. You can also visit https://picantepequinsalsaco.com/pay/your order number";
+    statusEl.innerHTML = `Invalid or missing order ID. 🌶️<br>
+    Please try your payment link again.<br>
+    You can also visit <a href="https://picantepequinsalsaco.com/pay/" target="_blank">https://picantepequinsalsaco.com/pay/Type Your Order Number</a>`;
     retryBtn.style.display = "inline-block";
   } else {
     const targetUrl = `https://picantepequinsalsaco.com/pay/${orderId}/`;
