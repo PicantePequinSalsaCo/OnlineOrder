@@ -61,10 +61,10 @@
   }
 
   .bg::after {
-    content: ""; /* ensure pseudo-element renders */
+    content: "";
     position: absolute;
     inset: 0;
-    background: none; /* or gradient overlay if desired */
+    background: none;
   }
 
   /* Sticky header */
@@ -158,10 +158,7 @@
     box-shadow: var(--shadow);
   }
 
-  /* Ensure the gallery aligns at the top in the right column */
-  .hero .hero-gallery {
-    align-self: start;
-  }
+  .hero .hero-gallery { align-self: start; }
 
   .kicker {
     color: var(--accent-green);
@@ -230,7 +227,7 @@
     font-weight: 800;
   }
 
-  /* Menu section (responsive table -> cards on narrow screens) */
+  /* Menu section */
   .section {
     max-width: var(--maxw);
     margin: 20px auto;
@@ -280,7 +277,6 @@
 
   tbody tr:nth-child(even) { background: var(--row-alt); }
 
-  /* Shelf life + order CTA row */
   .info-grid {
     display: grid;
     grid-template-columns: 1.2fr .8fr;
@@ -409,35 +405,52 @@
 
   .links a { color: var(--accent-orange); font-weight: 700; }
 
-  /* Responsive */
+  /* ========================= */
+  /* Responsive Styles         */
+  /* ========================= */
+
   @media (max-width: 960px) {
     .hero { grid-template-columns: 1fr; }
     .info-grid { grid-template-columns: 1fr; }
+
+    /* Keep gallery fixed size & centered */
+    .gallery-wrap {
+      width: calc(var(--tile-w) + 2 * var(--rail-pad));
+      height: calc(var(--tile-h) + 2 * var(--rail-pad));
+      margin: 0 auto;
+    }
   }
 
   @media (max-width: 640px) {
-    .nav { flex-direction: column; align-items: stretch; text-align: center; }
-    .brand { flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 6px; }
-    nav ul { flex-wrap: wrap; justify-content: center; gap: 8px; }
-    nav ul li { display: flex; justify-content: center; }
-    nav a { width: 100%; text-align: center; }
+    .nav {
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+    }
+    .brand {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    nav ul {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+    nav ul li {
+      display: flex;
+      justify-content: center;
+    }
+    nav a {
+      width: 100%;
+      text-align: center;
+    }
   }
 
-  /* Motion preferences */
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
   }
-
-  @media (max-width: 960px) {
-  .hero {
-    grid-template-columns: 1fr;
-  }
-
-  .gallery-wrap {
-    width: 100%;
-    height: auto;      /* let the height flow naturally */
-  }
-}
 </style>
 </head>
 <body>
