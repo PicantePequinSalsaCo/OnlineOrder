@@ -31,37 +31,41 @@
 
     /* Subtle dark gradient base with soft red/green light to echo header gradient */
     --grad: linear-gradient(135deg, #1f1f1f 0%, #1b1b1b 40%, #151515 100%);
+
+    --tile-w: 300px;
+    --tile-h: 300px;
+    --rail-pad: 14px;
   }
 
   * { box-sizing: border-box; }
 
-html, body {
-  margin: 0;
-  padding: 0;
-  font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-  background-color: var(--bg-deep); /* fallback */
-  scroll-behavior: smooth;
-}
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-deep); /* fallback */
+    scroll-behavior: smooth;
+  }
 
-a { color: inherit; text-decoration: none; }
-img { display: block; max-width: 100%; }
+  a { color: inherit; text-decoration: none; }
+  img { display: block; max-width: 100%; }
 
-/* Background image + atmospheric overlay (image inside .bg so filter applies) */
-.bg {
-  position: fixed;
-  inset: 0;
-  z-index: -1; /* push behind all content */
-  background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover no-repeat;
-  filter: blur(0px) saturate(1.05) brightness(.9);
-  transform: translateZ(0) scale(1.02);
-}
+  /* Background image + atmospheric overlay (image inside .bg so filter applies) */
+  .bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1; /* push behind all content */
+    background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover no-repeat;
+    filter: blur(0px) saturate(1.05) brightness(.9);
+    transform: translateZ(0) scale(1.02);
+  }
 
-.bg::after {
-  content: ""; /* ensure pseudo-element renders */
-  position: absolute;
-  inset: 0;
-  background: none; /* or gradient overlay if desired */
-}
+  .bg::after {
+    content: ""; /* ensure pseudo-element renders */
+    position: absolute;
+    inset: 0;
+    background: none; /* or gradient overlay if desired */
+  }
 
   /* Sticky header */
   header {
@@ -142,7 +146,7 @@ img { display: block; max-width: 100%; }
     margin: 36px auto 18px;
     padding: 0 18px;
     display: grid;
-    grid-template-columns: 1fr .9fr;
+    grid-template-columns: 1fr auto;
     gap: 24px;
   }
 
@@ -152,6 +156,11 @@ img { display: block; max-width: 100%; }
     border-radius: var(--radius);
     padding: 28px;
     box-shadow: var(--shadow);
+  }
+
+  /* Ensure the gallery aligns at the top in the right column */
+  .hero .hero-gallery {
+    align-self: start;
   }
 
   .kicker {
@@ -300,20 +309,24 @@ img { display: block; max-width: 100%; }
 
   .small { font-size: .9rem; color: var(--muted); margin-top: 10px; }
 
-  /* Optional highlights gallery */
+  /* Highlights gallery */
   .gallery-wrap {
     position: relative;
     overflow: hidden;
     border-radius: var(--radius);
     border: 1px solid var(--card-border);
-    background: #1c1c1ccc;
+    background: #1e1e1e60;
     box-shadow: var(--shadow);
+    width: calc(var(--tile-w) + 2 * var(--rail-pad));
+    height: calc(var(--tile-h) + 2 * var(--rail-pad));
+    max-width: 100%;
+    margin: 0 auto;
   }
 
   .rail {
     display: flex;
     gap: 12px;
-    padding: 14px;
+    padding: var(--rail-pad);
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
@@ -324,8 +337,8 @@ img { display: block; max-width: 100%; }
 
   .tile {
     flex: 0 0 auto;
-    width: 300px;
-    height: 180px;
+    width: var(--tile-w);
+    height: var(--tile-h);
     position: relative;
     border-radius: 12px;
     overflow: hidden;
@@ -414,16 +427,27 @@ img { display: block; max-width: 100%; }
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
   }
+
+  @media (max-width: 960px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery-wrap {
+    width: 100%;
+    height: auto;      /* let the height flow naturally */
+  }
+}
 </style>
 </head>
 <body>
   <div class="bg" aria-hidden="true"></div>
+
   <header>
     <div class="nav">
       <div class="brand">
         <div class="logo" aria-hidden="true"></div>
         <strong>Picante Pequin Salsa Co.</strong>
-        <span class="tag">Online Menu</span>
       </div>
       <nav aria-label="Primary">
         <ul>
@@ -436,10 +460,9 @@ img { display: block; max-width: 100%; }
   </header>
 
   <main>
-    <!-- HERO -->
+    <!-- HERO with gallery on the right (desktop), stacked (mobile) -->
     <section class="hero">
       <div class="hero-card">
-        <div class="kicker">Online menu</div>
         <h1>Homegrown, locally sourced, guaranteed fresh</h1>
         <p class="sub">Salsas in 16 oz mason jars at $12 per jar + tax.</p>
         <div class="badges">
@@ -451,9 +474,21 @@ img { display: block; max-width: 100%; }
           <a class="btn" href="mailto:support@picantepequinsalsaco.com?subject=Order%20Support">Contact support</a>
         </div>
       </div>
+
+      <!-- Gallery moved next to hero content -->
+      <div class="hero-gallery">
+        <div class="gallery-wrap" aria-labelledby="highlights-title">
+          <h2 id="highlights-title" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">Highlights</h2>
+          <div class="gallery-controls" aria-hidden="true">
+            <button class="ctrl" id="prev" title="Previous">◀</button>
+            <button class="ctrl" id="next" title="Next">▶</button>
+          </div>
+          <div class="rail" id="rail" aria-label="Auto-scrolling highlights"></div>
+        </div>
+      </div>
     </section>
 
-    <!-- MENU -->
+    <!-- MENU (Flavors) -->
     <section class="section" id="menu">
       <div class="card">
         <h2>Flavors</h2>
@@ -499,18 +534,6 @@ img { display: block; max-width: 100%; }
         </div>
       </div>
     </section>
-
-    <!-- OPTIONAL HIGHLIGHTS -->
-    <section class="section" aria-labelledby="highlights-title">
-      <h2 id="highlights-title" style="margin-bottom:10px">Highlights</h2>
-      <div class="gallery-wrap">
-        <div class="gallery-controls" aria-hidden="true">
-          <button class="ctrl" id="prev" title="Previous">◀</button>
-          <button class="ctrl" id="next" title="Next">▶</button>
-        </div>
-        <div class="rail" id="rail" aria-label="Auto-scrolling highlights"></div>
-      </div>
-    </section>
   </main>
 
   <footer>
@@ -547,7 +570,7 @@ img { display: block; max-width: 100%; }
 
     function render(items){
       rail.innerHTML = '';
-      const loop = [...items, ...items.slice(0, 3)];
+      const loop = [...items, ...items.slice(0, 4)];
       loop.forEach((it)=>{
         const tile = document.createElement('div');
         tile.className = 'tile';
@@ -589,4 +612,3 @@ img { display: block; max-width: 100%; }
   </script>
 </body>
 </html>
-
