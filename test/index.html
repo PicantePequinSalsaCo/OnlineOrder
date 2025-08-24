@@ -47,12 +47,9 @@
 
     /* Atmospheric background */
     .bg{
-      position:fixed; inset:0; z-index:-2;
+      position:fixed; inset:0; z-index:-1;
       background:
-        radial-gradient(1100px 700px at -10% -10%, #d8431518, transparent 60%),
-        radial-gradient(900px 600px at 110% 10%, #558b2f1a, transparent 55%),
         url('images/bg.png') center/cover no-repeat,
-        var(--grad);
       filter: blur(6px) saturate(1.05) brightness(.9);
       transform: translateZ(0) scale(1.02);
     }
