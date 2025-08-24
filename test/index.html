@@ -35,30 +35,33 @@
 
   * { box-sizing: border-box; }
 
-  html, body {
-    margin: 0;
-    padding: 0;
-    font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--bg-deep); /* fallback */
-    scroll-behavior: smooth;
-  }
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-deep); /* fallback */
+  scroll-behavior: smooth;
+}
 
-  a { color: inherit; text-decoration: none; }
-  img { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
 
-  /* Background image + atmospheric overlay (image inside .bg so filter applies) */
-  .bg {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    background: url('images/bg.png') center/cover no-repeat;
-    filter: blur(6px) saturate(1.05) brightness(.9);
-    transform: translateZ(0) scale(1.02);
-  }
+/* Background image + atmospheric overlay (image inside .bg so filter applies) */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1; /* push behind all content */
+  background: url('images/bg.png') center/cover no-repeat;
+  filter: blur(6px) saturate(1.05) brightness(.9);
+  transform: translateZ(0) scale(1.02);
+}
 
-  .bg::after {
-    background: none;
-  }
+.bg::after {
+  content: ""; /* ensure pseudo-element renders */
+  position: absolute;
+  inset: 0;
+  background: none; /* or gradient overlay if desired */
+}
 
   /* Sticky header */
   header {
@@ -415,7 +418,6 @@
 </head>
 <body>
   <div class="bg" aria-hidden="true"></div>
-
   <header>
     <div class="nav">
       <div class="brand">
