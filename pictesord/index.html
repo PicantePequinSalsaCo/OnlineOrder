@@ -1,66 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Order Now</title>
-  <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+  <meta charset="utf-8" />
+  <title>Place Your Order – Picante Pequin Salsa Co.</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
+  <link rel="preload" as="image" href="https://picantepequinsalsaco.com/images/bg.png" />
+
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-	  height: 100%;
-      background-image: url('https://picantepequinsalsaco.com/images/bg.png');
-	  background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
+    /*————————————————————————————
+      Root vars + reset
+    ————————————————————————————*/
+    :root {
+      --bg-deep: #1e1e1e00;
+      --ink: #ececec;
+      --muted: #b0b0b0;
+      --accent-orange: #f57c00;
+      --accent-glow: 0 0 0 2px #f57c0033, 0 10px 20px #f57c0022;
+      --maxw: 1100px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-deep);
+      color: #fff;
+      scroll-behavior: smooth;
+    }
+
+    /*————————————————————————————
+      Global link reset
+    ————————————————————————————*/
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /*————————————————————————————
+      Background
+    ————————————————————————————*/
+    .bg {
+      position: fixed; inset: 0; z-index: -1;
+      background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover no-repeat;
+      filter: blur(0) saturate(1.05) brightness(.9);
+      transform: translateZ(0) scale(1.02);
+    }
+
+    /*————————————————————————————
+      Sticky header
+    ————————————————————————————*/
+    header {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: saturate(140%) blur(10px);
+      background: #161616cc;
+      border-bottom: 1px solid #ffffff14;
+    }
+    .nav {
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo {
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover no-repeat;
+      box-shadow: var(--accent-glow);
+    }
+    nav ul {
+      display: flex; gap: 10px;
+      list-style: none; margin: 0; padding: 0;
+    }
+    .link {
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: var(--muted);
+      transition: .2s;
+    }
+    .link:hover {
+      color: var(--ink);
+      background: #ffffff10;
+      border: 1px solid #ffffff22;
+    }
+
+    /*————————————————————————————
+      Main + centering
+    ————————————————————————————*/
+    main {
+      max-width: var(--maxw);
+      margin: 24px auto;
+      padding: 0 18px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      padding: 40px;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', sans-serif;
-      color: #fff;
       text-align: center;
     }
     h1 {
-      font-size: 2.5em;
-      margin: 0 0 30px 0;
-      background-color: rgba(0, 0, 0, 0.4);
-      padding: 20px 30px;
+      font-size: clamp(2rem, 5vw, 2.5rem);
+      margin-bottom: 16px;
+      background-color: rgba(0,0,0,0.4);
+      padding: 12px 18px;
       border-radius: 12px;
-      box-shadow: 0 0 15px rgba(255, 87, 34, 0.6);
-    }
-    iframe {
-      width: 100%;
-      max-width: 640px;
-      height: 100vh;
-      border: none;
-      box-shadow: 0 0 25px rgba(255, 87, 34, 0.5);
-      background-color: rgba(255,255,255,0.05);
-    }
-     @media (max-width: 768px) {
-      iframe {
-        height: 50vh;
-      }
-    }
-     @media (max-width: 480px) {
-      iframe {
-        height: 45vh;
-      }
+      box-shadow: 0 0 15px rgba(255,87,34,0.6);
     }
 
+    /*————————————————————————————
+      Iframe
+    ————————————————————————————*/
+    .order-frame {
+      width: 100%;
+      max-width: 800px;
+      height: 80vh;
+      border: none;
+      border-radius: 8px;
+      background-color: rgba(255,255,255,0.05);
+      box-shadow: 0 0 25px rgba(255,87,34,0.5);
+      margin-bottom: 40px;
+    }
+    @media (max-width: 768px) {
+      .order-frame { height: 60vh; }
+    }
+    @media (max-width: 480px) {
+      .order-frame { height: 50vh; }
+    }
   </style>
 </head>
+
 <body>
-  <h1>🌶️ Place Your Order 🌶️</h1>
-  <iframe
-    src="https://forms.office.com/Pages/ResponsePage.aspx?id=80PabvD7K06ZeLVD2d0x47RUJTLvrEhIvvHWsvuGX4VUN0hBNk45T1M1MkI2WVlZNUg2TElNQVNQQS4u&embed=true"
-    allowfullscreen
-    webkitallowfullscreen
-    mozallowfullscreen
-    msallowfullscreen>
-  </iframe>
+  <div class="bg" aria-hidden="true"></div>
+
+  <header>
+    <div class="nav">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <strong>Picante Pequin Salsa Co.</strong>
+      </div>
+      <nav aria-label="Primary">
+        <ul>
+          <li><a class="link" href="/ShippingPolicy">Shipping</a></li>
+          <li><a class="link" href="/PrivacyPolicy">Privacy</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>🌶️ Place Your Order 🌶️</h1>
+    <iframe
+      class="order-frame"
+      src="https://forms.office.com/Pages/ResponsePage.aspx?id=80PabvD7K06ZeLVD2d0x47RUJTLvrEhIvvHWsvuGX4VUN0hBNk45T1M1MkI2WVlZNUg2TElNQVNQQS4u&embed=true"
+      allowfullscreen
+      webkitallowfullscreen
+      mozallowfullscreen
+      msallowfullscreen>
+    </iframe>
+  </main>
 </body>
 </html>
