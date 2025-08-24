@@ -18,7 +18,7 @@
     --accent-green: #558b2f;
     --accent-red: #d84315;
 
-    --card: #2e2e2e00;      /* glass card tint from old table bg */
+    --card: #2e2e2e60;      /* glass card tint from old table bg */
     --card-border: #3a3a3a; /* old table row divider */
     --row-alt: #262626;     /* old alternating row */
 
@@ -52,7 +52,7 @@ img { display: block; max-width: 100%; }
   inset: 0;
   z-index: -1; /* push behind all content */
   background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover no-repeat;
-  filter: blur(6px) saturate(1.05) brightness(.9);
+  filter: blur(0px) saturate(1.05) brightness(.9);
   transform: translateZ(0) scale(1.02);
 }
 
@@ -229,7 +229,7 @@ img { display: block; max-width: 100%; }
   }
 
   .card {
-    background: #202020cc;
+    background: var(--card);
     border: 1px solid var(--card-border);
     border-radius: var(--radius-sm);
     padding: 18px;
