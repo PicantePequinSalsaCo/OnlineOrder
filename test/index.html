@@ -1,1 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Picante Pequin Salsa Co</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <style>
+    :root{
+      --bg-deep:#0b1022;            /* flattered navy base */
+      --bg-accent:#0b1c3d;          /* your primary, used subtly */
+      --card:#101a33cc;             /* glass card */
+      --card-border:#ffffff1a;
+      --gold:#f9c851;               /* your accent gold */
+      --gold-600:#d6a538;
+      --ink:#e7ecff;
+      --muted:#c6d0f0a6;
+      --success:#51f9e8;
+      --warning:#f9aa51;
+      --shadow:0 10px 30px #00000066;
+      --radius:16px;
+      --radius-sm:12px;
+      --maxw:1200px;
+      --grad:linear-gradient(135deg,#182a52 0%,#0b1c3d 40%,#1d3557 100%);
+      --gold-glow:0 0 0 2px #f9c85133, 0 10px 20px #f9c85122;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg-deep);color:var(--ink);scroll-behavior:smooth}
+    a{color:inherit;text-decoration:none}
+    img{display:block;max-width:100%}
+    /* Background image layer */
+    .bg{
+      position:fixed; inset:0; z-index:-2;
+      background:
+        radial-gradient(1200px 800px at 10% -10%, #5ac8fa22, transparent 60%),
+        radial-gradient(900px 600px at 110% 10%, #f9c8511c, transparent 55%),
+        url('assets/bg.jpg') center/cover no-repeat,
+        var(--grad);
+      filter: blur(6px) saturate(1.05) brightness(.85);
+      transform: scale(1.03);
+    }
+    /* Subtle vignette overlay */
+    .bg::after{
+      content:""; position:absolute; inset:0;
+      background: radial-gradient(1000px 600px at 50% -10%, transparent, #000814aa 70%),
+                  linear-gradient(to bottom, #00000055, transparent 30%, #00000066 100%);
+    }
 
+    /* Sticky glass header */
+    header{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter:saturate(140%) blur(10px);
+      background:#0b1224cc;
+      border-bottom:1px solid var(--card-border);
+    }
+    .nav{
+      max-width:var(--maxw); margin:0 auto; padding:14px 20px;
+      display:flex; align-items:center; gap:16px; justify-content:space-between;
+    }
+    .brand{display:flex; align-items:center; gap:10px; letter-spacing:.5px}
+    .logo{
+      width:34px; height:34px; border-radius:10px;
+      background-image: url('https://picantepequinsalsaco.com/images/Logo.png';
+      background-size: cover;
+      background-style:center;
+      box-shadow: var(--gold-glow);
+    }
+    .brand strong{font-weight:700}
+    nav ul{display:flex; gap:14px; list-style:none; align-items:center}
+    .link{
+      padding:9px 14px; border-radius:999px; color:var(--muted);
+      border:1px solid transparent; transition:.2s ease;
+    }
+    .link:hover{color:var(--ink); border-color:#ffffff22; background:#ffffff10}
+    .cta{
+      background: linear-gradient(180deg, var(--gold), var(--gold-600));
+      color:#1a1405; font-weight:700;
+      padding:10px 16px; border-radius:999px; box-shadow: var(--gold-glow);
+    }
+    .cta:hover{filter:brightness(.95)}
+
+    /* Hero */
+    .hero{
+      max-width:var(--maxw); margin:40px auto; padding:24px 20px;
+      display:grid; grid-template-columns:1.2fr .8fr; gap:28px;
+    }
+    .hero-card{
+      background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius);
+      padding:32px; box-shadow:var(--shadow);
+    }
+    .kicker{color:var(--success); font-weight:700; letter-spacing:.12em; text-transform:uppercase; font-size:.8rem}
+    h1{font-size:clamp(2rem, 3.2vw, 3rem); line-height:1.1; margin:.4rem 0 1rem 0}
+    .sub{color:var(--muted); font-size:1.05rem}
+    .hero-actions{margin-top:18px; display:flex; gap:12px; flex-wrap:wrap}
+    .btn{
+      padding:12px 16px; border-radius:12px; border:1px solid #ffffff1f;
+      background:#ffffff0f; color:#fff; backdrop-filter: blur(6px);
+      transition: transform .15s ease, background .2s ease;
+    }
+    .btn:hover{transform: translateY(-1px); background:#ffffff1a}
+    .btn.gold{background: linear-gradient(180deg, var(--gold), var(--gold-600)); color:#1a1405; border:none}
+
+    .hero-side{
+      display:grid; gap:16px;
+    }
+    .stat{
+      padding:20px; border-radius:var(--radius-sm);
+      background:#0f1933cc; border:1px solid var(--card-border);
+      display:flex; align-items:center; gap:14px;
+    }
+    .pill{padding:6px 10px; border-radius:999px; font-weight:700; font-size:.8rem;
+      color:#071018; background:linear-gradient(180deg,#51f9e8,#22d3ee)}
+    .pill.gold{background:linear-gradient(180deg,#f9c851,#f39c12)}
+
+    /* Gallery */
+    .section{max-width:var(--maxw); margin:36px auto; padding:0 20px}
+    .section h2{font-size:1.6rem; margin-bottom:12px}
+    .gallery-wrap{
+      position:relative; overflow:hidden; border-radius:var(--radius); border:1px solid var(--card-border);
+      background:#0e1730cc; box-shadow:var(--shadow);
+    }
+    .rail{
+      display:flex; gap:14px; padding:16px; overflow-x:auto; scroll-snap-type:x mandatory;
+      scrollbar-width:none; -ms-overflow-style:none;
+    }
+    .rail::-webkit-scrollbar{display:none}
+    .tile{
+      flex:0 0 auto; width:320px; height:200px; position:relative; border-radius:12px;
+      overflow:hidden; scroll-snap-align:center; border:1px solid #ffffff1a; background:#0c1530;
+    }
+    .tile img{width:100%; height:100%; object-fit:cover; opacity:.95; transition:.25s}
+    .tile:hover img{transform:scale(1.03); opacity:1}
+    .tile .label{
+      position:absolute; left:10px; bottom:10px; padding:6px 10px; border-radius:999px;
+      background:#0b1224cc; border:1px solid #ffffff22; color:#fff; font-size:.8rem
+    }
+    .gallery-controls{
+      position:absolute; inset:auto 10px 10px auto; display:flex; gap:8px; z-index:2;
+    }
+    .ctrl{
+      width:36px; height:36px; display:grid; place-items:center; border-radius:10px;
+      background:#0b1224cc; border:1px solid #ffffff2a; color:#fff; cursor:pointer
+    }
+    .ctrl:hover{background:#0b1224e0}
+
+    /* Tiers */
+    .tiers{display:grid; grid-template-columns:repeat(4,1fr); gap:16px}
+    .tier{
+      background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius-sm);
+      padding:18px; box-shadow:var(--shadow); transform-style:preserve-3d; transition:transform .2s ease, box-shadow .2s ease;
+    }
+    .tier:hover{transform:translateY(-4px); box-shadow:0 16px 40px #00000088}
+    .tier h3{display:flex; align-items:center; gap:8px; margin:4px 0 8px 0; color:var(--gold)}
+    .price{color:var(--muted); font-size:.95rem; margin-bottom:8px}
+    .tier ul{margin:0; padding-left:18px; color:var(--ink)}
+    .tier li{margin:.35rem 0}
+    .tier .go{margin-top:10px; display:inline-block; font-weight:700}
+
+    /* Footer */
+    footer{margin:50px 0 30px 0; color:var(--muted); text-align:center; font-size:.9rem}
+
+    /* Responsive */
+    @media (max-width: 1000px){
+      .hero{grid-template-columns:1fr}
+      .tiers{grid-template-columns:repeat(2,1fr)}
+    }
+@media (max-width: 640px) {
+  .nav {
+    flex-direction: column;
+    align-items: stretch; /* full width */
+    text-align: center;
+  }
+  .brand {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  nav ul {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+  }
+  nav ul li {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+  }
+  nav ul a {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+    /* Motion preferences */
+    @media (prefers-reduced-motion: reduce){
+      *{animation:none!important; transition:none!important}
+    }
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <header>
+    <div class="nav">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <strong>Picante Pequin Salsa Co</strong>
+        <span style="color:var(--muted)">Online Order</span>
+      </div>
+      <nav aria-label="Primary">
+        <ul>
+          <li><a class="link" href="/ParentLegalGuide/">Order Now</a></li>
+          <li><a class="cta" href="submit_request.html">Picante Pequin Trading Co</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-card">
+        <div class="kicker">Online Menu</div>
+        <h1>Made Fresh, Locally Sourced</h1>
+        <p class="sub">Homegrown & Locally Sourced Ingredients. $12 per 16oz Jar.</p>
+        <div class="hero-actions">
+          <a class="btn gold" href="#tiers">Order Now!</a>
+          <a class="btn" id="btn-support" href="mailto:support@picantepequinsalsaco.com?subject=Order%20Support">Contact Support</a>
+        </div>
+      </div>
+     </section>
+
+    <!-- GALLERY -->
+    <section id="gallery" class="section">
+      <h2>Features</h2>
+      <div class="gallery-wrap">
+        <div class="gallery-controls" aria-hidden="true">
+          <button class="ctrl" id="prev" title="Previous">◀</button>
+          <button class="ctrl" id="next" title="Next">▶</button>
+        </div>
+        <div class="rail" id="rail" aria-label="Auto-scrolling gallery"></div>
+      </div>
+      <div style="margin-top:8px; color:var(--muted); font-size:.9rem">
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © <span id="y"></span> Picante Pequin Salsa Co. All rights reserved.
+  </footer>
+
+  <script>
+    // Year
+    document.getElementById('y').textContent = new Date().getFullYear();
+
+    // Gallery data: defaults, then optional assets/gallery.json override
+    const defaults = [
+      {src:'https://fortiviewholdings.com/images/Ideaboard.png', label:'Ideas to Ops'},
+      {src:'https://fortiviewholdings.com/images/Mentorship.jpg', label:'Mentorship'},
+      {src:'https://fortiviewholdings.com/images/Automation.png', label:'Automation'},
+      {src:'https://fortiviewholdings.com/images/Branding.jpg', label:'Branding'},
+      {src:'https://fortiviewholdings.com/images/Dashboard.jpg', label:'Dashboards'}
+    ];
+
+    async function loadGallery() {
+      try {
+        const r = await fetch('assets/gallery.json', {cache:'no-store'});
+        if (!r.ok) throw new Error('no json');
+        const items = await r.json();
+        if (!Array.isArray(items) || !items.length) throw new Error('empty');
+        return items;
+      } catch { return defaults; }
+    }
+
+    const rail = document.getElementById('rail');
+    function render(items){
+      rail.innerHTML = '';
+      // Duplicate items on each end for seamless loop
+      const loop = [...items, ...items.slice(0, 3)];
+      loop.forEach((it,i)=>{
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.innerHTML = `
+          <img src="${it.src}" alt="${it.alt || it.label || 'Gallery item'}" loading="lazy">
+          <span class="label">${it.label || ''}</span>
+        `;
+        rail.appendChild(tile);
+      });
+    }
+
+let idx = 0, timer, allowMotion = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function step(dir = 1) {
+  const tiles = rail.children;
+  if (!tiles.length) return;
+
+  idx = (idx + dir + tiles.length) % tiles.length;
+  const el = tiles[idx];
+
+  // Scroll only the gallery rail, not the whole page
+  rail.scrollTo({
+    left: el.offsetLeft - rail.offsetLeft,
+    behavior: 'smooth'
+  });
+}
+    function play(){ if (allowMotion){ timer = setInterval(()=>step(1), 3600); } }
+    function pause(){ clearInterval(timer); }
+
+    loadGallery().then(items=>{
+      render(items);
+      play();
+    });
+
+    rail.addEventListener('mouseenter', pause);
+    rail.addEventListener('mouseleave', play);
+    document.getElementById('prev').addEventListener('click', ()=>{ pause(); step(-1); });
+    document.getElementById('next').addEventListener('click', ()=>{ pause(); step(1); });
+
+    // 3D hover tilt for tier cards
+    document.querySelectorAll('.tier').forEach(card=>{
+      let rAF;
+      function onMove(e){
+        const rect = card.getBoundingClientRect();
+        const x = (e.clientX - rect.left)/rect.width - .5;
+        const y = (e.clientY - rect.top)/rect.height - .5;
+        cancelAnimationFrame(rAF);
+        rAF = requestAnimationFrame(()=>{
+          card.style.transform = `rotateX(${(-y*6).toFixed(2)}deg) rotateY(${(x*6).toFixed(2)}deg) translateY(-4px)`;
+        });
+      }
+      function reset(){ card.style.transform = '' }
+      card.addEventListener('mousemove', onMove);
+      card.addEventListener('mouseleave', reset);
+    });
+
+    // Anchor smooth scroll fix for sticky header offset (if needed)
+    // Not required due to scroll-behavior CSS and section spacing.
+  </script>
+
+  <!--
+    Optional: assets/gallery.json (Power Automate can overwrite this)
+    [
+      {"src":"assets/gallery/1.jpg","label":"Prototype"},
+      {"src":"assets/gallery/2.jpg","label":"KPIs"},
+      {"src":"assets/gallery/3.jpg","label":"Parent View"}
+    ]
+
+    Place a background image at assets/bg.jpg (abstract, high-res).
+  -->
+</body>
+</html>
