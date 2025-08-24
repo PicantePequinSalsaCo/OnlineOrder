@@ -2,198 +2,226 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Picante Pequin Salsa Co</title>
-  <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+  <title>Picante Pequin Salsa Co.</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark light" />
+  <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+  <link rel="preload" as="image" href="images/bg.jpg">
+ 
+
   <style>
     :root{
-      --bg-deep:#0b1022;            /* flattered navy base */
-      --bg-accent:#0b1c3d;          /* your primary, used subtly */
-      --card:#101a33cc;             /* glass card */
-      --card-border:#ffffff1a;
-      --gold:#f9c851;               /* your accent gold */
-      --gold-600:#d6a538;
-      --ink:#e7ecff;
-      --muted:#c6d0f0a6;
-      --success:#51f9e8;
-      --warning:#f9aa51;
-      --shadow:0 10px 30px #00000066;
+      /* Old site palette preserved */
+      --bg-deep:#1e1e1e;
+      --ink:#ececec;
+      --muted:#b0b0b0;
+
+      --accent-orange:#f57c00;
+      --accent-green:#558b2f;
+      --accent-red:#d84315;
+
+      --card:#2e2e2ecc;      /* glass card tint from old table bg */
+      --card-border:#3a3a3a; /* old table row divider */
+      --row-alt:#262626;     /* old alternating row */
+
       --radius:16px;
       --radius-sm:12px;
-      --maxw:1200px;
-      --grad:linear-gradient(135deg,#182a52 0%,#0b1c3d 40%,#1d3557 100%);
-      --gold-glow:0 0 0 2px #f9c85133, 0 10px 20px #f9c85122;
+      --shadow:0 10px 30px #00000066;
+      --accent-glow:0 0 0 2px #f57c0033, 0 10px 20px #f57c0022;
+
+      --maxw:1100px;
+
+      /* Subtle dark gradient base with soft red/green light to echo header gradient */
+      --grad:linear-gradient(135deg,#1f1f1f 0%,#1b1b1b 40%,#151515 100%);
     }
+
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg-deep);color:var(--ink);scroll-behavior:smooth}
-    a{color:inherit;text-decoration:none}
-    img{display:block;max-width:100%}
-    /* Background image layer */
+    html,body{
+      margin:0; padding:0;
+      font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:var(--bg-deep); color:var(--ink);
+      scroll-behavior:smooth;
+    }
+    a{color:inherit; text-decoration:none}
+    img{display:block; max-width:100%}
+
+    /* Atmospheric background */
     .bg{
       position:fixed; inset:0; z-index:-2;
       background:
-        radial-gradient(1200px 800px at 10% -10%, #5ac8fa22, transparent 60%),
-        radial-gradient(900px 600px at 110% 10%, #f9c8511c, transparent 55%),
-        url('assets/bg.jpg') center/cover no-repeat,
+        radial-gradient(1100px 700px at -10% -10%, #d8431518, transparent 60%),
+        radial-gradient(900px 600px at 110% 10%, #558b2f1a, transparent 55%),
+        url('images/bg.jpg') center/cover no-repeat,
         var(--grad);
-      filter: blur(6px) saturate(1.05) brightness(.85);
-      transform: scale(1.03);
+      filter: blur(6px) saturate(1.05) brightness(.9);
+      transform: translateZ(0) scale(1.02);
     }
-    /* Subtle vignette overlay */
     .bg::after{
       content:""; position:absolute; inset:0;
-      background: radial-gradient(1000px 600px at 50% -10%, transparent, #000814aa 70%),
-                  linear-gradient(to bottom, #00000055, transparent 30%, #00000066 100%);
+      background:
+        radial-gradient(1000px 600px at 50% -10%, transparent, #000000aa 70%),
+        linear-gradient(to bottom, #00000055, transparent 30%, #00000066 100%);
     }
 
-    /* Sticky glass header */
+    /* Sticky header */
     header{
       position:sticky; top:0; z-index:50;
       backdrop-filter:saturate(140%) blur(10px);
-      background:#0b1224cc;
-      border-bottom:1px solid var(--card-border);
+      background:#161616cc;
+      border-bottom:1px solid #ffffff14;
     }
     .nav{
-      max-width:var(--maxw); margin:0 auto; padding:14px 20px;
-      display:flex; align-items:center; gap:16px; justify-content:space-between;
+      max-width:var(--maxw); margin:0 auto; padding:12px 18px;
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
     }
-    .brand{display:flex; align-items:center; gap:10px; letter-spacing:.5px}
+    .brand{display:flex; align-items:center; gap:10px; letter-spacing:.3px}
     .logo{
       width:34px; height:34px; border-radius:10px;
-      background-image: url('https://picantepequinsalsaco.com/images/Logo.png';
-      background-size: cover;
-      background-style:center;
-      box-shadow: var(--gold-glow);
+      background-image: url('https://picantepequinsalsaco.com/images/Logo.png');
+      background-size: cover; background-position:center;
+      box-shadow: var(--accent-glow);
     }
-    .brand strong{font-weight:700}
-    nav ul{display:flex; gap:14px; list-style:none; align-items:center}
+    .tag{color:var(--muted); font-size:.95rem}
+    nav ul{display:flex; gap:10px; list-style:none; align-items:center; margin:0; padding:0}
     .link{
-      padding:9px 14px; border-radius:999px; color:var(--muted);
+      padding:8px 12px; border-radius:999px; color:var(--muted);
       border:1px solid transparent; transition:.2s ease;
     }
     .link:hover{color:var(--ink); border-color:#ffffff22; background:#ffffff10}
     .cta{
-      background: linear-gradient(180deg, var(--gold), var(--gold-600));
+      background: linear-gradient(180deg, var(--accent-orange), #e46f00);
       color:#1a1405; font-weight:700;
-      padding:10px 16px; border-radius:999px; box-shadow: var(--gold-glow);
+      padding:9px 14px; border-radius:999px; box-shadow: var(--accent-glow);
     }
     .cta:hover{filter:brightness(.95)}
 
     /* Hero */
     .hero{
-      max-width:var(--maxw); margin:40px auto; padding:24px 20px;
-      display:grid; grid-template-columns:1.2fr .8fr; gap:28px;
+      max-width:var(--maxw); margin:36px auto 18px; padding:0 18px;
+      display:grid; grid-template-columns:1fr .9fr; gap:24px;
     }
     .hero-card{
-      background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius);
-      padding:32px; box-shadow:var(--shadow);
+      background:var(--card);
+      border:1px solid var(--card-border);
+      border-radius:var(--radius);
+      padding:28px; box-shadow:var(--shadow);
     }
-    .kicker{color:var(--success); font-weight:700; letter-spacing:.12em; text-transform:uppercase; font-size:.8rem}
-    h1{font-size:clamp(2rem, 3.2vw, 3rem); line-height:1.1; margin:.4rem 0 1rem 0}
+    .kicker{
+      color:var(--accent-green); font-weight:800; letter-spacing:.12em;
+      text-transform:uppercase; font-size:.8rem
+    }
+    h1{font-size:clamp(1.9rem, 3.2vw, 3rem); line-height:1.1; margin:.4rem 0 .8rem}
     .sub{color:var(--muted); font-size:1.05rem}
-    .hero-actions{margin-top:18px; display:flex; gap:12px; flex-wrap:wrap}
+    .badges{margin-top:10px; display:flex; flex-wrap:wrap; gap:8px}
+    .pill{
+      padding:6px 10px; border-radius:999px; font-weight:700; font-size:.8rem;
+      color:#0d0a05; background:linear-gradient(180deg,#f8a044,#f57c00);
+      border:1px solid #ffffff22;
+    }
+    .pill.alt{
+      color:#0a0f08; background:linear-gradient(180deg,#70b56b,#558b2f);
+    }
+    .hero-actions{margin-top:16px; display:flex; gap:10px; flex-wrap:wrap}
     .btn{
-      padding:12px 16px; border-radius:12px; border:1px solid #ffffff1f;
+      padding:11px 14px; border-radius:12px; border:1px solid #ffffff1f;
       background:#ffffff0f; color:#fff; backdrop-filter: blur(6px);
       transition: transform .15s ease, background .2s ease;
     }
     .btn:hover{transform: translateY(-1px); background:#ffffff1a}
-    .btn.gold{background: linear-gradient(180deg, var(--gold), var(--gold-600)); color:#1a1405; border:none}
-
-    .hero-side{
-      display:grid; gap:16px;
+    .btn.primary{
+      background: linear-gradient(180deg, var(--accent-orange), #e46f00);
+      color:#1a1405; border:none; font-weight:800;
     }
-    .stat{
-      padding:20px; border-radius:var(--radius-sm);
-      background:#0f1933cc; border:1px solid var(--card-border);
-      display:flex; align-items:center; gap:14px;
-    }
-    .pill{padding:6px 10px; border-radius:999px; font-weight:700; font-size:.8rem;
-      color:#071018; background:linear-gradient(180deg,#51f9e8,#22d3ee)}
-    .pill.gold{background:linear-gradient(180deg,#f9c851,#f39c12)}
 
-    /* Gallery */
-    .section{max-width:var(--maxw); margin:36px auto; padding:0 20px}
-    .section h2{font-size:1.6rem; margin-bottom:12px}
+    /* Menu section (responsive table -> cards on narrow screens) */
+    .section{max-width:var(--maxw); margin:20px auto; padding:0 18px}
+    .card{
+      background:#202020cc; border:1px solid var(--card-border);
+      border-radius:var(--radius-sm); padding:18px; box-shadow:var(--shadow);
+    }
+    .section h2{font-size:1.4rem; margin:0 0 10px}
+
+    .table-wrap{
+      overflow:auto; border-radius:12px; border:1px solid var(--card-border);
+      background:#1a1a1acc;
+    }
+    table{
+      width:100%; border-collapse:separate; border-spacing:0;
+      min-width:520px;
+    }
+    thead{
+      background: linear-gradient(90deg, var(--accent-red), var(--accent-green));
+    }
+    thead th{
+      color:#fff; font-weight:600; padding:.8em 1em; text-align:left;
+    }
+    tbody td{
+      padding:.8em 1em; border-top:1px solid var(--card-border); color:var(--ink);
+    }
+    tbody tr:nth-child(even){ background: var(--row-alt); }
+
+    /* Shelf life + order CTA row */
+    .info-grid{
+      display:grid; grid-template-columns:1.2fr .8fr; gap:16px; margin-top:12px;
+    }
+    .list{margin:0; padding-left:1.2em}
+    .list li{margin:.4em 0}
+    .order-cta{
+      display:flex; align-items:center; justify-content:center;
+    }
+    .order-cta a{
+      background-color:var(--accent-orange); color:#fff;
+      padding:.9em 1.4em; border-radius:10px; font-weight:800; text-align:center;
+      box-shadow: var(--accent-glow);
+    }
+    .small{font-size:.9rem; color:var(--muted); margin-top:10px}
+
+    /* Optional highlights gallery (kept lean; can be fed via assets/gallery.json) */
     .gallery-wrap{
-      position:relative; overflow:hidden; border-radius:var(--radius); border:1px solid var(--card-border);
-      background:#0e1730cc; box-shadow:var(--shadow);
+      position:relative; overflow:hidden; border-radius:var(--radius);
+      border:1px solid var(--card-border); background:#1c1c1ccc; box-shadow:var(--shadow);
     }
     .rail{
-      display:flex; gap:14px; padding:16px; overflow-x:auto; scroll-snap-type:x mandatory;
+      display:flex; gap:12px; padding:14px; overflow-x:auto; scroll-snap-type:x mandatory;
       scrollbar-width:none; -ms-overflow-style:none;
     }
     .rail::-webkit-scrollbar{display:none}
     .tile{
-      flex:0 0 auto; width:320px; height:200px; position:relative; border-radius:12px;
-      overflow:hidden; scroll-snap-align:center; border:1px solid #ffffff1a; background:#0c1530;
+      flex:0 0 auto; width:300px; height:180px; position:relative; border-radius:12px;
+      overflow:hidden; scroll-snap-align:center; border:1px solid #ffffff1a; background:#141414;
     }
     .tile img{width:100%; height:100%; object-fit:cover; opacity:.95; transition:.25s}
     .tile:hover img{transform:scale(1.03); opacity:1}
     .tile .label{
       position:absolute; left:10px; bottom:10px; padding:6px 10px; border-radius:999px;
-      background:#0b1224cc; border:1px solid #ffffff22; color:#fff; font-size:.8rem
+      background:#161616cc; border:1px solid #ffffff22; color:#fff; font-size:.8rem
     }
     .gallery-controls{
       position:absolute; inset:auto 10px 10px auto; display:flex; gap:8px; z-index:2;
     }
     .ctrl{
       width:36px; height:36px; display:grid; place-items:center; border-radius:10px;
-      background:#0b1224cc; border:1px solid #ffffff2a; color:#fff; cursor:pointer
+      background:#161616cc; border:1px solid #ffffff2a; color:#fff; cursor:pointer
     }
-    .ctrl:hover{background:#0b1224e0}
-
-    /* Tiers */
-    .tiers{display:grid; grid-template-columns:repeat(4,1fr); gap:16px}
-    .tier{
-      background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius-sm);
-      padding:18px; box-shadow:var(--shadow); transform-style:preserve-3d; transition:transform .2s ease, box-shadow .2s ease;
-    }
-    .tier:hover{transform:translateY(-4px); box-shadow:0 16px 40px #00000088}
-    .tier h3{display:flex; align-items:center; gap:8px; margin:4px 0 8px 0; color:var(--gold)}
-    .price{color:var(--muted); font-size:.95rem; margin-bottom:8px}
-    .tier ul{margin:0; padding-left:18px; color:var(--ink)}
-    .tier li{margin:.35rem 0}
-    .tier .go{margin-top:10px; display:inline-block; font-weight:700}
+    .ctrl:hover{background:#161616e0}
 
     /* Footer */
-    footer{margin:50px 0 30px 0; color:var(--muted); text-align:center; font-size:.9rem}
+    footer{margin:40px 0 28px; color:var(--muted); text-align:center; font-size:.9rem}
+    .links{display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:8px}
+    .links a{color:var(--accent-orange); font-weight:700}
 
     /* Responsive */
-    @media (max-width: 1000px){
+    @media (max-width: 960px){
       .hero{grid-template-columns:1fr}
-      .tiers{grid-template-columns:repeat(2,1fr)}
+      .info-grid{grid-template-columns:1fr}
     }
-@media (max-width: 640px) {
-  .nav {
-    flex-direction: column;
-    align-items: stretch; /* full width */
-    text-align: center;
-  }
-  .brand {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px;
-    margin-bottom: 8px;
-  }
-  nav ul {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-    padding: 0;
-    margin: 0;
-  }
-  nav ul li {
-    flex: 1 1 auto;
-    display: flex;
-    justify-content: center;
-  }
-  nav ul a {
-    width: 100%;
-    text-align: center;
-  }
-}
+    @media (max-width: 640px){
+      .nav{flex-direction:column; align-items:stretch; text-align:center}
+      .brand{flex-wrap:wrap; justify-content:center; gap:6px; margin-bottom:6px}
+      nav ul{flex-wrap:wrap; justify-content:center; gap:8px}
+      nav ul li{display:flex; justify-content:center}
+      nav a{width:100%; text-align:center}
+    }
 
     /* Motion preferences */
     @media (prefers-reduced-motion: reduce){
@@ -208,13 +236,14 @@
     <div class="nav">
       <div class="brand">
         <div class="logo" aria-hidden="true"></div>
-        <strong>Picante Pequin Salsa Co</strong>
-        <span style="color:var(--muted)">Online Order</span>
+        <strong>Picante Pequin Salsa Co.</strong>
+        <span class="tag">Online Menu</span>
       </div>
       <nav aria-label="Primary">
         <ul>
-          <li><a class="link" href="/ParentLegalGuide/">Order Now</a></li>
-          <li><a class="cta" href="submit_request.html">Picante Pequin Trading Co</a></li>
+          <li><a class="link" href="https://picantepequinsalsaco.com/ShippingPolicy">Shipping</a></li>
+          <li><a class="link" href="https://picantepequinsalsaco.com/PrivacyPolicy">Privacy</a></li>
+          <li><a class="cta" href="https://picantepequinsalsaco.com/ComingSoon">Order Now</a></li>
         </ul>
       </nav>
     </div>
@@ -224,51 +253,102 @@
     <!-- HERO -->
     <section class="hero">
       <div class="hero-card">
-        <div class="kicker">Online Menu</div>
-        <h1>Made Fresh, Locally Sourced</h1>
-        <p class="sub">Homegrown & Locally Sourced Ingredients. $12 per 16oz Jar.</p>
+        <div class="kicker">Online menu</div>
+        <h1>Homegrown, locally sourced, guaranteed fresh</h1>
+        <p class="sub">Salsas in 16 oz mason jars at $12 per jar + tax.</p>
+        <div class="badges">
+          <span class="pill">Free shipping over $72</span>
+          <span class="pill alt">Free local delivery within 25 mi of League City, TX (77573)</span>
+        </div>
         <div class="hero-actions">
-          <a class="btn gold" href="#tiers">Order Now!</a>
-          <a class="btn" id="btn-support" href="mailto:support@picantepequinsalsaco.com?subject=Order%20Support">Contact Support</a>
+          <a class="btn primary" href="https://picantepequinsalsaco.com/ComingSoon">Order now</a>
+          <a class="btn" href="mailto:support@picantepequinsalsaco.com?subject=Order%20Support">Contact support</a>
         </div>
       </div>
-     </section>
+    </section>
 
-    <!-- GALLERY -->
-    <section id="gallery" class="section">
-      <h2>Features</h2>
+    <!-- MENU -->
+    <section class="section" id="menu">
+      <div class="card">
+        <h2>Flavors</h2>
+        <div class="table-wrap" role="region" aria-label="Flavor descriptions" tabindex="0">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Flavor</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>House Pequin</td>
+                <td>A mild, bright blend of serrano, chile pequin, fresh tomatoes, white onion, garlic & cilantro.</td>
+              </tr>
+              <tr>
+                <td>Spicy Green Chile Pequin</td>
+                <td>Smoky–citrusy salsa of serrano, chile pequin, fresh tomatillos, yellow onion, garlic, cilantro & lime.</td>
+              </tr>
+              <tr>
+                <td>Red Hot Pepper Pequin</td>
+                <td>Hot & sweet: red jalapeño, chile pequin, fresh tomatoes, yellow onion & garlic.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="info-grid">
+          <div>
+            <p><strong style="color:var(--accent-green)">Shelf life</strong></p>
+            <ul class="list">
+              <li><strong style="color:var(--accent-green)">Unopened & sealed:</strong> up to 12 months in a cool, dark place.</li>
+              <li><strong style="color:var(--accent-green)">Opened & refrigerated:</strong> best consumed within 7–10 days.</li>
+            </ul>
+            <p class="small">
+              All ingredients are home-grown or locally sourced first. Some peppers, when unavailable locally, may be sourced through other small business pepper distributors. We guarantee the freshest salsa in every jar.
+            </p>
+          </div>
+          <div class="order-cta">
+            <a href="https://picantepequinsalsaco.com/ComingSoon" aria-label="Order now from Picante Pequin Salsa Co">Order Now</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OPTIONAL HIGHLIGHTS -->
+    <section class="section" aria-labelledby="highlights-title">
+      <h2 id="highlights-title" style="margin-bottom:10px">Highlights</h2>
       <div class="gallery-wrap">
         <div class="gallery-controls" aria-hidden="true">
           <button class="ctrl" id="prev" title="Previous">◀</button>
           <button class="ctrl" id="next" title="Next">▶</button>
         </div>
-        <div class="rail" id="rail" aria-label="Auto-scrolling gallery"></div>
-      </div>
-      <div style="margin-top:8px; color:var(--muted); font-size:.9rem">
+        <div class="rail" id="rail" aria-label="Auto-scrolling highlights"></div>
       </div>
     </section>
   </main>
 
   <footer>
     © <span id="y"></span> Picante Pequin Salsa Co. All rights reserved.
+    <div class="links">
+      <a href="https://picantepequinsalsaco.com/ShippingPolicy">Shipping & Delivery Policy</a>
+      <a href="https://picantepequinsalsaco.com/PrivacyPolicy">Customer Communication & Privacy Policy</a>
+    </div>
   </footer>
 
   <script>
     // Year
     document.getElementById('y').textContent = new Date().getFullYear();
 
-    // Gallery data: defaults, then optional assets/gallery.json override
+    // Highlights data: defaults, then optional assets/gallery.json override
     const defaults = [
-      {src:'https://fortiviewholdings.com/images/Ideaboard.png', label:'Ideas to Ops'},
-      {src:'https://fortiviewholdings.com/images/Mentorship.jpg', label:'Mentorship'},
-      {src:'https://fortiviewholdings.com/images/Automation.png', label:'Automation'},
-      {src:'https://fortiviewholdings.com/images/Branding.jpg', label:'Branding'},
-      {src:'https://fortiviewholdings.com/images/Dashboard.jpg', label:'Dashboards'}
+      {src:'assets/gallery/1.jpg', label:'House Pequin'},
+      {src:'assets/gallery/2.jpg', label:'Spicy Green Chile Pequin'},
+      {src:'assets/gallery/3.jpg', label:'Red Hot Pepper Pequin'}
     ];
 
     async function loadGallery() {
       try {
-        const r = await fetch('assets/gallery.json', {cache:'no-store'});
+        const r = await fetch('images/gallery.json', {cache:'no-store'});
         if (!r.ok) throw new Error('no json');
         const items = await r.json();
         if (!Array.isArray(items) || !items.length) throw new Error('empty');
@@ -277,36 +357,36 @@
     }
 
     const rail = document.getElementById('rail');
+
     function render(items){
       rail.innerHTML = '';
-      // Duplicate items on each end for seamless loop
       const loop = [...items, ...items.slice(0, 3)];
-      loop.forEach((it,i)=>{
+      loop.forEach((it)=>{
         const tile = document.createElement('div');
         tile.className = 'tile';
         tile.innerHTML = `
-          <img src="${it.src}" alt="${it.alt || it.label || 'Gallery item'}" loading="lazy">
+          <img src="${it.src}" alt="${it.alt || it.label || 'Highlight'}" loading="lazy">
           <span class="label">${it.label || ''}</span>
         `;
         rail.appendChild(tile);
       });
     }
 
-let idx = 0, timer, allowMotion = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let idx = 0, timer, allowMotion = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-function step(dir = 1) {
-  const tiles = rail.children;
-  if (!tiles.length) return;
+    function step(dir = 1) {
+      const tiles = rail.children;
+      if (!tiles.length) return;
 
-  idx = (idx + dir + tiles.length) % tiles.length;
-  const el = tiles[idx];
+      idx = (idx + dir + tiles.length) % tiles.length;
+      const el = tiles[idx];
 
-  // Scroll only the gallery rail, not the whole page
-  rail.scrollTo({
-    left: el.offsetLeft - rail.offsetLeft,
-    behavior: 'smooth'
-  });
-}
+      // Scroll only the gallery rail, not the whole page
+      rail.scrollTo({
+        left: el.offsetLeft - rail.offsetLeft,
+        behavior: 'smooth'
+      });
+    }
     function play(){ if (allowMotion){ timer = setInterval(()=>step(1), 3600); } }
     function pause(){ clearInterval(timer); }
 
@@ -319,37 +399,7 @@ function step(dir = 1) {
     rail.addEventListener('mouseleave', play);
     document.getElementById('prev').addEventListener('click', ()=>{ pause(); step(-1); });
     document.getElementById('next').addEventListener('click', ()=>{ pause(); step(1); });
-
-    // 3D hover tilt for tier cards
-    document.querySelectorAll('.tier').forEach(card=>{
-      let rAF;
-      function onMove(e){
-        const rect = card.getBoundingClientRect();
-        const x = (e.clientX - rect.left)/rect.width - .5;
-        const y = (e.clientY - rect.top)/rect.height - .5;
-        cancelAnimationFrame(rAF);
-        rAF = requestAnimationFrame(()=>{
-          card.style.transform = `rotateX(${(-y*6).toFixed(2)}deg) rotateY(${(x*6).toFixed(2)}deg) translateY(-4px)`;
-        });
-      }
-      function reset(){ card.style.transform = '' }
-      card.addEventListener('mousemove', onMove);
-      card.addEventListener('mouseleave', reset);
-    });
-
-    // Anchor smooth scroll fix for sticky header offset (if needed)
-    // Not required due to scroll-behavior CSS and section spacing.
   </script>
-
-  <!--
-    Optional: assets/gallery.json (Power Automate can overwrite this)
-    [
-      {"src":"assets/gallery/1.jpg","label":"Prototype"},
-      {"src":"assets/gallery/2.jpg","label":"KPIs"},
-      {"src":"assets/gallery/3.jpg","label":"Parent View"}
-    ]
-
-    Place a background image at assets/bg.jpg (abstract, high-res).
-  -->
 </body>
 </html>
+
