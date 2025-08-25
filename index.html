@@ -114,7 +114,22 @@
     margin: 0;
     padding: 0;
   }
+   /* 1px white outline around orange text */
+.outlined {
+  color: #04045d88;                    /* your fill color */
+  
+  /* Chrome, Safari & modern WebKit-based browsers */
+  -webkit-text-stroke: 1px #f36d00c1;  
+  text-stroke: 1px #f36d00c1;         /* non-prefixed if supported */
 
+  /* fallback for other browsers using multi-layer text-shadow */
+  text-shadow:
+    /* top-left */     -1px -1px 0 #f36d00c1,
+    /* top-right */     1px -1px 0 #f36d00c1,
+    /* bottom-left */  -1px  1px 0 #f36d00c1,
+    /* bottom-right */  1px  1px 0 #f36d00c1;
+}
+  
   .link {
     padding: 8px 12px;
     border-radius: 999px;
@@ -477,7 +492,7 @@
     <!-- HERO with gallery on the right (desktop), stacked (mobile) -->
     <section class="hero">
       <div class="hero-card">
-        <h1>Homegrown, locally sourced, guaranteed fresh</h1>
+        <h1 class="outlined">Homegrown, locally sourced, guaranteed fresh</h1>
         <p class="sub">Salsas in 16 oz mason jars at $12 per jar + tax.</p>
         <div class="badges">
           <span class="pill">Free shipping over $72</span>
@@ -626,6 +641,7 @@
   </script>
 </body>
 </html>
+
 
 
 
