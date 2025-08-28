@@ -20,6 +20,7 @@
       --card-border:    #3a3a3a;
       --row-alt:        #262626;
       --button-opq:     #ffffff2f;
+      --cart-opq:       #010f2b74;
       --radius-sm:      12px;
       --radius-lg:      20px;
       --shadow:         0 10px 30px #00000066;
@@ -147,7 +148,7 @@
     #cart-container.open { display:flex; }
     .cart-panel {
       width: var(--cart-width); max-width: var(--cart-max-width);
-      height:100vh; background: var(--card);
+      height:100vh; background: var(--cart-opq); border: solid; border-color: var(--accent-orange); border-radius: 20px;
       transform: translateX(100%); transition:transform .3s ease;
       display:flex; flex-direction:column;
     }
@@ -226,7 +227,7 @@
     #login-container.open { display:flex; }
     #login-container .cart-panel {
       width: var(--login-width); max-width: var(--cart-max-width);
-      height:100vh; background: var(--card);
+      height:100vh; background: var(--button-opq); border: solid; border-color: var(--accent-green); border-radius: 20px;
       transform: translateX(100%); transition:transform .3s ease;
       display:flex; flex-direction:column;
     }
