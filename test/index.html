@@ -5,610 +5,570 @@
   <title>Picante Pequin Salsa Co.</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark light" />
-  <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
-  <link rel="preload" as="image" href="https://picantepequinsalsaco.com/images/bg.png">
-<style>
-  :root {
-    /* Old site palette preserved */
-    --bg-deep: #1e1e1e00;
-    --ink: #ececec;
-    --muted: #b0b0b0;
-
-    --accent-orange: #f57c00;
-    --accent-green: #558b2f;
-    --accent-red: #d84315;
-
-    --card: #2e2e2e60;      /* glass card tint from old table bg */
-    --card-border: #3a3a3a; /* old table row divider */
-    --row-alt: #262626;     /* old alternating row */
-
-    --radius: 16px;
-    --radius-sm: 12px;
-    --shadow: 0 10px 30px #00000066;
-    --accent-glow: 0 0 0 2px #f57c0033, 0 10px 20px #f57c0022;
-
-    --maxw: 1100px;
-
-    /* Subtle dark gradient base with soft red/green light to echo header gradient */
-    --grad: linear-gradient(135deg, #1f1f1f 0%, #1b1b1b 40%, #151515 100%);
-
-    --tile-w: 300px;
-    --tile-h: 300px;
-    --rail-pad: 14px;
-  }
-
-  * { box-sizing: border-box; }
-
-  html, body {
-    margin: 0;
-    padding: 0;
-    font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--bg-deep); /* fallback */
-    scroll-behavior: smooth;
-  }
-
-  a { color: inherit; text-decoration: none; }
-  img { display: block; max-width: 100%; }
-
-  /* Background image + atmospheric overlay (image inside .bg so filter applies) */
-  .bg {
-    position: fixed;
-    inset: 0;
-    z-index: -1; /* push behind all content */
-    background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover no-repeat;
-    filter: blur(0px) saturate(1.05) brightness(.9);
-    transform: translateZ(0) scale(1.02);
-  }
-
-  .bg::after {
-    content: ""; /* ensure pseudo-element renders */
-    position: absolute;
-    inset: 0;
-    background: none; /* or gradient overlay if desired */
-  }
-
-  /* Sticky header */
-  header {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    backdrop-filter: saturate(140%) blur(10px);
-    background: #161616cc;
-    border-bottom: 1px solid #ffffff14;
-  }
-
-  .nav {
-    max-width: var(--maxw);
-    margin: 0 auto;
-    padding: 12px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-  }
-
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    letter-spacing: .3px;
-  }
-
-  .logo {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    background-image: url('https://picantepequinsalsaco.com/images/bg.png');
-    background-size: cover;
-    background-position: center;
-    box-shadow: var(--accent-glow);
-  }
-
-  .tag { color: var(--muted); font-size: .95rem; }
-
-  nav ul {
-    display: flex;
-    gap: 10px;
-    list-style: none;
-    align-items: center;
-    margin: 0;
-    padding: 0;
-  }
-
-  .link {
-    padding: 8px 12px;
-    border-radius: 999px;
-    color: var(--muted);
-    border: 1px solid transparent;
-    transition: .2s ease;
-  }
-
-  .link:hover {
-    color: var(--ink);
-    border-color: #ffffff22;
-    background: #ffffff10;
-  }
-
-  .cta {
-    background: linear-gradient(180deg, var(--accent-orange), #e46f00);
-    color: #1a1405;
-    font-weight: 700;
-    padding: 9px 14px;
-    border-radius: 999px;
-    box-shadow: var(--accent-glow);
-  }
-
-  .cta:hover { filter: brightness(.95); }
-
-  /* Hero */
-  .hero {
-    max-width: var(--maxw);
-    margin: 36px auto 18px;
-    padding: 0 18px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 24px;
-  }
-
-  .hero-card {
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius);
-    padding: 28px;
-    box-shadow: var(--shadow);
-  }
-
-  /* Ensure the gallery aligns at the top in the right column */
-  .hero .hero-gallery {
-    align-self: start;
-  }
-
-  .kicker {
-    color: var(--accent-green);
-    font-weight: 800;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    font-size: .8rem;
-  }
-
-  h1 {
-    font-size: clamp(1.9rem, 3.2vw, 3rem);
-    line-height: 1.1;
-    margin: .4rem 0 .8rem;
-  }
-
-  .sub { color: var(--muted); font-size: 1.05rem; }
-
-  .badges {
-    margin-top: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .pill {
-    padding: 6px 10px;
-    border-radius: 999px;
-    font-weight: 700;
-    font-size: .8rem;
-    color: #0d0a05;
-    background: linear-gradient(180deg, #f8a044, #f57c00);
-    border: 1px solid #ffffff22;
-  }
-
-  .pill.alt {
-    color: #0a0f08;
-    background: linear-gradient(180deg, #70b56b, #558b2f);
-  }
-
-  .hero-actions {
-    margin-top: 16px;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .btn {
-    padding: 11px 14px;
-    border-radius: 12px;
-    border: 1px solid #ffffff1f;
-    background: #ffffff0f;
-    color: #fff;
-    backdrop-filter: blur(6px);
-    transition: transform .15s ease, background .2s ease;
-  }
-
-  .btn:hover {
-    transform: translateY(-1px);
-    background: #ffffff1a;
-  }
-
-  .btn.primary {
-    background: linear-gradient(180deg, var(--accent-orange), #e46f00);
-    color: #1a1405;
-    border: none;
-    font-weight: 800;
-  }
-
-  /* Menu section (responsive table -> cards on narrow screens) */
-  .section {
-    max-width: var(--maxw);
-    margin: 20px auto;
-    padding: 0 18px;
-  }
-
-  .card {
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-sm);
-    padding: 18px;
-    box-shadow: var(--shadow);
-  }
-
-  .section h2 { font-size: 1.4rem; margin: 0 0 10px; }
-
-  .table-wrap {
-    overflow: auto;
-    border-radius: 12px;
-    border: 1px solid var(--card-border);
-    background: #1a1a1acc;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    min-width: 520px;
-  }
-
-  thead {
-    background: linear-gradient(90deg, var(--accent-red), var(--accent-green));
-  }
-
-  thead th {
-    color: #fff;
-    font-weight: 600;
-    padding: .8em 1em;
-    text-align: left;
-  }
-
-  tbody td {
-    padding: .8em 1em;
-    border-top: 1px solid var(--card-border);
-    color: var(--ink);
-  }
-
-  tbody tr:nth-child(even) { background: var(--row-alt); }
-
-  /* Shelf life + order CTA row */
-  .info-grid {
-    display: grid;
-    grid-template-columns: 1.2fr .8fr;
-    gap: 16px;
-    margin-top: 12px;
-  }
-
-  .list { margin: 0; padding-left: 1.2em; }
-  .list li { margin: .4em 0; }
-
-  .order-cta {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .order-cta a {
-    background-color: var(--accent-orange);
-    color: #fff;
-    padding: .9em 1.4em;
-    border-radius: 10px;
-    font-weight: 800;
-    text-align: center;
-    box-shadow: var(--accent-glow);
-  }
-
-  .small { font-size: .9rem; color: var(--muted); margin-top: 10px; }
-
-  /* Highlights gallery */
-  .gallery-wrap {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--radius);
-    border: 1px solid var(--card-border);
-    background: #1e1e1e60;
-    box-shadow: var(--shadow);
-    width: calc(var(--tile-w) + 2 * var(--rail-pad));
-    height: calc(var(--tile-h) + 2 * var(--rail-pad));
-    max-width: 100%;
-    margin: 0 auto;
-  }
-
-  .rail {
-    display: flex;
-    gap: 12px;
-    padding: var(--rail-pad);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .rail::-webkit-scrollbar { display: none; }
-
-  .tile {
-    flex: 0 0 auto;
-    width: var(--tile-w);
-    height: var(--tile-h);
-    position: relative;
-    border-radius: 12px;
-    overflow: hidden;
-    scroll-snap-align: center;
-    border: 1px solid #ffffff1a;
-    background: #141414;
-  }
-
-  .tile img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: .95;
-    transition: .25s;
-  }
-
-  .tile:hover img { transform: scale(1.03); opacity: 1; }
-
-  .tile .label {
-    position: absolute;
-    left: 10px;
-    bottom: 10px;
-    padding: 6px 10px;
-    border-radius: 999px;
-    background: #161616cc;
-    border: 1px solid #ffffff22;
-    color: #fff;
-    font-size: .8rem;
-  }
-
-  .gallery-controls {
-    position: absolute;
-    inset: auto 10px 10px auto;
-    display: flex;
-    gap: 8px;
-    z-index: 2;
-  }
-
-  .ctrl {
-    width: 36px;
-    height: 36px;
-    display: grid;
-    place-items: center;
-    border-radius: 10px;
-    background: #161616cc;
-    border: 1px solid #ffffff2a;
-    color: #fff;
-    cursor: pointer;
-  }
-
-  .ctrl:hover { background: #161616e0; }
-
-  /* Footer */
-  footer {
-    margin: 40px 0 28px;
-    color: var(--muted);
-    text-align: center;
-    font-size: .9rem;
-  }
-
-  .links {
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 8px;
-  }
-
-  .links a { color: var(--accent-orange); font-weight: 700; }
-
-  /* Responsive */
-  @media (max-width: 960px) {
-    .hero { grid-template-columns: 1fr; }
-    .info-grid { grid-template-columns: 1fr; }
-  }
-
-  @media (max-width: 640px) {
-    .nav { flex-direction: column; align-items: stretch; text-align: center; }
-    .brand { flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 6px; }
-    nav ul { flex-wrap: wrap; justify-content: center; gap: 8px; }
-    nav ul li { display: flex; justify-content: center; }
-    nav a { width: 100%; text-align: center; }
-  }
-
-  /* Motion preferences */
-  @media (prefers-reduced-motion: reduce) {
-    * { animation: none !important; transition: none !important; }
-  }
-
-  @media (max-width: 960px) {
-  .hero {
-    grid-template-columns: 1fr;
-  }
-
-  .gallery-wrap {
-    width: 100%;
-    height: auto;      /* let the height flow naturally */
-  }
-}
-</style>
+  <link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
+  <link rel="preload" as="image" href="https://picantepequinsalsaco.com/images/bg.png" />
+
+  <style>
+    :root {
+      --bg-deep:        #1e1e1e00;
+      --ink:            #ececec;
+      --muted:          #b0b0b0;
+      --accent-orange:  #f57c00;
+      --accent-green:   #558b2f;
+      --accent-red:     #d84315;
+      --card:           #2e2e2e60;
+      --card-border:    #3a3a3a;
+      --row-alt:        #262626;
+      --button-opq:     #ffffff2f;
+      --radius-sm:      12px;
+      --shadow:         0 10px 30px #00000066;
+      --accent-glow:    0 0 0 2px #f57c0033, 0 10px 20px #f57c0022;
+      --maxw:           1100px;
+      --cart-width:     40vw;
+      --cart-max-width: 400px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-deep);
+      scroll-behavior: smooth;
+      color: var(--ink);
+    }
+    a, button { font: inherit; }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    .bg {
+      position: fixed; inset: 0; z-index: -1;
+      background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover no-repeat;
+      filter: blur(0) saturate(1.05) brightness(.9);
+      transform: translateZ(0) scale(1.02);
+    }
+
+    header {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: saturate(140%) blur(10px);
+      background: #161616cc; border-bottom:1px solid #ffffff14;
+    }
+    .nav {
+      max-width: var(--maxw); margin:0 auto;
+      padding:12px 18px; display:flex;
+      align-items:center; justify-content:space-between;
+    }
+    .brand { display:flex; align-items:center; gap:10px; }
+    .logo {
+      width:34px; height:34px; border-radius:10px;
+      background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover;
+      box-shadow: var(--accent-glow);
+    }
+    .header-info {
+      display: flex; align-items:center; gap:12px;
+      font-size:0.9rem;
+    }
+    .header-info strong { font-weight:700; }
+    nav ul {
+      display:flex; gap:10px; list-style:none; margin:0; padding:0;
+    }
+    .cta {
+      background:#050f46a9; color:#c06a00b5;
+      font-weight:700; padding:9px 14px; border-radius:999px;
+      box-shadow: var(--accent-glow); cursor:pointer;
+      border:none; transition:filter .2s;
+    }
+    .cta:hover { filter:brightness(.95); }
+    .cta.logout {
+      background: var(--accent-red); color: #fff;
+    }
+
+    .vertical-gallery {
+      max-width: var(--maxw);
+      margin: 20px auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .prod-card {
+      background: var(--card);
+      border:1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      padding:16px; box-shadow:var(--shadow);
+      display:flex; flex-direction:column;
+    }
+    .prod-card img {
+      border-radius: var(--radius-sm);
+      margin-bottom:12px;
+      object-fit:cover;
+      aspect-ratio: 1 / 1;
+    }
+    .prod-name { margin:0 0 8px; font-size:1.2rem; }
+    .prod-price { margin:0 0 12px; color:var(--muted); }
+    .quantity {
+      display:flex; align-items:center; gap:8px; margin-bottom:12px;
+    }
+    .qty-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--button-opq); border:solid; border-color: var(--accent-orange);
+      color: #fff; width:32px; height:32px;
+      border-radius:6px; font-size:1.2rem; line-height:1;
+      cursor:pointer;
+    }
+    .qty-input {
+      width:50px; text-align:center;
+      border:1px solid var(--card-border);
+      border-radius:var(--radius-sm);
+      background: var(--row-alt);
+      color: var(--ink);
+    }
+    .add-to-cart {
+      margin-top:auto;
+      background: linear-gradient(180deg,var(--accent-green),#4a7c27ef);
+      color:#fff; border:solid; border-color: var(--button-opq); padding:10px;
+      border-radius: var(--radius-sm);
+      font-weight:700; cursor:pointer;
+    }
+
+    #cart-container {
+      position:fixed; inset:0;
+      background: rgba(0,0,0,0.8);
+      display:none; align-items:center; justify-content:flex-end;
+      z-index:100;
+    }
+    #cart-container.open { display:flex; }
+    .cart-panel {
+      width: var(--cart-width); max-width: var(--cart-max-width);
+      height:100vh; background: var(--card);
+      transform: translateX(100%); transition:transform .3s ease;
+      display:flex; flex-direction:column;
+    }
+    #cart-container.open .cart-panel {
+      transform: translateX(0);
+    }
+    .cart-header {
+      display:flex; align-items:center;
+      padding:1rem; border-bottom:1px solid var(--card-border);
+    }
+    .cart-header h2 {
+      flex:1; margin:0; font-size:1.2rem; text-align:center;
+    }
+    #close-cart {
+      background:none; border:none;
+      color:var(--ink); font-size:1.5rem; cursor:pointer;
+    }
+    .cart-content {
+      flex:1; overflow:auto; padding:1rem;
+    }
+    .cart-total {
+      display: flex; justify-content: space-between;
+      align-items: center; padding: 0.75rem 1rem;
+      border-top: 1px solid var(--card-border);
+      font-size: 1.1rem;
+    }
+    #cart-items { list-style:none; margin:0; padding:0; }
+    #cart-items li {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:8px; margin-bottom:8px;
+      background:var(--row-alt); border-radius:var(--radius-sm);
+      transition:opacity 0.3s ease;
+      overflow:hidden; white-space:nowrap;
+    }
+    #cart-items li.removing { opacity:0; }
+    #cart-items li img.cart-thumb {
+      flex:0 0 auto; width:32px; height:32px;
+      object-fit:cover; border-radius:4px; margin-right:8px;
+    }
+    #cart-items li .cart-name {
+      flex:1 1 auto; margin-right:8px;
+      overflow:hidden; text-overflow:ellipsis;
+    }
+    #cart-items li .cart-quantity {
+      display:flex; align-items:center; gap:4px;
+    }
+    #cart-items li .qty-btn {
+      background:rgba(255,255,255,0.1); border:none;
+      color:var(--ink); width:28px; height:28px;
+      border-radius:6px; font-size:1.2rem; line-height:1;
+      cursor:pointer;
+    }
+    #cart-items li .qty-display {
+      min-width:24px; text-align:center; color:var(--ink);
+    }
+    #checkout-btn {
+      margin-top:1rem; width:100%;
+      padding:.75rem; border:none; border-radius:4px;
+      background:var(--accent-orange); color:#fff;
+      font-weight:700; cursor:pointer;
+    }
+    #checkout-btn[disabled] {
+      background:var(--muted); cursor:not-allowed;
+    }
+
+    #login-container {
+      position:fixed; inset:0;
+      background: rgba(0,0,0,0.8);
+      display:none; align-items:center; justify-content:flex-end;
+      z-index:100;
+    }
+    #login-container.open { display:flex; }
+    #login-container .cart-panel {
+      width: var(--cart-width); max-width: var(--cart-max-width);
+      height:100vh; background: var(--card);
+      transform: translateX(100%); transition:transform .3s ease;
+      display:flex; flex-direction:column;
+    }
+    #login-container.open .cart-panel {
+      transform: translateX(0);
+    }
+    .login-form {
+      display:flex; flex-direction:column; padding:1rem;
+    }
+    .login-form input {
+      margin-bottom:12px; padding:8px;
+      border:1px solid var(--card-border);
+      border-radius:var(--radius-sm);
+      background:var(--row-alt); color:var(--ink);
+    }
+    .login-form button {
+      background:var(--accent-green); color:#fff;
+      border:none; padding:12px; border-radius:var(--radius-sm);
+      cursor:pointer; font-weight:700;
+    }
+
+    footer {
+      text-align:center; color:var(--muted);
+      font-size:.9rem; margin:20px 0;
+    }
+    .links {
+      display:flex; gap:14px; justify-content:center;
+      flex-wrap:wrap; margin-top:8px;
+    }
+    .links a { color:var(--accent-orange); font-weight:700; }
+
+    @media (max-width:640px) {
+      :root { --cart-width:80vw; }
+      .vertical-gallery { margin:12px; }
+      .nav { flex-wrap:wrap; gap:8px; }
+    }
+  </style>
 </head>
+
 <body>
   <div class="bg" aria-hidden="true"></div>
 
   <header>
     <div class="nav">
-      <div class="brand">
+      <a class="brand" href="https://picantepequinsalsaco.com">
         <div class="logo" aria-hidden="true"></div>
-        <strong>Picante Pequin Salsa Co.</strong>
+        <strong>Picante Pequin Salsa Co</strong>
+      </a>
+      <div class="header-info">
+        <span id="username-display">Guest</span>
+        <span>Rewards: <strong id="rewards-display">0</strong></span>
       </div>
       <nav aria-label="Primary">
         <ul>
-          <li><a class="link" href="https://picantepequinsalsaco.com/ShippingPolicy">Shipping</a></li>
-          <li><a class="link" href="https://picantepequinsalsaco.com/PrivacyPolicy">Privacy</a></li>
-          <li><a class="cta" href="https://picantepequinsalsaco.com/ComingSoon">Order Now</a></li>
+          <li><button id="cart-icon" class="cta" aria-label="Toggle Cart">🛒</button></li>
+          <li><button id="login-btn" class="cta">Login</button></li>
         </ul>
       </nav>
     </div>
   </header>
 
   <main>
-    <!-- HERO with gallery on the right (desktop), stacked (mobile) -->
-    <section class="hero">
-      <div class="hero-card">
-        <h1>Homegrown, locally sourced, guaranteed fresh</h1>
-        <p class="sub">Salsas in 16 oz mason jars at $12 per jar + tax.</p>
-        <div class="badges">
-          <span class="pill">Free shipping over $72</span>
-          <span class="pill alt">Free local delivery within 25 mi of League City, TX (77573)</span>
-        </div>
-        <div class="hero-actions">
-          <a class="btn primary" href="https://picantepequinsalsaco.com/ComingSoon">Order now</a>
-          <a class="btn" href="mailto:support@picantepequinsalsaco.com?subject=Order%20Support">Contact support</a>
-        </div>
-      </div>
-
-      <!-- Gallery moved next to hero content -->
-      <div class="hero-gallery">
-        <div class="gallery-wrap" aria-labelledby="highlights-title">
-          <h2 id="highlights-title" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">Highlights</h2>
-          <div class="gallery-controls" aria-hidden="true">
-            <button class="ctrl" id="prev" title="Previous">◀</button>
-            <button class="ctrl" id="next" title="Next">▶</button>
-          </div>
-          <div class="rail" id="rail" aria-label="Auto-scrolling highlights"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- MENU (Flavors) -->
-    <section class="section" id="menu">
-      <div class="card">
-        <h2>Flavors</h2>
-        <div class="table-wrap" role="region" aria-label="Flavor descriptions" tabindex="0">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Flavor</th>
-                <th scope="col">Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>House Pequin</td>
-                <td>A mild, bright blend of serrano, chile pequin, fresh tomatoes, white onion, garlic & cilantro.</td>
-              </tr>
-              <tr>
-                <td>Spicy Green Chile Pequin</td>
-                <td>Smokey-citrusy salsa of serrano, chile pequin, fresh tomatillos, yellow onion, garlic, cilantro & lime.</td>
-              </tr>
-              <tr>
-                <td>Red Hot Pepper Pequin</td>
-                <td>Hot & sweet: fresno peppers, chile pequin, fresh tomatoes, yellow onion & garlic.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="info-grid">
-          <div>
-            <p><strong style="color:var(--accent-green)">Shelf life</strong></p>
-            <ul class="list">
-              <li><strong style="color:var(--accent-green)">Unopened & sealed:</strong> up to 18 months in a cool, dark place.</li>
-              <li><strong style="color:var(--accent-green)">Opened & refrigerated:</strong> best consumed within 7–10 days.</li>
-            </ul>
-            <p class="small">
-              All ingredients are home-grown or locally sourced first. Some peppers, when unavailable locally, may be sourced through other small business pepper distributors. We guarantee the freshest salsa in every jar.
-            </p>
-          </div>
-          <div class="order-cta">
-            <a href="https://picantepequinsalsaco.com/ComingSoon" aria-label="Order now from Picante Pequin Salsa Co">Order Now</a>
-          </div>
-        </div>
-      </div>
+    <section class="vertical-gallery" id="product-gallery"
+             role="region" aria-label="Product Catalog">
+      <!-- products injected by JS -->
     </section>
   </main>
 
+  <aside id="cart-container" role="dialog" aria-modal="true" aria-label="Shopping Cart">
+    <div class="cart-panel">
+      <div class="cart-header">
+        <button id="close-cart" aria-label="Close cart">×</button>
+        <h2>Your Cart</h2>
+      </div>
+      <div class="cart-content">
+        <ul id="cart-items"></ul>
+        <div class="cart-total">
+          <span>Total:</span>
+          <strong>$<span id="cart-total-value">0.00</span></strong>
+        </div>
+        <button id="checkout-btn" disabled>Sign In to Checkout</button>
+      </div>
+    </div>
+  </aside>
+
+  <aside id="login-container" role="dialog" aria-modal="true" aria-label="Customer Login">
+    <div class="cart-panel">
+      <div class="cart-header">
+        <button id="close-login" aria-label="Close login">×</button>
+        <h2>Sign In</h2>
+      </div>
+      <div class="cart-content">
+        <form id="login-form" class="login-form">
+          <input type="email" id="login-username"
+                 placeholder="Email address" required />
+          <input type="password" id="login-password"
+                 placeholder="Password" required />
+          <button type="submit">Sign In</button>
+        </form>
+      </div>
+    </div>
+  </aside>
+
   <footer>
-    © <span id="y"></span> Picante Pequin Salsa Co. All rights reserved.
+    © <span id="y"></span> Picante Pequin Salsa Co.
     <div class="links">
-      <a href="https://picantepequinsalsaco.com/ShippingPolicy">Shipping & Delivery Policy</a>
-      <a href="https://picantepequinsalsaco.com/PrivacyPolicy">Customer Communication & Privacy Policy</a>
+      <a href="/ShippingPolicy">Shipping &amp; Delivery</a>
+      <a href="/PrivacyPolicy">Privacy Policy</a>
     </div>
   </footer>
 
   <script>
-    // Year
+    // update year
     document.getElementById('y').textContent = new Date().getFullYear();
 
-    // Highlights data: defaults, then optional assets/gallery.json override
-    const defaults = [
-      {src:'https://picantepequinsalsaco.com/images/image1.jpg', label:'House Pequin'},
-      {src:'https://picantepequinsalsaco.com/images/image2.jpg', label:'Spicy Green Chile Pequin'},
-      {src:'https://picantepequinsalsaco.com/images/image3.jpg', label:'Red Hot Pepper Pequin'},
-      {src:'https://picantepequinsalsaco.com/images/image4.jpg', label:'The Crew'}
+    // ==== CONFIGURE YOUR AUTOMATION ENDPOINTS HERE ====
+    const API = {
+      // GET user by email+password via Power Automate → returns { firstName, lastName, rewards }
+      login:    'https://<YOUR-POWER-AUTOMATE-GET-USER-ENDPOINT>',
+      // POST order payload → items + user → Power Automate flow for checkout
+      checkout: 'https://<YOUR-POWER-AUTOMATE-CHECKOUT-ENDPOINT>'
+    };
+
+    const productsEcom = [
+      { id: 'house-pequin',   name: 'House Pequin Salsa',       price: 12, image: 'https://picantepequinsalsaco.com/images/image1.jpg' },
+      { id: 'spicy-green',    name: 'Spicy Green Chile Pequin', price: 12, image: 'https://picantepequinsalsaco.com/images/image2.jpg' },
+      { id: 'red-hot',        name: 'Red Hot Pepper Pequin',    price: 12, image: 'https://picantepequinsalsaco.com/images/image3.jpg' },
+      { id: 'the-crew',       name: 'The Crew',                 price: 36, image: 'https://picantepequinsalsaco.com/images/image4.jpg' }
     ];
 
-    async function loadGallery() {
-      try {
-        const r = await fetch('images/gallery.json', {cache:'no-store'});
-        if (!r.ok) throw new Error('no json');
-        const items = await r.json();
-        if (!Array.isArray(items) || !items.length) throw new Error('empty');
-        return items;
-      } catch { return defaults; }
-    }
+    let cart = [];
+    let isLoggedIn = false;
+    let currentUser = { email: '', name: '', rewards: 0 };
 
-    const rail = document.getElementById('rail');
+    // DOM refs
+    const galleryEl       = document.getElementById('product-gallery');
+    const cartOverlay     = document.getElementById('cart-container');
+    const cartItemsEl     = document.getElementById('cart-items');
+    const checkoutBtn     = document.getElementById('checkout-btn');
+    const closeCart       = document.getElementById('close-cart');
+    const cartIcon        = document.getElementById('cart-icon');
+    const loginBtn        = document.getElementById('login-btn');
+    const loginOverlay    = document.getElementById('login-container');
+    const closeLogin      = document.getElementById('close-login');
+    const loginForm       = document.getElementById('login-form');
+    const usernameDisplay = document.getElementById('username-display');
+    const rewardsDisplay  = document.getElementById('rewards-display');
 
-    function render(items){
-      rail.innerHTML = '';
-      const loop = [...items, ...items.slice(0, 4)];
-      loop.forEach((it)=>{
-        const tile = document.createElement('div');
-        tile.className = 'tile';
-        tile.innerHTML = `
-          <img src="${it.src}" alt="${it.alt || it.label || 'Highlight'}" loading="lazy">
-          <span class="label">${it.label || ''}</span>
+    // render products grid
+    function renderProducts() {
+      galleryEl.innerHTML = '';
+      productsEcom.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'prod-card';
+        card.innerHTML = `
+          <img src="${p.image}" alt="${p.name}">
+          <h3 class="prod-name">${p.name}</h3>
+          <p class="prod-price">$${p.price.toFixed(2)}</p>
+          <div class="quantity">
+            <button class="qty-btn minus">−</button>
+            <input type="number" class="qty-input" value="0" min="0">
+            <button class="qty-btn plus">+</button>
+          </div>
+          <button class="add-to-cart">Add to Cart</button>
         `;
-        rail.appendChild(tile);
+
+        const qtyInput = card.querySelector('.qty-input');
+        card.querySelector('.minus').onclick = () =>
+          qtyInput.value = Math.max(0, +qtyInput.value - 1);
+        card.querySelector('.plus').onclick = () =>
+          qtyInput.value = +qtyInput.value + 1;
+
+        card.querySelector('.add-to-cart').onclick = () => {
+          const qty = +qtyInput.value;
+          if (!qty) return;
+          addToCart({ ...p, qty });
+          qtyInput.value = 0;
+          toggleCart(true);
+        };
+
+        galleryEl.appendChild(card);
       });
     }
 
-    let idx = 0, timer, allowMotion = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    function step(dir = 1) {
-      const tiles = rail.children;
-      if (!tiles.length) return;
-
-      idx = (idx + dir + tiles.length) % tiles.length;
-      const el = tiles[idx];
-
-      // Scroll only the gallery rail, not the whole page
-      rail.scrollTo({
-        left: el.offsetLeft - rail.offsetLeft,
-        behavior: 'smooth'
-      });
+    function addToCart(item) {
+      const idx = cart.findIndex(x => x.id === item.id);
+      if (idx > -1) cart[idx].qty += item.qty;
+      else cart.push(item);
+      renderCart();
     }
-    function play(){ if (allowMotion){ timer = setInterval(()=>step(1), 3600); } }
-    function pause(){ clearInterval(timer); }
 
-    loadGallery().then(items=>{
-      render(items);
-      play();
+    function removeFromCart(id) {
+      cart = cart.filter(i => i.id !== id);
+      renderCart();
+    }
+
+    function renderCart() {
+      cartItemsEl.innerHTML = '';
+      cart.forEach(item => {
+        const prod = productsEcom.find(p => p.id === item.id);
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <img src="${prod.image}" class="cart-thumb" alt="${prod.name}">
+          <span class="cart-name">${prod.name}</span>
+          <div class="cart-quantity">
+            <button class="qty-btn minus">−</button>
+            <span class="qty-display">${item.qty}</span>
+            <button class="qty-btn plus">+</button>
+          </div>
+        `;
+        li.querySelector('.minus').onclick = () => {
+          if (item.qty > 1) {
+            item.qty--;
+            renderCart();
+          } else {
+            li.classList.add('removing');
+            setTimeout(() => removeFromCart(item.id), 300);
+          }
+        };
+        li.querySelector('.plus').onclick = () => {
+          item.qty++;
+          renderCart();
+        };
+        cartItemsEl.appendChild(li);
+      });
+
+      const total = cart.reduce((sum, { id, qty }) => {
+        const prod = productsEcom.find(p => p.id === id);
+        return sum + prod.price * qty;
+      }, 0);
+      document.getElementById('cart-total-value').textContent = total.toFixed(2);
+
+      checkoutBtn.disabled = !isLoggedIn || cart.length === 0;
+      checkoutBtn.textContent = !isLoggedIn
+        ? 'Sign In to Checkout'
+        : 'Proceed to Checkout';
+    }
+
+    function toggleCart(open = false) {
+      cartOverlay.classList.toggle('open',
+        open || !cartOverlay.classList.contains('open'));
+    }
+    function toggleLogin(open = false) {
+      loginOverlay.classList.toggle('open',
+        open || !loginOverlay.classList.contains('open'));
+    }
+
+    // cart toggle events
+    cartIcon.addEventListener('click', () => toggleCart());
+    closeCart.addEventListener('click', () => toggleCart());
+    cartOverlay.addEventListener('click', e => {
+      if (e.target === cartOverlay) toggleCart();
     });
 
-    rail.addEventListener('mouseenter', pause);
-    rail.addEventListener('mouseleave', play);
-    document.getElementById('prev').addEventListener('click', ()=>{ pause(); step(-1); });
-    document.getElementById('next').addEventListener('click', ()=>{ pause(); step(1); });
+    // login/logout toggle
+    loginBtn.addEventListener('click', () => {
+      if (isLoggedIn) {
+        // clear session
+        isLoggedIn = false;
+        currentUser = { email: '', name: '', rewards: 0 };
+        usernameDisplay.textContent = 'Guest';
+        rewardsDisplay.textContent = '0';
+        loginBtn.textContent = 'Login';
+        loginBtn.classList.remove('logout');
+        checkoutBtn.disabled = true;
+        checkoutBtn.textContent = 'Sign In to Checkout';
+      } else {
+        toggleLogin(true);
+      }
+    });
+    closeLogin.addEventListener('click', () => toggleLogin());
+    loginOverlay.addEventListener('click', e => {
+      if (e.target === loginOverlay) toggleLogin();
+    });
+
+    // ---- HANDLE LOGIN ----
+    loginForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const email = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      try {
+        // GET user record by email+password
+        const resp = await fetch(
+          `${API.login}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
+          { method: 'GET' }
+        );
+        if (!resp.ok) throw new Error('Invalid credentials or server error');
+        const user = await resp.json();
+        // expected user = { firstName, lastName, rewards }
+        if (!user || !user.firstName) {
+          throw new Error('No matching account found');
+        }
+
+        // update session state
+        isLoggedIn = true;
+        currentUser.email   = email;
+        currentUser.name    = `${user.firstName} ${user.lastName}`;
+        currentUser.rewards = user.rewards;
+
+        // update UI
+        usernameDisplay.textContent = currentUser.name;
+        rewardsDisplay.textContent  = currentUser.rewards;
+        loginBtn.textContent = 'Logout';
+        loginBtn.classList.add('logout');
+        checkoutBtn.disabled = false;
+        checkoutBtn.textContent = 'Proceed to Checkout';
+
+        loginForm.reset();
+        toggleLogin(false);
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    // ---- HANDLE CHECKOUT ----
+    checkoutBtn.addEventListener('click', async () => {
+      if (!cart.length) {
+        alert('Your cart is empty.');
+        return;
+      }
+      if (!isLoggedIn) {
+        alert('Please sign in first.');
+        return;
+      }
+
+      const payload = {
+        user: {
+          email: currentUser.email,
+          name:  currentUser.name,
+          rewards: currentUser.rewards
+        },
+        items: cart.map(i => ({ id: i.id, qty: i.qty }))
+      };
+
+      try {
+        const resp = await fetch(API.checkout, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!resp.ok) throw new Error('Order submission failed');
+        alert('Order submitted successfully!');
+        cart = [];
+        renderCart();
+        toggleCart();
+      } catch {
+        alert('Network or server error during checkout.');
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', renderProducts);
   </script>
 </body>
 </html>
+
