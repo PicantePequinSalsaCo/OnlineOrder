@@ -111,9 +111,13 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: var(--button-opq); border:solid; border-color: var(--accent-orange);
-      color: #fff; width:32px; height:32px;
-      border-radius:6px; font-size:1.2rem; line-height:1;
+      width:32px;
+      height:32px;
+      padding: 0;
+      background: var(--button-opq); border: 1px solid var(--accent-orange);
+      border-radius: 6px;
+      font-size:1.2rem;
+      color: #fff;
       cursor:pointer;
     }
     .qty-input {
@@ -247,11 +251,50 @@
     }
     .links a { color:var(--accent-orange); font-weight:700; }
 
-    @media (max-width:640px) {
-      :root { --cart-width:80vw; }
-      .vertical-gallery { margin:12px; }
-      .nav { flex-wrap:wrap; gap:8px; }
-    }
+    /* 1. Tablets & small desktops: single-column gallery */
+@media (max-width: 960px) {
+  .vertical-gallery {
+    /* switch from multi-col to full-width items */
+    grid-template-columns: 1fr;
+    max-width: var(--maxw);
+    margin: 0 auto;       /* center it */
+  }
+}
+
+/* 2. Mobile nav stacking & centering */
+@media (max-width: 640px) {
+  .nav {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  .brand {
+    justify-content: center;
+    margin-bottom: 6px;
+  }
+  nav ul {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  nav ul li {
+    display: flex;
+    justify-content: center;
+    width: 100%;          /* make each nav item full-width */
+  }
+  nav ul li a,
+  nav ul li button {
+    width: 100%;
+  }
+}
+
+/* 3. Respect reduced-motion settings */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
   </style>
 </head>
 
