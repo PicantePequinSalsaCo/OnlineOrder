@@ -524,56 +524,122 @@
 
 <script>
 /* ===========================
-   API Button State Helpers
-   =========================== */
-function setButtonState(btn, state) {
-  btn.classList.remove('loading', 'success', 'error');
-  if (state) btn.classList.add(state);
-}
-
-/* Decides state by payload.status when present; defaults to OK/ERROR */
-async function handleApiButton(btn, apiCall) {
-  try {
-    setButtonState(btn, 'loading');
-    const payload = await apiCall(); // your flow's JSON or a {status,...} object
-
-    // Normalize status from payload if present; otherwise infer
-    const status =
-      payload?.status ??
-      payload?.result ??
-      payload?.code ??
-      (payload === true ? 'OK' : (payload === false ? 'ERROR' : undefined));
-
-    if (String(status).toUpperCase() === 'OK' || status === 200 || status === 'SUCCESS') {
-      setButtonState(btn, 'success');
-    } else {
-      setButtonState(btn, 'error');
-    }
-    setTimeout(() => setButtonState(btn, ''), 2000);
-  } catch (err) {
-    console.error(err);
-    setButtonState(btn, 'error');
-    setTimeout(() => setButtonState(btn, ''), 2000);
-  }
-}
-
-/* ===========================
-   Your existing script
+   Config
    =========================== */
 
 // Update year
 document.getElementById('y').textContent = new Date().getFullYear();
 
-// ===== CONFIGURE YOUR AUTOMATION ENDPOINTS HERE =====
+// Your automation endpoints (unchanged)
 const API = {
   login:    'https://prod-142.westus.logic.azure.com:443/workflows/d8ec90b3bf1e47be8fd0b7fe17b0ee0a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=kHPC42TyiVE30h4_bdIFfnxK4qyEGbtkEVDyKSDFUgI',
   signup:   'https://prod-12.westus.logic.azure.com:443/workflows/ed2bfa5b836a4807b3e3de4665bcc88a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=_ctvNHFq0WSoErcPnFvbnwH8Y2lWbJNke7h3IUXnAyw',
   checkout: 'https://prod-142.westus.logic.azure.com:443/.../checkout'
 };
-const login = 'b7e2f9a1-4c8d-4f3a-9d6e-2a9c1b7e5f3d';
+const login  = 'b7e2f9a1-4c8d-4f3a-9d6e-2a9c1b7e5f3d';
 const signup = '8f3b2c9e-4a7d-4b6f-9d3a-1e2f5c8b7a90';
 
-// Product catalog
+// Polling window (≥ 2 minutes)
+const JOB = {
+  intervalMs: 2000,
+  timeoutMs: 120000
+};
+
+/* ===========================
+   Utilities
+   =========================== */
+
+function createJobId() {
+  if (crypto?.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = (Math.random() * 16) | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+async function safeJson(resp) { try { return await resp.json(); } catch { return null; } }
+
+function normalizeStatus(payload) {
+  const v =
+    payload?.status ??
+    payload?.result ??
+    payload?.code ??
+    (payload === true ? 'OK' : (payload === false ? 'ERROR' : undefined));
+  return typeof v === 'string' ? v.toUpperCase() : v;
+}
+
+/* ===========================
+   API Button state + job handling
+   =========================== */
+
+function setButtonState(btn, state) {
+  btn.classList.remove('loading', 'success', 'error');
+  if (state) btn.classList.add(state);
+}
+
+/**
+ * Polls statusUrl until final or timeout.
+ * Expects { status: "PENDING"|"SUCCESS"|"OK"|"ERROR", ... }
+ */
+async function pollStatusUntilDone({ statusUrl, jobId, intervalMs = JOB.intervalMs, timeoutMs = JOB.timeoutMs }) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const res = await fetch(statusUrl, { headers: { 'Content-Type': 'application/json', 'x-job-id': jobId } });
+      const data = await safeJson(res);
+      const status = normalizeStatus(data);
+
+      if (status === 'SUCCESS' || status === 'OK') return { final: true, ok: true, payload: data };
+      if (status === 'ERROR') return { final: true, ok: false, payload: data };
+    } catch (err) {
+      console.warn('Status poll error:', err);
+    }
+    await sleep(intervalMs);
+  }
+  return { final: true, ok: false, payload: { status: 'ERROR', message: 'Timed out waiting for job status.' } };
+}
+
+/**
+ * Unified button handler.
+ * - Sets loading state.
+ * - Calls apiCall() which should perform the "start job" request.
+ * - Supports:
+ *    a) Immediate response: return final payload with status.
+ *    b) Deferred response: return { jobId, statusUrl } to poll.
+ * - Returns { ok, payload } to the caller for side-effects.
+ */
+async function handleApiButton(btn, apiCall) {
+  try {
+    setButtonState(btn, 'loading');
+
+    const first = await apiCall();
+
+    // Deferred job: poll statusUrl
+    if (first?.jobId && first?.statusUrl) {
+      const result = await pollStatusUntilDone({ statusUrl: first.statusUrl, jobId: first.jobId });
+      setButtonState(btn, result.ok ? 'success' : 'error');
+      setTimeout(() => setButtonState(btn, ''), 2000);
+      return { ok: result.ok, payload: result.payload };
+    }
+
+    // Immediate mode
+    const status = normalizeStatus(first);
+    const ok = status === 'OK' || status === 'SUCCESS' || status === 200 || status === true;
+
+    setButtonState(btn, ok ? 'success' : 'error');
+    setTimeout(() => setButtonState(btn, ''), 2000);
+    return { ok, payload: first };
+  } catch (err) {
+    console.error(err);
+    setButtonState(btn, 'error');
+    setTimeout(() => setButtonState(btn, ''), 2000);
+    return { ok: false, payload: { status: 'ERROR', message: 'Unhandled error' } };
+  }
+}
+
+/* ===========================
+   Catalog
+   =========================== */
 const productsEcom = [
   { id: 'house-pequin', name: 'House Pequin Salsa',       price: 12, image: 'https://picantepequinsalsaco.com/images/image1.jpg' },
   { id: 'spicy-green', name: 'Spicy Green Chile Pequin',  price: 12, image: 'https://picantepequinsalsaco.com/images/image2.jpg' },
@@ -581,12 +647,16 @@ const productsEcom = [
   { id: 'the-crew',    name: 'The Crew',                  price: 36, image: 'https://picantepequinsalsaco.com/images/image4.jpg' }
 ];
 
-// Application state
+/* ===========================
+   App state
+   =========================== */
 let cart = [];
 let isLoggedIn = false;
 let currentUser = { email: '', name: '', rewards: 0 };
 
-// DOM references
+/* ===========================
+   DOM refs
+   =========================== */
 const galleryEl       = document.getElementById('product-gallery');
 const cartOverlay     = document.getElementById('cart-container');
 const cartItemsEl     = document.getElementById('cart-items');
@@ -794,6 +864,21 @@ function toggleLogin(open = false) {
 }
 
 /* ===========================
+   Sign out helper
+   =========================== */
+function signOut() {
+  isLoggedIn = false;
+  currentUser = { email: '', name: '', rewards: 0 };
+  sessionStorage.removeItem('authToken');
+  usernameDisplay.textContent = 'Guest';
+  rewardsDisplay.textContent = '0';
+  loginBtn.textContent = 'Login';
+  loginBtn.classList.remove('logout');
+  checkoutBtn.disabled = true;
+  checkoutBtn.textContent = 'Sign In to Checkout';
+}
+
+/* ===========================
    Event bindings
    =========================== */
 cartIcon.addEventListener('click', () => toggleCart());
@@ -802,14 +887,7 @@ cartOverlay.addEventListener('click', e => { if (e.target === cartOverlay) toggl
 
 loginBtn.addEventListener('click', () => {
   if (isLoggedIn) {
-    isLoggedIn = false;
-    currentUser = { email:'', name:'', rewards:0 };
-    usernameDisplay.textContent = 'Guest';
-    rewardsDisplay.textContent = '0';
-    loginBtn.textContent = 'Login';
-    loginBtn.classList.remove('logout');
-    checkoutBtn.disabled = true;
-    checkoutBtn.textContent = 'Sign In to Checkout';
+    signOut();
   } else {
     toggleLogin(true);
     document.getElementById('login-username').focus();
@@ -830,15 +908,15 @@ showLoginBtn.addEventListener('click', () => {
 });
 
 /* ===========================
-   Form + button handlers with state wrapper
+   Form + button handlers with job correlation
    =========================== */
 
 // Sign In
-loginForm.addEventListener('submit', e => {
+loginForm.addEventListener('submit', async e => {
   e.preventDefault();
   const btn = loginForm.querySelector('button[type="submit"]');
 
-  handleApiButton(btn, async () => {
+  const result = await handleApiButton(btn, async () => {
     const email = document.getElementById('login-username').value.trim();
     const password = document.getElementById('login-password').value;
 
@@ -847,20 +925,29 @@ loginForm.addEventListener('submit', e => {
       return { status: 'ERROR', message: 'Missing credentials' };
     }
 
+    const jobId = createJobId();
+
     const resp = await fetch(API.login, {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', 'x-auth-token': login },
-      body: JSON.stringify({ email, password })
+      headers: {
+        'Content-Type': 'application/json',
+        'x-auth-token': login,
+        'x-job-id': jobId
+      },
+      body: JSON.stringify({ email, password, jobId })
     });
 
-    // Try to read flow payload regardless of HTTP
-    let data = null;
-    try { data = await resp.json(); } catch (_) {}
+    const data = await safeJson(resp);
 
-    // Define success criteria from payload (prefer explicit status if present)
-    const explicitStatus = (data && (data.status || data.result || data.code)) || null;
-    const okByPayload = typeof explicitStatus === 'string'
-      ? explicitStatus.toUpperCase() === 'OK' || explicitStatus.toUpperCase() === 'SUCCESS'
+    // If flow defers completion, return jobId + statusUrl to trigger polling
+    if (data?.jobId && data?.statusUrl) {
+      return { jobId: data.jobId, statusUrl: data.statusUrl };
+    }
+
+    // Immediate mode fallback
+    const explicit = normalizeStatus(data);
+    const okByPayload = typeof explicit === 'string'
+      ? explicit === 'OK' || explicit === 'SUCCESS'
       : resp.ok;
 
     if (!okByPayload || !data?.firstName) {
@@ -869,11 +956,16 @@ loginForm.addEventListener('submit', e => {
       return { status: 'ERROR', message: msg };
     }
 
-    // Success side-effects
+    return data;
+  });
+
+  // Final side-effects after button resolves
+  if (result.ok && result?.payload) {
+    const data = result.payload;
     isLoggedIn = true;
     currentUser = {
-      email,
-      name: `${data.firstName} ${data.lastName || ''}`.trim(),
+      email: data.email || document.getElementById('login-username').value.trim(),
+      name: `${data.firstName ?? ''} ${data.lastName ?? ''}`.trim(),
       rewards: data.rewards ?? 0
     };
     if (data.token) sessionStorage.setItem('authToken', data.token);
@@ -886,17 +978,16 @@ loginForm.addEventListener('submit', e => {
     checkoutBtn.textContent = 'Proceed to Checkout';
     loginForm.reset();
     toggleLogin(false);
-
-    return { status: 'OK', message: 'Signed in' };
-  });
+    showMessage(data?.message || 'Signed in', 'success');
+  }
 });
 
 // Create Account
-signupForm.addEventListener('submit', e => {
+signupForm.addEventListener('submit', async e => {
   e.preventDefault();
   const btn = signupForm.querySelector('button[type="submit"]');
 
-  handleApiButton(btn, async () => {
+  const result = await handleApiButton(btn, async () => {
     const fn   = document.getElementById('signup-firstname').value.trim();
     const ln   = document.getElementById('signup-lastname').value.trim();
     const addr = document.getElementById('signup-address').value.trim();
@@ -921,9 +1012,11 @@ signupForm.addEventListener('submit', e => {
       return { status: 'ERROR', message: 'Invalid phone' };
     }
 
+    const jobId = createJobId();
+
     const res = await fetch(API.signup, {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', 'x-auth-token': signup },
+      headers: { 'Content-Type': 'application/json', 'x-auth-token': signup, 'x-job-id': jobId },
       body: JSON.stringify({
         firstName: fn,
         lastName: ln,
@@ -933,16 +1026,20 @@ signupForm.addEventListener('submit', e => {
         zip,
         phone: ph,
         email: em,
-        password: pw1
+        password: pw1,
+        jobId
       })
     });
 
-    let data = null;
-    try { data = await res.json(); } catch (_) {}
+    const data = await safeJson(res);
 
-    const explicitStatus = (data && (data.status || data.result || data.code)) || null;
-    const okByPayload = typeof explicitStatus === 'string'
-      ? explicitStatus.toUpperCase() === 'OK' || explicitStatus.toUpperCase() === 'SUCCESS'
+    if (data?.jobId && data?.statusUrl) {
+      return { jobId: data.jobId, statusUrl: data.statusUrl };
+    }
+
+    const explicit = normalizeStatus(data);
+    const okByPayload = typeof explicit === 'string'
+      ? explicit === 'OK' || explicit === 'SUCCESS'
       : res.ok;
 
     if (!okByPayload) {
@@ -951,16 +1048,20 @@ signupForm.addEventListener('submit', e => {
       return { status: 'ERROR', message: msg };
     }
 
+    return data;
+  });
+
+  if (result.ok) {
+    const data = result.payload || {};
     showMessage(data?.message || 'Account created! Please sign in.', 'success');
     signupForm.reset();
     showLoginBtn.click();
-    return { status: 'OK', message: 'Account created' };
-  });
+  }
 });
 
 // Checkout
-checkoutBtn.addEventListener('click', () => {
-  handleApiButton(checkoutBtn, async () => {
+checkoutBtn.addEventListener('click', async () => {
+  const result = await handleApiButton(checkoutBtn, async () => {
     if (!cart.length) {
       showMessage('Your cart is empty.', 'error');
       return { status: 'ERROR', message: 'Empty cart' };
@@ -970,26 +1071,32 @@ checkoutBtn.addEventListener('click', () => {
       return { status: 'ERROR', message: 'Not signed in' };
     }
 
+    const jobId = createJobId();
     const payload = {
       user: { email: currentUser.email, name: currentUser.name, rewards: currentUser.rewards },
-      items: cart.map(i => ({ id: i.id, qty: i.qty }))
+      items: cart.map(i => ({ id: i.id, qty: i.qty })),
+      jobId
     };
 
     const resp = await fetch(API.checkout, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        'x-job-id': jobId
       },
       body: JSON.stringify(payload)
     });
 
-    let data = null;
-    try { data = await resp.json(); } catch (_) {}
+    const data = await safeJson(resp);
 
-    const explicitStatus = (data && (data.status || data.result || data.code)) || null;
-    const okByPayload = typeof explicitStatus === 'string'
-      ? explicitStatus.toUpperCase() === 'OK' || explicitStatus.toUpperCase() === 'SUCCESS'
+    if (data?.jobId && data?.statusUrl) {
+      return { jobId: data.jobId, statusUrl: data.statusUrl };
+    }
+
+    const explicit = normalizeStatus(data);
+    const okByPayload = typeof explicit === 'string'
+      ? explicit === 'OK' || explicit === 'SUCCESS'
       : resp.ok;
 
     if (!okByPayload) {
@@ -998,12 +1105,16 @@ checkoutBtn.addEventListener('click', () => {
       return { status: 'ERROR', message: msg };
     }
 
+    return data;
+  });
+
+  if (result.ok) {
+    const data = result.payload || {};
     showMessage(data?.message || 'Order submitted successfully!', 'success');
     cart = [];
     renderCart();
     toggleCart();
-    return { status: 'OK', message: 'Order submitted' };
-  });
+  }
 });
 
 /* ===========================
@@ -1029,6 +1140,23 @@ checkoutBtn.addEventListener('click', () => {
     openNativeDropdown();
   });
 })();
+
+/* ===========================
+   Confirm-on-exit sign-out
+   =========================== */
+// Show native prompt; if user proceeds, pagehide will trigger and we sign out.
+window.addEventListener('beforeunload', (e) => {
+  if (isLoggedIn) {
+    e.preventDefault();
+    e.returnValue = 'You are currently signed in. If you leave, you will be signed out.';
+  }
+});
+// Fires only when actually leaving (refresh/back/close). Safe for cleanup.
+window.addEventListener('pagehide', () => {
+  if (isLoggedIn) {
+    signOut();
+  }
+});
 
 /* ===========================
    Persist cart and init
