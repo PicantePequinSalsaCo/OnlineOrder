@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Picante Pequin Salsa Co.</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="dark light" />
-  <link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
-  <link rel="preload" as="image" href="https://picantepequinsalsaco.com/images/bg.png" />
+<meta charset="utf-8" />
+<title>Picante Pequin Salsa Co.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="dark light" />
+<link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
+<link rel="preload" as="image" href="https://picantepequinsalsaco.com/images/bg.png" />
 
-  <style>
+<style>
+/* ... your existing CSS ... */
     :root {
       --bg-deep:        #1e1e1e00;
       --ink:            #ececec;
@@ -346,7 +347,61 @@
         transition: none !important;
       }
     }
-  </style>
+/* API button states */
+.api-btn {
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+.api-btn.loading {
+  color: transparent !important;
+  background: linear-gradient(
+    110deg,
+    rgba(255,255,255,0.1) 8%,
+    rgba(255,255,255,0.3) 18%,
+    rgba(255,255,255,0.1) 33%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.api-btn.loading::after {
+  content: attr(data-loading-text);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-weight: bold;
+}
+.api-btn.success {
+  background: var(--accent-green) !important;
+}
+.api-btn.success::after {
+  content: "✔";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.2rem;
+  color: #fff;
+}
+.api-btn.error {
+  background: var(--accent-red) !important;
+}
+.api-btn.error::after {
+  content: "✖";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.2rem;
+  color: #fff;
+}
+</style>
 </head>
 
 <body>
@@ -389,7 +444,7 @@
           <span>Total:</span>
           <strong>$<span id="cart-total-value">0.00</span></strong>
         </div>
-        <button id="checkout-btn" disabled>Sign In to Checkout</button>
+        <button id="checkout-btn" class="api-btn" data-loading-text="Processing Order" disabled>Sign In to Checkout</button>
       </div>
     </div>
   </aside>
@@ -407,7 +462,7 @@
                  placeholder="Email address" required autocomplete="username" />
           <input type="password" id="login-password" name="password"
                  placeholder="Password" required autocomplete="current-password" />
-          <button type="submit">Sign In</button>
+          <button type="submit" class="api-btn" data-loading-text="Signing In">Sign In</button>
           <div class="auth-switch">
             <span>Don't have an account?</span>
             <button id="show-signup" type="button">Create Account</button>
@@ -421,128 +476,34 @@
   autocomplete="on"
   novalidate
 >
-  <input
-    type="text"
-    id="signup-firstname"
-    name="firstName"
-    placeholder="First Name"
-    required
-    autocomplete="given-name"
-  />
+  <input type="text" id="signup-firstname" name="firstName" placeholder="First Name" required autocomplete="given-name" />
+  <input type="text" id="signup-lastname" name="lastName" placeholder="Last Name" required autocomplete="family-name" />
+  <input type="text" id="signup-address" name="address" placeholder="Street Address" required autocomplete="street-address" />
+  <input type="text" id="signup-city" name="city" placeholder="City" required autocomplete="address-level2" />
 
-  <input
-    type="text"
-    id="signup-lastname"
-    name="lastName"
-    placeholder="Last Name"
-    required
-    autocomplete="family-name"
-  />
-
-  <input
-    type="text"
-    id="signup-address"
-    name="address"
-    placeholder="Street Address"
-    required
-    autocomplete="street-address"
-  />
-
-  <input
-    type="text"
-    id="signup-city"
-    name="city"
-    placeholder="City"
-    required
-    autocomplete="address-level2"
-  />
-
-  <!-- State as dropdown, only TX for now -->
   <div class="state-select-wrapper">
-    <select
-      id="signup-state"
-      name="state"
-      required
-      autocomplete="address-level1"
-    >
+    <select id="signup-state" name="state" required autocomplete="address-level1">
       <option value="">Select State</option>
       <option value="TX">TX</option>
     </select>
     <button type="button" class="state-dropdown-btn" aria-label="Open state list">⌄</button>
   </div>
 
-  <!-- ZIP: numeric only, exactly 5 digits -->
-  <input
-    type="text"
-    id="signup-zip"
-    name="zip"
-    placeholder="ZIP Code (5 digits)"
-    required
-    pattern="^\d{5}$"
-    maxlength="5"
-    inputmode="numeric"
-    oninput="this.value = this.value.replace(/\D/g, '')"
-  />
+  <input type="text" id="signup-zip" name="zip" placeholder="ZIP Code (5 digits)" required pattern="^\d{5}$" maxlength="5" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '')" />
+  <input type="text" id="signup-phone" name="phone" placeholder="Phone (10 digits)" required pattern="^\d{10}$" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '')" />
+  <input type="email" id="signup-email" name="email" placeholder="Email address" required autocomplete="username" />
+  <small id="email-error-msg" style="color: var(--accent-red); font-weight: bold; display: none;">Please enter a valid email address</small>
 
-  <!-- Phone: numeric only, exactly 10 digits -->
-  <input
-    type="text"
-    id="signup-phone"
-    name="phone"
-    placeholder="Phone (10 digits)"
-    required
-    pattern="^\d{10}$"
-    maxlength="10"
-    inputmode="numeric"
-    oninput="this.value = this.value.replace(/\D/g, '')"
-  />
-
-  <!-- Email: built-in browser validation -->
-  <input
-    type="email"
-    id="signup-email"
-    name="email"
-    placeholder="Email address"
-    required
-    autocomplete="username"
-  />
-
-   <small id="email-error-msg" style="color: var(--accent-red); font-weight: bold; display: none;">
-  Please enter a valid email address
-</small>
-
-  <!-- Password + Confirm -->
-  <input
-    type="password"
-    id="signup-password"
-    name="password"
-    placeholder="Password"
-    required
-    autocomplete="new-password"
-  />
-
+  <input type="password" id="signup-password" name="password" placeholder="Password" required autocomplete="new-password" />
   <div id="password-strength-wrapper" style="margin-bottom: 8px;">
-  <div id="password-strength-bar"
-       style="height: 4px; width: 0%; background: red; border-radius: 4px; transition: width 0.3s, background 0.3s;">
+    <div id="password-strength-bar" style="height: 4px; width: 0%; background: red; border-radius: 4px; transition: width 0.3s, background 0.3s;"></div>
+    <small id="password-strength-text" style="display:block; margin-top:4px; font-size:0.8rem; color: var(--muted);">Strength: —</small>
   </div>
-  <small id="password-strength-text" style="display:block; margin-top:4px; font-size:0.8rem; color: var(--muted);">
-    Strength: —
-  </small>
-</div>
 
-  <input
-    type="password"
-    id="signup-password-confirm"
-    name="passwordConfirm"
-    placeholder="Confirm Password"
-    required
-    autocomplete="new-password"
-  />
-  <small id="password-match-msg" style="color: var(--accent-red); display: none;">
-  Passwords do not match
-</small>
+  <input type="password" id="signup-password-confirm" name="passwordConfirm" placeholder="Confirm Password" required autocomplete="new-password" />
+  <small id="password-match-msg" style="color: var(--accent-red); display: none;">Passwords do not match</small>
 
-  <button type="submit">Create Account</button>
+  <button type="submit" class="api-btn" data-loading-text="Creating Account">Create Account</button>
 
   <div class="auth-switch">
     <span>Already have an account?</span>
@@ -561,57 +522,97 @@
     </div>
   </footer>
 
-  <script>
-    // Update year
-    document.getElementById('y').textContent = new Date().getFullYear();
+<script>
+/* ===========================
+   API Button State Helpers
+   =========================== */
+function setButtonState(btn, state) {
+  btn.classList.remove('loading', 'success', 'error');
+  if (state) btn.classList.add(state);
+}
 
-    // ===== CONFIGURE YOUR AUTOMATION ENDPOINTS HERE =====
-    const API = {
-      login:    'https://prod-142.westus.logic.azure.com:443/workflows/d8ec90b3bf1e47be8fd0b7fe17b0ee0a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=kHPC42TyiVE30h4_bdIFfnxK4qyEGbtkEVDyKSDFUgI',
-      signup:   'https://prod-12.westus.logic.azure.com:443/workflows/ed2bfa5b836a4807b3e3de4665bcc88a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=_ctvNHFq0WSoErcPnFvbnwH8Y2lWbJNke7h3IUXnAyw',
-      checkout: 'https://prod-142.westus.logic.azure.com:443/.../checkout'
-    };
-    const login = 'b7e2f9a1-4c8d-4f3a-9d6e-2a9c1b7e5f3d';
-    const signup = '8f3b2c9e-4a7d-4b6f-9d3a-1e2f5c8b7a90';
+/* Decides state by payload.status when present; defaults to OK/ERROR */
+async function handleApiButton(btn, apiCall) {
+  try {
+    setButtonState(btn, 'loading');
+    const payload = await apiCall(); // your flow's JSON or a {status,...} object
 
-    // Product catalog
-    const productsEcom = [
-      { id: 'house-pequin', name: 'House Pequin Salsa',       price: 12, image: 'https://picantepequinsalsaco.com/images/image1.jpg' },
-      { id: 'spicy-green', name: 'Spicy Green Chile Pequin',  price: 12, image: 'https://picantepequinsalsaco.com/images/image2.jpg' },
-      { id: 'red-hot',     name: 'Red Hot Pepper Pequin',     price: 12, image: 'https://picantepequinsalsaco.com/images/image3.jpg' },
-      { id: 'the-crew',    name: 'The Crew',                  price: 36, image: 'https://picantepequinsalsaco.com/images/image4.jpg' }
-    ];
+    // Normalize status from payload if present; otherwise infer
+    const status =
+      payload?.status ??
+      payload?.result ??
+      payload?.code ??
+      (payload === true ? 'OK' : (payload === false ? 'ERROR' : undefined));
 
-    // Application state
-    let cart = [];
-    let isLoggedIn = false;
-    let currentUser = { email: '', name: '', rewards: 0 };
+    if (String(status).toUpperCase() === 'OK' || status === 200 || status === 'SUCCESS') {
+      setButtonState(btn, 'success');
+    } else {
+      setButtonState(btn, 'error');
+    }
+    setTimeout(() => setButtonState(btn, ''), 2000);
+  } catch (err) {
+    console.error(err);
+    setButtonState(btn, 'error');
+    setTimeout(() => setButtonState(btn, ''), 2000);
+  }
+}
 
-    // DOM references
-    const galleryEl       = document.getElementById('product-gallery');
-    const cartOverlay     = document.getElementById('cart-container');
-    const cartItemsEl     = document.getElementById('cart-items');
-    const checkoutBtn     = document.getElementById('checkout-btn');
-    const closeCart       = document.getElementById('close-cart');
-    const cartIcon        = document.getElementById('cart-icon');
+/* ===========================
+   Your existing script
+   =========================== */
 
-    const loginBtn        = document.getElementById('login-btn');
-    const loginOverlay    = document.getElementById('login-container');
-    const closeLogin      = document.getElementById('close-login');
-    const loginForm       = document.getElementById('login-form');
-    const signupForm      = document.getElementById('signup-form');
-    const showSignupBtn   = document.getElementById('show-signup');
-    const showLoginBtn    = document.getElementById('show-login');
-    const authTitle       = document.getElementById('auth-title');
+// Update year
+document.getElementById('y').textContent = new Date().getFullYear();
 
-    const usernameDisplay = document.getElementById('username-display');
-    const rewardsDisplay  = document.getElementById('rewards-display');
+// ===== CONFIGURE YOUR AUTOMATION ENDPOINTS HERE =====
+const API = {
+  login:    'https://prod-142.westus.logic.azure.com:443/workflows/d8ec90b3bf1e47be8fd0b7fe17b0ee0a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=kHPC42TyiVE30h4_bdIFfnxK4qyEGbtkEVDyKSDFUgI',
+  signup:   'https://prod-12.westus.logic.azure.com:443/workflows/ed2bfa5b836a4807b3e3de4665bcc88a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=_ctvNHFq0WSoErcPnFvbnwH8Y2lWbJNke7h3IUXnAyw',
+  checkout: 'https://prod-142.westus.logic.azure.com:443/.../checkout'
+};
+const login = 'b7e2f9a1-4c8d-4f3a-9d6e-2a9c1b7e5f3d';
+const signup = '8f3b2c9e-4a7d-4b6f-9d3a-1e2f5c8b7a90';
 
-    (function emailDomainValidation() {
+// Product catalog
+const productsEcom = [
+  { id: 'house-pequin', name: 'House Pequin Salsa',       price: 12, image: 'https://picantepequinsalsaco.com/images/image1.jpg' },
+  { id: 'spicy-green', name: 'Spicy Green Chile Pequin',  price: 12, image: 'https://picantepequinsalsaco.com/images/image2.jpg' },
+  { id: 'red-hot',     name: 'Red Hot Pepper Pequin',     price: 12, image: 'https://picantepequinsalsaco.com/images/image3.jpg' },
+  { id: 'the-crew',    name: 'The Crew',                  price: 36, image: 'https://picantepequinsalsaco.com/images/image4.jpg' }
+];
+
+// Application state
+let cart = [];
+let isLoggedIn = false;
+let currentUser = { email: '', name: '', rewards: 0 };
+
+// DOM references
+const galleryEl       = document.getElementById('product-gallery');
+const cartOverlay     = document.getElementById('cart-container');
+const cartItemsEl     = document.getElementById('cart-items');
+const checkoutBtn     = document.getElementById('checkout-btn');
+const closeCart       = document.getElementById('close-cart');
+const cartIcon        = document.getElementById('cart-icon');
+
+const loginBtn        = document.getElementById('login-btn');
+const loginOverlay    = document.getElementById('login-container');
+const closeLogin      = document.getElementById('close-login');
+const loginForm       = document.getElementById('login-form');
+const signupForm      = document.getElementById('signup-form');
+const showSignupBtn   = document.getElementById('show-signup');
+const showLoginBtn    = document.getElementById('show-login');
+const authTitle       = document.getElementById('auth-title');
+
+const usernameDisplay = document.getElementById('username-display');
+const rewardsDisplay  = document.getElementById('rewards-display');
+
+/* ===========================
+   Live validators
+   =========================== */
+(function emailDomainValidation() {
   const emailInput = document.getElementById('signup-email');
   const errorMsg = document.getElementById('email-error-msg');
 
-  // Simple regex for domain format (not just syntax)
   const domainPattern = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   emailInput.addEventListener('input', () => {
@@ -619,7 +620,6 @@
     const atIndex = value.lastIndexOf('@');
 
     if (atIndex === -1) {
-      // No @ yet, hide error
       errorMsg.style.display = 'none';
       emailInput.style.borderColor = '';
       return;
@@ -628,18 +628,16 @@
     const domain = value.slice(atIndex + 1);
 
     if (domainPattern.test(domain)) {
-      // Looks like a valid domain format
       errorMsg.style.display = 'none';
       emailInput.style.borderColor = 'var(--accent-green)';
     } else {
-      // Invalid domain format
       errorMsg.style.display = 'block';
       emailInput.style.borderColor = 'var(--accent-red)';
     }
   });
 })();
 
-    (function passwordStrengthMeter() {
+(function passwordStrengthMeter() {
   const pwInput = document.getElementById('signup-password');
   const bar = document.getElementById('password-strength-bar');
   const text = document.getElementById('password-strength-text');
@@ -648,14 +646,12 @@
     const val = pwInput.value;
     let score = 0;
 
-    // Simple scoring: length + variety of character types
     if (val.length >= 4) score++;
     if (/[A-Z]/.test(val)) score++;
     if (/[0-9]/.test(val)) score++;
     if (/[^A-Za-z0-9]/.test(val)) score++;
-    if (val.length >= 8) score++; // bonus for long passwords
+    if (val.length >= 8) score++;
 
-    // Map score to width, color, and label
     const widths = ['0%', '20%', '40%', '60%', '80%', '100%'];
     const colors = ['red', 'orangered', 'orange', 'gold', 'yellowgreen', 'green'];
     const labels = ['Too short', 'Weak', 'Fair', 'Good', 'Strong', 'Excellent'];
@@ -666,7 +662,7 @@
   });
 })();
 
-    (function livePasswordMatch() {
+(function livePasswordMatch() {
   const pw1 = document.getElementById('signup-password');
   const pw2 = document.getElementById('signup-password-confirm');
   const msg = document.getElementById('password-match-msg');
@@ -693,286 +689,359 @@
   pw2.addEventListener('input', checkMatch);
 })();
 
-    // Message helper
-    function showMessage(msg, type = 'info') {
-      const box = document.createElement('div');
-      box.className = `message-box ${type}`;
-      box.textContent = msg;
-      document.body.appendChild(box);
-      setTimeout(() => box.remove(), 4000);
+/* ===========================
+   Message helper
+   =========================== */
+function showMessage(msg, type = 'info') {
+  const box = document.createElement('div');
+  box.className = `message-box ${type}`;
+  box.textContent = msg;
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 4000);
+}
+
+/* ===========================
+   Render products
+   =========================== */
+function renderProducts() {
+  galleryEl.innerHTML = '';
+  productsEcom.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'prod-card';
+    card.innerHTML = `
+      <img src="${p.image}" alt="${p.name}">
+      <h3 class="prod-name">${p.name}</h3>
+      <p class="prod-price">$${p.price.toFixed(2)}</p>
+      <div class="quantity">
+        <button class="qty-btn minus">−</button>
+        <input type="number" class="qty-input" value="0" min="0">
+        <button class="qty-btn plus">+</button>
+      </div>
+      <button class="add-to-cart">Add to Cart</button>
+    `;
+    const qtyInput = card.querySelector('.qty-input');
+    card.querySelector('.qty-btn.minus').onclick = () =>
+      qtyInput.value = Math.max(0, +qtyInput.value - 1);
+    card.querySelector('.qty-btn.plus').onclick = () =>
+      qtyInput.value = +qtyInput.value + 1;
+    card.querySelector('.add-to-cart').onclick = () => {
+      const qty = +qtyInput.value;
+      if (!qty) return;
+      addToCart({ ...p, qty });
+      qtyInput.value = 0;
+      toggleCart(true);
+    };
+    galleryEl.appendChild(card);
+  });
+}
+
+/* ===========================
+   Cart management
+   =========================== */
+function addToCart(item) {
+  const idx = cart.findIndex(x => x.id === item.id);
+  if (idx > -1) cart[idx].qty += item.qty;
+  else cart.push(item);
+  renderCart();
+}
+function removeFromCart(id) {
+  cart = cart.filter(i => i.id !== id);
+  renderCart();
+}
+function renderCart() {
+  cartItemsEl.innerHTML = '';
+  cart.forEach(item => {
+    const prod = productsEcom.find(p => p.id === item.id);
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <img src="${prod.image}" class="cart-thumb" alt="${prod.name}">
+      <span class="cart-name">${prod.name}</span>
+      <div class="cart-quantity">
+        <button class="qty-btn minus">−</button>
+        <span class="qty-display">${item.qty}</span>
+        <button class="qty-btn plus">+</button>
+      </div>
+    `;
+    li.querySelector('.qty-btn.minus').onclick = () => {
+      if (item.qty > 1) item.qty--, renderCart();
+      else {
+        li.classList.add('removing');
+        setTimeout(() => removeFromCart(item.id), 300);
+      }
+    };
+    li.querySelector('.qty-btn.plus').onclick = () => {
+      item.qty++; renderCart();
+    };
+    cartItemsEl.appendChild(li);
+  });
+  const total = cart.reduce((sum, { id, qty }) => {
+    const prod = productsEcom.find(p => p.id === id);
+    return sum + prod.price * qty;
+  }, 0);
+  document.getElementById('cart-total-value').textContent = total.toFixed(2);
+  checkoutBtn.disabled = !isLoggedIn || cart.length === 0;
+  checkoutBtn.textContent = !isLoggedIn ? 'Sign In to Checkout' : 'Proceed to Checkout';
+}
+
+/* ===========================
+   Overlay toggles
+   =========================== */
+function toggleCart(open = false) {
+  cartOverlay.classList.toggle('open', open || !cartOverlay.classList.contains('open'));
+}
+function toggleLogin(open = false) {
+  loginOverlay.classList.toggle('open', open || !loginOverlay.classList.contains('open'));
+}
+
+/* ===========================
+   Event bindings
+   =========================== */
+cartIcon.addEventListener('click', () => toggleCart());
+closeCart.addEventListener('click', () => toggleCart());
+cartOverlay.addEventListener('click', e => { if (e.target === cartOverlay) toggleCart(); });
+
+loginBtn.addEventListener('click', () => {
+  if (isLoggedIn) {
+    isLoggedIn = false;
+    currentUser = { email:'', name:'', rewards:0 };
+    usernameDisplay.textContent = 'Guest';
+    rewardsDisplay.textContent = '0';
+    loginBtn.textContent = 'Login';
+    loginBtn.classList.remove('logout');
+    checkoutBtn.disabled = true;
+    checkoutBtn.textContent = 'Sign In to Checkout';
+  } else {
+    toggleLogin(true);
+    document.getElementById('login-username').focus();
+  }
+});
+closeLogin.addEventListener('click', () => toggleLogin());
+loginOverlay.addEventListener('click', e => { if (e.target === loginOverlay) toggleLogin(); });
+
+showSignupBtn.addEventListener('click', () => {
+  loginForm.classList.add('hidden');
+  signupForm.classList.remove('hidden');
+  authTitle.textContent = 'Create Account';
+});
+showLoginBtn.addEventListener('click', () => {
+  signupForm.classList.add('hidden');
+  loginForm.classList.remove('hidden');
+  authTitle.textContent = 'Sign In';
+});
+
+/* ===========================
+   Form + button handlers with state wrapper
+   =========================== */
+
+// Sign In
+loginForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const btn = loginForm.querySelector('button[type="submit"]');
+
+  handleApiButton(btn, async () => {
+    const email = document.getElementById('login-username').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    if (!email || !password) {
+      showMessage('Please enter both email and password.', 'error');
+      return { status: 'ERROR', message: 'Missing credentials' };
     }
 
-    // Render products
-    function renderProducts() {
-      galleryEl.innerHTML = '';
-      productsEcom.forEach(p => {
-        const card = document.createElement('div');
-        card.className = 'prod-card';
-        card.innerHTML = `
-          <img src="${p.image}" alt="${p.name}">
-          <h3 class="prod-name">${p.name}</h3>
-          <p class="prod-price">$${p.price.toFixed(2)}</p>
-          <div class="quantity">
-            <button class="qty-btn minus">−</button>
-            <input type="number" class="qty-input" value="0" min="0">
-            <button class="qty-btn plus">+</button>
-          </div>
-          <button class="add-to-cart">Add to Cart</button>
-        `;
-        const qtyInput = card.querySelector('.qty-input');
-        card.querySelector('.qty-btn.minus').onclick = () =>
-          qtyInput.value = Math.max(0, +qtyInput.value - 1);
-        card.querySelector('.qty-btn.plus').onclick = () =>
-          qtyInput.value = +qtyInput.value + 1;
-        card.querySelector('.add-to-cart').onclick = () => {
-          const qty = +qtyInput.value;
-          if (!qty) return;
-          addToCart({ ...p, qty });
-          qtyInput.value = 0;
-          toggleCart(true);
-        };
-        galleryEl.appendChild(card);
-      });
+    const resp = await fetch(API.login, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-auth-token': login },
+      body: JSON.stringify({ email, password })
+    });
+
+    // Try to read flow payload regardless of HTTP
+    let data = null;
+    try { data = await resp.json(); } catch (_) {}
+
+    // Define success criteria from payload (prefer explicit status if present)
+    const explicitStatus = (data && (data.status || data.result || data.code)) || null;
+    const okByPayload = typeof explicitStatus === 'string'
+      ? explicitStatus.toUpperCase() === 'OK' || explicitStatus.toUpperCase() === 'SUCCESS'
+      : resp.ok;
+
+    if (!okByPayload || !data?.firstName) {
+      const msg = data?.message || 'Invalid credentials or server error';
+      showMessage(msg, 'error');
+      return { status: 'ERROR', message: msg };
     }
 
-    // Cart management
-    function addToCart(item) {
-      const idx = cart.findIndex(x => x.id === item.id);
-      if (idx > -1) cart[idx].qty += item.qty;
-      else cart.push(item);
-      renderCart();
-    }
-    function removeFromCart(id) {
-      cart = cart.filter(i => i.id !== id);
-      renderCart();
-    }
-    function renderCart() {
-      cartItemsEl.innerHTML = '';
-      cart.forEach(item => {
-        const prod = productsEcom.find(p => p.id === item.id);
-        const li = document.createElement('li');
-        li.innerHTML = `
-          <img src="${prod.image}" class="cart-thumb" alt="${prod.name}">
-          <span class="cart-name">${prod.name}</span>
-          <div class="cart-quantity">
-            <button class="qty-btn minus">−</button>
-            <span class="qty-display">${item.qty}</span>
-            <button class="qty-btn plus">+</button>
-          </div>
-        `;
-        li.querySelector('.qty-btn.minus').onclick = () => {
-          if (item.qty > 1) item.qty--, renderCart();
-          else {
-            li.classList.add('removing');
-            setTimeout(() => removeFromCart(item.id), 300);
-          }
-        };
-        li.querySelector('.qty-btn.plus').onclick = () => {
-          item.qty++; renderCart();
-        };
-        cartItemsEl.appendChild(li);
-      });
-      const total = cart.reduce((sum, { id, qty }) => {
-        const prod = productsEcom.find(p => p.id === id);
-        return sum + prod.price * qty;
-      }, 0);
-      document.getElementById('cart-total-value').textContent = total.toFixed(2);
-      checkoutBtn.disabled = !isLoggedIn || cart.length === 0;
-      checkoutBtn.textContent = !isLoggedIn ? 'Sign In to Checkout' : 'Proceed to Checkout';
-    }
+    // Success side-effects
+    isLoggedIn = true;
+    currentUser = {
+      email,
+      name: `${data.firstName} ${data.lastName || ''}`.trim(),
+      rewards: data.rewards ?? 0
+    };
+    if (data.token) sessionStorage.setItem('authToken', data.token);
 
-    // Overlay toggles
-    function toggleCart(open = false) {
-      cartOverlay.classList.toggle('open', open || !cartOverlay.classList.contains('open'));
+    usernameDisplay.textContent = currentUser.name;
+    rewardsDisplay.textContent = currentUser.rewards;
+    loginBtn.textContent = 'Logout';
+    loginBtn.classList.add('logout');
+    checkoutBtn.disabled = false;
+    checkoutBtn.textContent = 'Proceed to Checkout';
+    loginForm.reset();
+    toggleLogin(false);
+
+    return { status: 'OK', message: 'Signed in' };
+  });
+});
+
+// Create Account
+signupForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const btn = signupForm.querySelector('button[type="submit"]');
+
+  handleApiButton(btn, async () => {
+    const fn   = document.getElementById('signup-firstname').value.trim();
+    const ln   = document.getElementById('signup-lastname').value.trim();
+    const addr = document.getElementById('signup-address').value.trim();
+    const city = document.getElementById('signup-city').value.trim();
+    const st   = document.getElementById('signup-state').value.trim();
+    const zip  = document.getElementById('signup-zip').value.trim();
+    const ph   = document.getElementById('signup-phone').value.trim();
+    const em   = document.getElementById('signup-email').value.trim();
+    const pw1  = document.getElementById('signup-password').value;
+    const pw2  = document.getElementById('signup-password-confirm').value;
+
+    if (pw1 !== pw2) {
+      showMessage('Passwords do not match.', 'error');
+      return { status: 'ERROR', message: 'Passwords mismatch' };
     }
-    function toggleLogin(open = false) {
-      loginOverlay.classList.toggle('open', open || !loginOverlay.classList.contains('open'));
+    if (!/^\d{5}$/.test(zip)) {
+      showMessage('ZIP Code must be 5 digits.', 'error');
+      return { status: 'ERROR', message: 'Invalid ZIP' };
+    }
+    if (!/^\d{10}$/.test(ph)) {
+      showMessage('Phone must be 10 digits.', 'error');
+      return { status: 'ERROR', message: 'Invalid phone' };
     }
 
-    // Cart events
-    cartIcon.addEventListener('click', () => toggleCart());
-    closeCart.addEventListener('click', () => toggleCart());
-    cartOverlay.addEventListener('click', e => { if (e.target === cartOverlay) toggleCart(); });
-
-    // Login/logout events
-    loginBtn.addEventListener('click', () => {
-      if (isLoggedIn) {
-        isLoggedIn = false;
-        currentUser = { email:'', name:'', rewards:0 };
-        usernameDisplay.textContent = 'Guest';
-        rewardsDisplay.textContent = '0';
-        loginBtn.textContent = 'Login';
-        loginBtn.classList.remove('logout');
-        checkoutBtn.disabled = true;
-        checkoutBtn.textContent = 'Sign In to Checkout';
-      } else {
-        toggleLogin(true);
-        document.getElementById('login-username').focus();
-      }
-    });
-    closeLogin.addEventListener('click', () => toggleLogin());
-    loginOverlay.addEventListener('click', e => { if (e.target === loginOverlay) toggleLogin(); });
-
-    // Switch between Sign In / Create Account
-    showSignupBtn.addEventListener('click', () => {
-      loginForm.classList.add('hidden');
-      signupForm.classList.remove('hidden');
-      authTitle.textContent = 'Create Account';
-    });
-    showLoginBtn.addEventListener('click', () => {
-      signupForm.classList.add('hidden');
-      loginForm.classList.remove('hidden');
-      authTitle.textContent = 'Sign In';
+    const res = await fetch(API.signup, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-auth-token': signup },
+      body: JSON.stringify({
+        firstName: fn,
+        lastName: ln,
+        address: addr,
+        city,
+        state: st,
+        zip,
+        phone: ph,
+        email: em,
+        password: pw1
+      })
     });
 
-    // Handle Sign In
-    loginForm.addEventListener('submit', async e => {
-      e.preventDefault();
-      const email = document.getElementById('login-username').value.trim();
-      const password = document.getElementById('login-password').value;
-      if (!email || !password) {
-        showMessage('Please enter both email and password.', 'error');
-        return;
-      }
-      try {
-        const resp = await fetch(API.login, {
-          method: 'POST',
-          headers: { 'Content-Type':'application/json', 'x-auth-token':login},
-          body: JSON.stringify({ email, password })
-        });
-        if (!resp.ok) throw new Error('Invalid credentials or server error');
-        const user = await resp.json();
-        if (!user.firstName) throw new Error('No matching account found');
-        isLoggedIn = true;
-        currentUser = {
-          email,
-          name: `${user.firstName} ${user.lastName}`,
-          rewards: user.rewards
-        };
-        sessionStorage.setItem('authToken', user.token);
-        usernameDisplay.textContent = currentUser.name;
-        rewardsDisplay.textContent = currentUser.rewards;
-        loginBtn.textContent = 'Logout';
-        loginBtn.classList.add('logout');
-        checkoutBtn.disabled = false;
-        checkoutBtn.textContent = 'Proceed to Checkout';
-        loginForm.reset();
-        toggleLogin(false);
-      } catch (err) {
-        showMessage(err.message, 'error');
-      }
+    let data = null;
+    try { data = await res.json(); } catch (_) {}
+
+    const explicitStatus = (data && (data.status || data.result || data.code)) || null;
+    const okByPayload = typeof explicitStatus === 'string'
+      ? explicitStatus.toUpperCase() === 'OK' || explicitStatus.toUpperCase() === 'SUCCESS'
+      : res.ok;
+
+    if (!okByPayload) {
+      const msg = data?.message || 'Signup failed';
+      showMessage(msg, 'error');
+      return { status: 'ERROR', message: msg };
+    }
+
+    showMessage(data?.message || 'Account created! Please sign in.', 'success');
+    signupForm.reset();
+    showLoginBtn.click();
+    return { status: 'OK', message: 'Account created' };
+  });
+});
+
+// Checkout
+checkoutBtn.addEventListener('click', () => {
+  handleApiButton(checkoutBtn, async () => {
+    if (!cart.length) {
+      showMessage('Your cart is empty.', 'error');
+      return { status: 'ERROR', message: 'Empty cart' };
+    }
+    if (!isLoggedIn) {
+      showMessage('Please sign in first.', 'error');
+      return { status: 'ERROR', message: 'Not signed in' };
+    }
+
+    const payload = {
+      user: { email: currentUser.email, name: currentUser.name, rewards: currentUser.rewards },
+      items: cart.map(i => ({ id: i.id, qty: i.qty }))
+    };
+
+    const resp = await fetch(API.checkout, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+      },
+      body: JSON.stringify(payload)
     });
 
-    // Handle Create Account
-    signupForm.addEventListener('submit', async e => {
-      e.preventDefault();
-      const fn   = document.getElementById('signup-firstname').value.trim();
-      const ln   = document.getElementById('signup-lastname').value.trim();
-      const addr = document.getElementById('signup-address').value.trim();
-      const city = document.getElementById('signup-city').value.trim();
-      const st   = document.getElementById('signup-state').value.trim();
-      const zip  = document.getElementById('signup-zip').value.trim();
-      const ph   = document.getElementById('signup-phone').value.trim();
-      const em   = document.getElementById('signup-email').value.trim();
-      const pw1  = document.getElementById('signup-password').value;
-      const pw2  = document.getElementById('signup-password-confirm').value;
+    let data = null;
+    try { data = await resp.json(); } catch (_) {}
 
-      if (pw1 !== pw2) {
-        showMessage('Passwords do not match.', 'error');
-        return;
-      }
-      if (!/^\d{5}$/.test(zip)) {
-        showMessage('ZIP Code must be 5 digits.', 'error');
-        return;
-      }
-      if (!/^\d{10}$/.test(ph)) {
-        showMessage('Phone must be 10 digits.', 'error');
-        return;
-      }
+    const explicitStatus = (data && (data.status || data.result || data.code)) || null;
+    const okByPayload = typeof explicitStatus === 'string'
+      ? explicitStatus.toUpperCase() === 'OK' || explicitStatus.toUpperCase() === 'SUCCESS'
+      : resp.ok;
 
-      try {
-        const res = await fetch(API.signup, {
-          method: 'POST',
-          headers: { 'Content-Type':'application/json', 'x-auth-token':signup },
-          body: JSON.stringify({
-            firstName: fn,
-            lastName: ln,
-            address: addr,
-            city,
-            state: st,
-            zip,
-            phone: ph,
-            email: em,
-            password: pw1
-          })
-        });
-        if (!res.ok) throw new Error('Signup failed');
-        showMessage('Account created! Please sign in.', 'success');
-        signupForm.reset();
-        showLoginBtn.click();
-      } catch (err) {
-        showMessage(err.message, 'error');
-      }
-    });
+    if (!okByPayload) {
+      const msg = data?.message || 'Order submission failed';
+      showMessage(msg, 'error');
+      return { status: 'ERROR', message: msg };
+    }
 
-    // Handle checkout...
-    checkoutBtn.addEventListener('click', async () => {
-      if (!cart.length) { showMessage('Your cart is empty.', 'error'); return; }
-      if (!isLoggedIn) { showMessage('Please sign in first.', 'error'); return; }
-      const payload = {
-        user:{ email:currentUser.email, name:currentUser.name, rewards:currentUser.rewards },
-        items: cart.map(i=>({ id:i.id, qty:i.qty }))
-      };
-      try {
-        const resp = await fetch(API.checkout,{
-          method:'POST',
-          headers:{
-            'Content-Type':'application/json',
-            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
-          },
-          body: JSON.stringify(payload)
-        });
-        if (!resp.ok) throw new Error('Order submission failed');
-        showMessage('Order submitted successfully!','success');
-        cart=[]; renderCart(); toggleCart();
-      } catch {
-        showMessage('Network or server error during checkout.','error');
-      }
-    });
+    showMessage(data?.message || 'Order submitted successfully!', 'success');
+    cart = [];
+    renderCart();
+    toggleCart();
+    return { status: 'OK', message: 'Order submitted' };
+  });
+});
 
-    // State dropdown button behavior (added)
-    (function enhanceStateSelect() {
-      const select = document.getElementById('signup-state');
-      const btn = document.querySelector('.state-dropdown-btn');
-      if (!select || !btn) return;
+/* ===========================
+   State dropdown enhancement
+   =========================== */
+(function enhanceStateSelect() {
+  const select = document.getElementById('signup-state');
+  const btn = document.querySelector('.state-dropdown-btn');
+  if (!select || !btn) return;
 
-      function openNativeDropdown() {
-        if (typeof select.showPicker === 'function') {
-          select.showPicker();
-        } else {
-          // Fallback that works in most browsers
-          select.focus();
-          const ev = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
-          select.dispatchEvent(ev);
-        }
-      }
+  function openNativeDropdown() {
+    if (typeof select.showPicker === 'function') {
+      select.showPicker();
+    } else {
+      select.focus();
+      const ev = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
+      select.dispatchEvent(ev);
+    }
+  }
 
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        openNativeDropdown();
-      });
-    })();
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    openNativeDropdown();
+  });
+})();
 
-    // Persist cart
-    window.addEventListener('beforeunload', () => {
-      sessionStorage.setItem('cart', JSON.stringify(cart));
-    });
+/* ===========================
+   Persist cart and init
+   =========================== */
+window.addEventListener('beforeunload', () => {
+  sessionStorage.setItem('cart', JSON.stringify(cart));
+});
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const saved = sessionStorage.getItem('cart');
-      if (saved) { cart = JSON.parse(saved); renderCart(); }
-      renderProducts();
-    });
-  </script>
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = sessionStorage.getItem('cart');
+  if (saved) { cart = JSON.parse(saved); renderCart(); }
+  renderProducts();
+});
+</script>
 </body>
 </html>
