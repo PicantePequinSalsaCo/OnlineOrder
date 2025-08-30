@@ -379,248 +379,290 @@
     </div>
   </footer>
 
-  <script>
-    // update year
-    document.getElementById('y').textContent = new Date().getFullYear();
+<script>
+  // update year
+  document.getElementById('y').textContent = new Date().getFullYear();
 
-    // ==== CONFIGURE YOUR AUTOMATION ENDPOINTS HERE ====
-    const API = {
-      // GET user by email+password via Power Automate → returns { firstName, lastName, rewards }
-      login:    'https://<YOUR-POWER-AUTOMATE-GET-USER-ENDPOINT>',
-      // POST order payload → items + user → Power Automate flow for checkout
-      checkout: 'https://<YOUR-POWER-AUTOMATE-CHECKOUT-ENDPOINT>'
-    };
+  // ==== CONFIGURE YOUR AUTOMATION ENDPOINTS HERE ====
+  const API = {
+    login:    'https://prod-142.westus.logic.azure.com:443/workflows/d8ec90b3bf1e47be8fd0b7fe17b0ee0a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=kHPC42TyiVE30h4_bdIFfnxK4qyEGbtkEVDyKSDFUgI',
+    checkout: 'https://<YOUR-POWER-AUTOMATE-CHECKOUT-ENDPOINT>'
+  };
+  const SHARED_TOKEN = 'b7e2f9a1-4c8d-4f3a-9d6e-2a9c1b7e5f3d';
+  // Product catalog
+  const productsEcom = [
+    { id: 'house-pequin',   name: 'House Pequin Salsa',       price: 12, image: 'https://picantepequinsalsaco.com/images/image1.jpg' },
+    { id: 'spicy-green',    name: 'Spicy Green Chile Pequin', price: 12, image: 'https://picantepequinsalsaco.com/images/image2.jpg' },
+    { id: 'red-hot',        name: 'Red Hot Pepper Pequin',    price: 12, image: 'https://picantepequinsalsaco.com/images/image3.jpg' },
+    { id: 'the-crew',       name: 'The Crew',                 price: 36, image: 'https://picantepequinsalsaco.com/images/image4.jpg' }
+  ];
 
-    const productsEcom = [
-      { id: 'house-pequin',   name: 'House Pequin Salsa',       price: 12, image: 'https://picantepequinsalsaco.com/images/image1.jpg' },
-      { id: 'spicy-green',    name: 'Spicy Green Chile Pequin', price: 12, image: 'https://picantepequinsalsaco.com/images/image2.jpg' },
-      { id: 'red-hot',        name: 'Red Hot Pepper Pequin',    price: 12, image: 'https://picantepequinsalsaco.com/images/image3.jpg' },
-      { id: 'the-crew',       name: 'The Crew',                 price: 36, image: 'https://picantepequinsalsaco.com/images/image4.jpg' }
-    ];
+  // Application state
+  let cart = [];
+  let isLoggedIn = false;
+  let currentUser = { email: '', name: '', rewards: 0 };
 
-    let cart = [];
-    let isLoggedIn = false;
-    let currentUser = { email: '', name: '', rewards: 0 };
+  // DOM references
+  const galleryEl       = document.getElementById('product-gallery');
+  const cartOverlay     = document.getElementById('cart-container');
+  const cartItemsEl     = document.getElementById('cart-items');
+  const checkoutBtn     = document.getElementById('checkout-btn');
+  const closeCart       = document.getElementById('close-cart');
+  const cartIcon        = document.getElementById('cart-icon');
+  const loginBtn        = document.getElementById('login-btn');
+  const loginOverlay    = document.getElementById('login-container');
+  const closeLogin      = document.getElementById('close-login');
+  const loginForm       = document.getElementById('login-form');
+  const usernameDisplay = document.getElementById('username-display');
+  const rewardsDisplay  = document.getElementById('rewards-display');
 
-    // DOM refs
-    const galleryEl       = document.getElementById('product-gallery');
-    const cartOverlay     = document.getElementById('cart-container');
-    const cartItemsEl     = document.getElementById('cart-items');
-    const checkoutBtn     = document.getElementById('checkout-btn');
-    const closeCart       = document.getElementById('close-cart');
-    const cartIcon        = document.getElementById('cart-icon');
-    const loginBtn        = document.getElementById('login-btn');
-    const loginOverlay    = document.getElementById('login-container');
-    const closeLogin      = document.getElementById('close-login');
-    const loginForm       = document.getElementById('login-form');
-    const usernameDisplay = document.getElementById('username-display');
-    const rewardsDisplay  = document.getElementById('rewards-display');
+  // === Message helper ===
+  function showMessage(msg, type = 'info') {
+    const box = document.createElement('div');
+    box.className = `message-box ${type}`;
+    box.textContent = msg;
+    document.body.appendChild(box);
+    setTimeout(() => box.remove(), 4000);
+  }
 
-    // render products grid
-    function renderProducts() {
-      galleryEl.innerHTML = '';
-      productsEcom.forEach(p => {
-        const card = document.createElement('div');
-        card.className = 'prod-card';
-        card.innerHTML = `
-          <img src="${p.image}" alt="${p.name}">
-          <h3 class="prod-name">${p.name}</h3>
-          <p class="prod-price">$${p.price.toFixed(2)}</p>
-          <div class="quantity">
-            <button class="qty-btn minus">−</button>
-            <input type="number" class="qty-input" value="0" min="0">
-            <button class="qty-btn plus">+</button>
-          </div>
-          <button class="add-to-cart">Add to Cart</button>
-        `;
+  // === Render product grid ===
+  function renderProducts() {
+    galleryEl.innerHTML = '';
+    productsEcom.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'prod-card';
+      card.innerHTML = `
+        <img src="${p.image}" alt="${p.name}">
+        <h3 class="prod-name">${p.name}</h3>
+        <p class="prod-price">$${p.price.toFixed(2)}</p>
+        <div class="quantity">
+          <button class="qty-btn minus">−</button>
+          <input type="number" class="qty-input" value="0" min="0">
+          <button class="qty-btn plus">+</button>
+        </div>
+        <button class="add-to-cart">Add to Cart</button>
+      `;
 
-        const qtyInput = card.querySelector('.qty-input');
-        card.querySelector('.minus').onclick = () =>
-          qtyInput.value = Math.max(0, +qtyInput.value - 1);
-        card.querySelector('.plus').onclick = () =>
-          qtyInput.value = +qtyInput.value + 1;
+      const qtyInput = card.querySelector('.qty-input');
+      card.querySelector('.minus').onclick = () =>
+        qtyInput.value = Math.max(0, +qtyInput.value - 1);
+      card.querySelector('.plus').onclick = () =>
+        qtyInput.value = +qtyInput.value + 1;
 
-        card.querySelector('.add-to-cart').onclick = () => {
-          const qty = +qtyInput.value;
-          if (!qty) return;
-          addToCart({ ...p, qty });
-          qtyInput.value = 0;
-          toggleCart(true);
-        };
-
-        galleryEl.appendChild(card);
-      });
-    }
-
-    function addToCart(item) {
-      const idx = cart.findIndex(x => x.id === item.id);
-      if (idx > -1) cart[idx].qty += item.qty;
-      else cart.push(item);
-      renderCart();
-    }
-
-    function removeFromCart(id) {
-      cart = cart.filter(i => i.id !== id);
-      renderCart();
-    }
-
-    function renderCart() {
-      cartItemsEl.innerHTML = '';
-      cart.forEach(item => {
-        const prod = productsEcom.find(p => p.id === item.id);
-        const li = document.createElement('li');
-        li.innerHTML = `
-          <img src="${prod.image}" class="cart-thumb" alt="${prod.name}">
-          <span class="cart-name">${prod.name}</span>
-          <div class="cart-quantity">
-            <button class="qty-btn minus">−</button>
-            <span class="qty-display">${item.qty}</span>
-            <button class="qty-btn plus">+</button>
-          </div>
-        `;
-        li.querySelector('.minus').onclick = () => {
-          if (item.qty > 1) {
-            item.qty--;
-            renderCart();
-          } else {
-            li.classList.add('removing');
-            setTimeout(() => removeFromCart(item.id), 300);
-          }
-        };
-        li.querySelector('.plus').onclick = () => {
-          item.qty++;
-          renderCart();
-        };
-        cartItemsEl.appendChild(li);
-      });
-
-      const total = cart.reduce((sum, { id, qty }) => {
-        const prod = productsEcom.find(p => p.id === id);
-        return sum + prod.price * qty;
-      }, 0);
-      document.getElementById('cart-total-value').textContent = total.toFixed(2);
-
-      checkoutBtn.disabled = !isLoggedIn || cart.length === 0;
-      checkoutBtn.textContent = !isLoggedIn
-        ? 'Sign In to Checkout'
-        : 'Proceed to Checkout';
-    }
-
-    function toggleCart(open = false) {
-      cartOverlay.classList.toggle('open',
-        open || !cartOverlay.classList.contains('open'));
-    }
-    function toggleLogin(open = false) {
-      loginOverlay.classList.toggle('open',
-        open || !loginOverlay.classList.contains('open'));
-    }
-
-    // cart toggle events
-    cartIcon.addEventListener('click', () => toggleCart());
-    closeCart.addEventListener('click', () => toggleCart());
-    cartOverlay.addEventListener('click', e => {
-      if (e.target === cartOverlay) toggleCart();
-    });
-
-    // login/logout toggle
-    loginBtn.addEventListener('click', () => {
-      if (isLoggedIn) {
-        // clear session
-        isLoggedIn = false;
-        currentUser = { email: '', name: '', rewards: 0 };
-        usernameDisplay.textContent = 'Guest';
-        rewardsDisplay.textContent = '0';
-        loginBtn.textContent = 'Login';
-        loginBtn.classList.remove('logout');
-        checkoutBtn.disabled = true;
-        checkoutBtn.textContent = 'Sign In to Checkout';
-      } else {
-        toggleLogin(true);
-      }
-    });
-    closeLogin.addEventListener('click', () => toggleLogin());
-    loginOverlay.addEventListener('click', e => {
-      if (e.target === loginOverlay) toggleLogin();
-    });
-
-    // ---- HANDLE LOGIN ----
-    loginForm.addEventListener('submit', async e => {
-      e.preventDefault();
-      const email = document.getElementById('login-username').value.trim();
-      const password = document.getElementById('login-password').value;
-
-      try {
-        // GET user record by email+password
-        const resp = await fetch(
-          `${API.login}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
-          { method: 'GET' }
-        );
-        if (!resp.ok) throw new Error('Invalid credentials or server error');
-        const user = await resp.json();
-        // expected user = { firstName, lastName, rewards }
-        if (!user || !user.firstName) {
-          throw new Error('No matching account found');
-        }
-
-        // update session state
-        isLoggedIn = true;
-        currentUser.email   = email;
-        currentUser.name    = `${user.firstName} ${user.lastName}`;
-        currentUser.rewards = user.rewards;
-
-        // update UI
-        usernameDisplay.textContent = currentUser.name;
-        rewardsDisplay.textContent  = currentUser.rewards;
-        loginBtn.textContent = 'Logout';
-        loginBtn.classList.add('logout');
-        checkoutBtn.disabled = false;
-        checkoutBtn.textContent = 'Proceed to Checkout';
-
-        loginForm.reset();
-        toggleLogin(false);
-      } catch (err) {
-        alert(err.message);
-      }
-    });
-
-    // ---- HANDLE CHECKOUT ----
-    checkoutBtn.addEventListener('click', async () => {
-      if (!cart.length) {
-        alert('Your cart is empty.');
-        return;
-      }
-      if (!isLoggedIn) {
-        alert('Please sign in first.');
-        return;
-      }
-
-      const payload = {
-        user: {
-          email: currentUser.email,
-          name:  currentUser.name,
-          rewards: currentUser.rewards
-        },
-        items: cart.map(i => ({ id: i.id, qty: i.qty }))
+      card.querySelector('.add-to-cart').onclick = () => {
+        const qty = +qtyInput.value;
+        if (!qty) return;
+        addToCart({ ...p, qty });
+        qtyInput.value = 0;
+        toggleCart(true);
       };
 
-      try {
-        const resp = await fetch(API.checkout, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (!resp.ok) throw new Error('Order submission failed');
-        alert('Order submitted successfully!');
-        cart = [];
+      galleryEl.appendChild(card);
+    });
+  }
+
+  // === Cart management ===
+  function addToCart(item) {
+    const idx = cart.findIndex(x => x.id === item.id);
+    if (idx > -1) cart[idx].qty += item.qty;
+    else cart.push(item);
+    renderCart();
+  }
+
+  function removeFromCart(id) {
+    cart = cart.filter(i => i.id !== id);
+    renderCart();
+  }
+
+  function renderCart() {
+    cartItemsEl.innerHTML = '';
+    cart.forEach(item => {
+      const prod = productsEcom.find(p => p.id === item.id);
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <img src="${prod.image}" class="cart-thumb" alt="${prod.name}">
+        <span class="cart-name">${prod.name}</span>
+        <div class="cart-quantity">
+          <button class="qty-btn minus">−</button>
+          <span class="qty-display">${item.qty}</span>
+          <button class="qty-btn plus">+</button>
+        </div>
+      `;
+      li.querySelector('.minus').onclick = () => {
+        if (item.qty > 1) {
+          item.qty--;
+          renderCart();
+        } else {
+          li.classList.add('removing');
+          setTimeout(() => removeFromCart(item.id), 300);
+        }
+      };
+      li.querySelector('.plus').onclick = () => {
+        item.qty++;
         renderCart();
-        toggleCart();
-      } catch {
-        alert('Network or server error during checkout.');
-      }
+      };
+      cartItemsEl.appendChild(li);
     });
 
-    document.addEventListener('DOMContentLoaded', renderProducts);
-  </script>
+    const total = cart.reduce((sum, { id, qty }) => {
+      const prod = productsEcom.find(p => p.id === id);
+      return sum + prod.price * qty;
+    }, 0);
+    document.getElementById('cart-total-value').textContent = total.toFixed(2);
+
+    checkoutBtn.disabled = !isLoggedIn || cart.length === 0;
+    checkoutBtn.textContent = !isLoggedIn
+      ? 'Sign In to Checkout'
+      : 'Proceed to Checkout';
+  }
+
+  // === Overlay toggles ===
+  function toggleCart(open = false) {
+    cartOverlay.classList.toggle('open',
+      open || !cartOverlay.classList.contains('open'));
+  }
+  function toggleLogin(open = false) {
+    loginOverlay.classList.toggle('open',
+      open || !loginOverlay.classList.contains('open'));
+  }
+
+  // === Cart toggle events ===
+  cartIcon.addEventListener('click', () => toggleCart());
+  closeCart.addEventListener('click', () => toggleCart());
+  cartOverlay.addEventListener('click', e => {
+    if (e.target === cartOverlay) toggleCart();
+  });
+
+  // === Login/logout toggle events ===
+  loginBtn.addEventListener('click', () => {
+    if (isLoggedIn) {
+      // clear session
+      isLoggedIn = false;
+      currentUser = { email: '', name: '', rewards: 0 };
+      usernameDisplay.textContent = 'Guest';
+      rewardsDisplay.textContent = '0';
+      loginBtn.textContent = 'Login';
+      loginBtn.classList.remove('logout');
+      checkoutBtn.disabled = true;
+      checkoutBtn.textContent = 'Sign In to Checkout';
+    } else {
+      toggleLogin(true);
+    }
+  });
+  closeLogin.addEventListener('click', () => toggleLogin());
+  loginOverlay.addEventListener('click', e => {
+    if (e.target === loginOverlay) toggleLogin();
+  });
+
+  // ==== HANDLE LOGIN ====
+  loginForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = document.getElementById('login-username').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    // Basic input validation
+    if (!email || !password) {
+      showMessage('Please enter both email and password.', 'error');
+      return;
+    }
+
+    try {
+      const resp = await fetch(API.login, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': SHARED_TOKEN
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (!resp.ok) throw new Error('Invalid credentials or server error');
+
+      const user = await resp.json();
+      // expected user = { firstName, lastName, rewards, token }
+
+      if (!user || !user.firstName) {
+        throw new Error('No matching account found');
+      }
+
+      // Store user info and token
+      isLoggedIn = true;
+      currentUser = {
+        email,
+        name: `${user.firstName} ${user.lastName}`,
+        rewards: user.rewards
+      };
+      sessionStorage.setItem('authToken', user.token);
+
+      // Update UI
+      usernameDisplay.textContent = currentUser.name;
+      rewardsDisplay.textContent = currentUser.rewards;
+      loginBtn.textContent = 'Logout';
+      loginBtn.classList.add('logout');
+      checkoutBtn.disabled = false;
+      checkoutBtn.textContent = 'Proceed to Checkout';
+
+      loginForm.reset();
+      toggleLogin(false);
+    } catch (err) {
+      showMessage(err.message || 'Login failed', 'error');
+    }
+  });
+
+  // ==== HANDLE CHECKOUT ====
+  checkoutBtn.addEventListener('click', async () => {
+    if (!cart.length) {
+      showMessage('Your cart is empty.', 'error');
+      return;
+    }
+    if (!isLoggedIn) {
+      showMessage('Please sign in first.', 'error');
+      return;
+    }
+
+    const payload = {
+      user: {
+        email: currentUser.email,
+        name: currentUser.name,
+        rewards: currentUser.rewards
+      },
+      items: cart.map(i => ({ id: i.id, qty: i.qty }))
+    };
+
+    try {
+      const resp = await fetch(API.checkout, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (!resp.ok) throw new Error('Order submission failed');
+
+      showMessage('Order submitted successfully!', 'success');
+      cart = [];
+      renderCart();
+      toggleCart();
+    } catch {
+      showMessage('Network or server error during checkout.', 'error');
+    }
+  });
+
+  // ==== Persist cart across sessions ====
+  window.addEventListener('beforeunload', () => {
+    sessionStorage.setItem('cart', JSON.stringify(cart));
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const savedCart = sessionStorage.getItem('cart');
+    if (savedCart) {
+      cart = JSON.parse(savedCart);
+      renderCart();
+    }
+    renderProducts();
+  });
+</script>
 </body>
 </html>
 
