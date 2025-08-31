@@ -357,8 +357,15 @@
 .api-btn {
   position: relative;
   overflow: hidden;
-  transition: background 0.3s ease, color 0.3s ease;
+  transition: background 0.3s ease, color 0.3s ease, opacity 0.2s ease;
 }
+
+.api-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: saturate(0.7);
+}
+    
 .api-btn.loading {
   color: transparent !important;
   background: linear-gradient(
@@ -509,7 +516,7 @@
   <input type="password" id="signup-password-confirm" name="passwordConfirm" placeholder="Confirm Password" required autocomplete="new-password" />
   <small id="password-match-msg" style="color: var(--accent-red); display: none;">Passwords do not match</small>
 
-  <button type="submit" class="api-btn" data-loading-text="Creating Account">Create Account</button>
+  <button type="submit" class="api-btn" data-loading-text="Creating Account" disabled>Create Account</button>
 
   <div class="auth-switch">
     <span>Already have an account?</span>
@@ -742,10 +749,52 @@ const rewardsDisplay  = document.getElementById('rewards-display');
 /* ===========================
    Live validators
    =========================== */
+    // Single source of truth for enabling the signup button
+function checkSignupValidity() {
+  const signupBtn = signupForm.querySelector('button[type="submit"]');
+  const ids = [
+    'signup-firstname',
+    'signup-lastname',
+    'signup-address',
+    'signup-city',
+    'signup-state',
+    'signup-zip',
+    'signup-phone',
+    'signup-email',
+    'signup-password',
+    'signup-password-confirm'
+  ];
+
+  const inputs = ids.map(id => document.getElementById(id));
+
+  // Filled check (keep simple + fast)
+  const allFilled = inputs.every(el => el && el.value.trim() !== '');
+
+  // Password matching
+  const pw1 = document.getElementById('signup-password').value;
+  const pw2 = document.getElementById('signup-password-confirm').value;
+  const passwordsMatch = pw1 && pw1 === pw2;
+
+  // Password strength gate (Strong or Excellent)
+  const strengthText = document.getElementById('password-strength-text');
+  const strength = (strengthText?.textContent || '');
+  const strongEnough = strength.includes('Strong') || strength.includes('Excellent');
+
+  // Email domain validity (matches your domain validator)
+  const emailInput = document.getElementById('signup-email');
+  const emailVal = emailInput.value.trim();
+  const atIndex = emailVal.lastIndexOf('@');
+  const domain = atIndex !== -1 ? emailVal.slice(atIndex + 1) : '';
+  const domainPattern = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const domainValid = atIndex !== -1 && domainPattern.test(domain);
+
+  // Final gate
+  signupBtn.disabled = !(allFilled && passwordsMatch && strongEnough && domainValid);
+}
+    
 (function emailDomainValidation() {
   const emailInput = document.getElementById('signup-email');
   const errorMsg = document.getElementById('email-error-msg');
-
   const domainPattern = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   emailInput.addEventListener('input', () => {
@@ -755,6 +804,7 @@ const rewardsDisplay  = document.getElementById('rewards-display');
     if (atIndex === -1) {
       errorMsg.style.display = 'none';
       emailInput.style.borderColor = '';
+      checkSignupValidity();
       return;
     }
 
@@ -767,6 +817,7 @@ const rewardsDisplay  = document.getElementById('rewards-display');
       errorMsg.style.display = 'block';
       emailInput.style.borderColor = 'var(--accent-red)';
     }
+    checkSignupValidity();
   });
 })();
 
@@ -792,6 +843,8 @@ const rewardsDisplay  = document.getElementById('rewards-display');
     bar.style.width = widths[score];
     bar.style.background = colors[score];
     text.textContent = `Strength: ${labels[score]}`;
+
+    checkSignupValidity();
   });
 })();
 
@@ -805,6 +858,7 @@ const rewardsDisplay  = document.getElementById('rewards-display');
       msg.style.display = 'none';
       pw1.style.borderColor = '';
       pw2.style.borderColor = '';
+      checkSignupValidity();
       return;
     }
     if (pw1.value === pw2.value) {
@@ -816,10 +870,36 @@ const rewardsDisplay  = document.getElementById('rewards-display');
       pw1.style.borderColor = 'var(--accent-red)';
       pw2.style.borderColor = 'var(--accent-red)';
     }
+    checkSignupValidity();
   }
 
   pw1.addEventListener('input', checkMatch);
   pw2.addEventListener('input', checkMatch);
+})();
+
+(function enableSignupButtonWhenValid() {
+  const fields = [
+    'signup-firstname',
+    'signup-lastname',
+    'signup-address',
+    'signup-city',
+    'signup-state',
+    'signup-zip',
+    'signup-phone',
+    'signup-email',
+    'signup-password',
+    'signup-password-confirm'
+  ].map(id => document.getElementById(id));
+
+  // Input listeners
+  fields.forEach(el => el && el.addEventListener('input', checkSignupValidity));
+
+  // Ensure select emits on change in all browsers
+  const stateSelect = document.getElementById('signup-state');
+  if (stateSelect) stateSelect.addEventListener('change', checkSignupValidity);
+
+  // Initial
+  checkSignupValidity();
 })();
 
 /* ===========================
@@ -1117,6 +1197,8 @@ signupForm.addEventListener('submit', async e => {
   if (result.ok) {
     const data = result.payload || {};
     showMessage(data?.message || 'Account created! Please sign in.', 'success');
+    document.getElementById('login-username').value = data.email;
+    document.getElementById('login-password').value = data.password;      
     signupForm.reset();
     showLoginBtn.click();
   }
