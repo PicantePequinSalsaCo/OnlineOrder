@@ -1197,8 +1197,10 @@ signupForm.addEventListener('submit', async e => {
   if (result.ok) {
     const data = result.payload || {};
     showMessage(data?.message || 'Account created! Please sign in.', 'success');
-    document.getElementById('login-username').value = data.email;
-    document.getElementById('login-password').value = data.password;      
+    const email = data.body?.email ?? data.email ?? document.getElementById('signup-email').value.trim();
+    const password = data.body?.password ?? data.password ?? document.getElementById('signup-password').value;
+    document.getElementById('login-username').value = email;
+    document.getElementById('login-password').value = password;      
     signupForm.reset();
     showLoginBtn.click();
   }
