@@ -583,15 +583,67 @@ function setButtonState(btn, state) {
   if (state) btn.classList.add(state);
 }
 
+// Dev/test config
+const DEV = {
+  stubJobs: true,         // true = bypass real polling
+  stubDelayMs: 3500,      // auto-success after this delay
+  manualEvent: true       // allow manual confirmation via window.dispatchEvent(...)
+};
+
+/**
+ * Stubbed poller for dev/testing.
+ * Resolves after delay or when a matching 'job:done' event is dispatched.
+ */
+async function stubStatusUntilDone({ jobId, delayMs = 3000, manualEvent = true }) {
+  function waitForEvent(ev, matchFn, timeoutMs) {
+    return new Promise((resolve, reject) => {
+      const on = (e) => {
+        const d = e.detail || {};
+        if (matchFn(d)) {
+          window.removeEventListener(ev, on);
+          resolve(d);
+        }
+      };
+      window.addEventListener(ev, on);
+      if (timeoutMs) {
+        setTimeout(() => {
+          window.removeEventListener(ev, on);
+          reject(new Error('Manual event timed out'));
+        }, timeoutMs);
+      }
+    });
+  }
+
+  if (manualEvent) {
+    const eventPromise = waitForEvent('job:done', (d) => d.jobId === jobId, delayMs + 100);
+    const delayPromise = new Promise((resolve) =>
+      setTimeout(() => resolve({ status: 'OK', jobId, message: 'Stub auto-resolve' }), delayMs)
+    );
+    const detail = await Promise.race([eventPromise, delayPromise]);
+    const status = normalizeStatus(detail);
+    return { final: true, ok: status === 'OK' || status === 'SUCCESS', payload: detail };
+  }
+
+  await sleep(delayMs);
+  return { final: true, ok: true, payload: { status: 'OK', jobId, message: 'Stub auto-resolve' } };
+}
+
 /**
  * Polls statusUrl until final or timeout.
  * Expects { status: "PENDING"|"SUCCESS"|"OK"|"ERROR", ... }
  */
 async function pollStatusUntilDone({ statusUrl, jobId, intervalMs = JOB.intervalMs, timeoutMs = JOB.timeoutMs }) {
+  if (DEV.stubJobs || !statusUrl) {
+    console.debug('[JOB:STUB] Using stub for job', { jobId, statusUrl });
+    return stubStatusUntilDone({ jobId, delayMs: DEV.stubDelayMs, manualEvent: DEV.manualEvent });
+  }
+
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     try {
-      const res = await fetch(statusUrl, { headers: { 'Content-Type': 'application/json', 'x-job-id': jobId } });
+      const res = await fetch(statusUrl, {
+        headers: { 'Content-Type': 'application/json', 'x-job-id': jobId }
+      });
       const data = await safeJson(res);
       const status = normalizeStatus(data);
 
@@ -606,39 +658,44 @@ async function pollStatusUntilDone({ statusUrl, jobId, intervalMs = JOB.interval
 }
 
 /**
- * Unified button handler.
- * - Sets loading state.
- * - Calls apiCall() which should perform the "start job" request.
- * - Supports:
- *    a) Immediate response: return final payload with status.
- *    b) Deferred response: return { jobId, statusUrl } to poll.
- * - Returns { ok, payload } to the caller for side-effects.
+ * Handles API-triggering buttons with loading/success/error states.
+ * Supports immediate and deferred (job) flows.
  */
 async function handleApiButton(btn, apiCall) {
-  try {
-    setButtonState(btn, 'loading');
+  setButtonState(btn, 'loading');
 
+  try {
+    // Kick the job
     const first = await apiCall();
 
-    // Deferred job: poll statusUrl
-    if (first?.jobId && first?.statusUrl) {
-      const result = await pollStatusUntilDone({ statusUrl: first.statusUrl, jobId: first.jobId });
+    // 1) Deferred mode: shape { jobId, statusUrl }
+    if (first && first.jobId && first.statusUrl) {
+      console.debug('[JOB] Waiting for completion', { jobId: first.jobId, statusUrl: first.statusUrl });
+
+      const result = await pollStatusUntilDone({
+        statusUrl: first.statusUrl,
+        jobId: first.jobId,
+        intervalMs: JOB.intervalMs,
+        timeoutMs: JOB.timeoutMs
+      });
+
       setButtonState(btn, result.ok ? 'success' : 'error');
-      setTimeout(() => setButtonState(btn, ''), 2000);
+      setTimeout(() => setButtonState(btn, ''), 1200);
       return { ok: result.ok, payload: result.payload };
     }
 
-    // Immediate mode
+    // 2) Immediate mode: treat undefined status as success (closures pre-screen errors)
     const status = normalizeStatus(first);
-    const ok = status === 'OK' || status === 'SUCCESS' || status === 200 || status === true;
+    const ok = status === undefined ? true : (status === 'OK' || status === 'SUCCESS');
 
     setButtonState(btn, ok ? 'success' : 'error');
-    setTimeout(() => setButtonState(btn, ''), 2000);
+    setTimeout(() => setButtonState(btn, ''), 1200);
     return { ok, payload: first };
+
   } catch (err) {
     console.error(err);
     setButtonState(btn, 'error');
-    setTimeout(() => setButtonState(btn, ''), 2000);
+    setTimeout(() => setButtonState(btn, ''), 1200);
     return { ok: false, payload: { status: 'ERROR', message: 'Unhandled error' } };
   }
 }
