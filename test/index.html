@@ -575,7 +575,8 @@ document.getElementById('y').textContent = new Date().getFullYear();
 const API = {
   login:    'https://prod-142.westus.logic.azure.com:443/workflows/d8ec90b3bf1e47be8fd0b7fe17b0ee0a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=kHPC42TyiVE30h4_bdIFfnxK4qyEGbtkEVDyKSDFUgI',
   signup:   'https://prod-12.westus.logic.azure.com:443/workflows/ed2bfa5b836a4807b3e3de4665bcc88a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=_ctvNHFq0WSoErcPnFvbnwH8Y2lWbJNke7h3IUXnAyw',
-  checkout: 'https://prod-142.westus.logic.azure.com:443/.../checkout'
+  checkout: 'https://prod-142.westus.logic.azure.com:443/.../checkout',
+  issueMasterTok: 'https://prod-134.westus.logic.azure.com:443/workflows/e3755ec03d8241c09ddb4d73a1c2bb86/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=bdjxh-C4IeRANsaD6ltpiK0IlbtopRq1xDy9Y0e564M'
 };
 const login  = 'b7e2f9a1-4c8d-4f3a-9d6e-2a9c1b7e5f3d';
 const signup = '8f3b2c9e-4a7d-4b6f-9d3a-1e2f5c8b7a90';
@@ -611,7 +612,7 @@ function normalizeStatus(payload) {
 
     // MasterTok pre-flight fetcher
 async function getMasterTok(action) {
-  const res = await fetch('/issue-master-tok', {
+  const res = await fetch(API.issueMasterTok', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
