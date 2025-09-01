@@ -612,18 +612,22 @@ function normalizeStatus(payload) {
 
     // MasterTok pre-flight fetcher
 async function getMasterTok(action) {
+  let sid = sessionStorage.getItem('sid');
+  if (!sid) {
+    sid = crypto.randomUUID();
+    sessionStorage.setItem('sid', sid); // persist for the session
+  }
+
   const res = await fetch(API.issueMasterTok, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      act: action,
-      sid: sessionStorage.getItem('sid') || crypto.randomUUID()
-    })
+    body: JSON.stringify({ act: action, sid })
   });
   if (!res.ok) throw new Error('Failed to get MasterTok');
   const { masterTok } = await res.json();
   return masterTok;
 }
+
     
 /* ===========================
    API Button state + job handling
@@ -1120,7 +1124,8 @@ loginForm.addEventListener('submit', async e => {
       headers: {
         'Content-Type': 'application/json',
         'x-auth-token': login,
-        'X-MasterTok': masterTok,  
+        'X-MasterTok': masterTok,
+        'X-SID': session.Storage.getItem('sid'),
         'x-job-id': jobId
       },
       body: JSON.stringify({ email, password, jobId })
@@ -1206,7 +1211,7 @@ signupForm.addEventListener('submit', async e => {
 
     const res = await fetch(API.signup, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-auth-token': signup, 'X-MasterTok': masterTok, 'x-job-id': jobId },
+      headers: { 'Content-Type': 'application/json', 'x-auth-token': signup, 'X-MasterTok': masterTok, 'X-SID': sessionStorage.getItem('sid'), 'x-job-id': jobId },
       body: JSON.stringify({
         firstName: fn,
         lastName: ln,
@@ -1288,6 +1293,7 @@ checkoutBtn.addEventListener('click', async () => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
         'X-MasterTok': masterTok,
+        'X-SID': session.Storage.getItem('sid'),
         'x-job-id': jobId
       },
       body: JSON.stringify(payload)
