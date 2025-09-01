@@ -609,6 +609,21 @@ function normalizeStatus(payload) {
   return typeof v === 'string' ? v.toUpperCase() : v;
 }
 
+    // MasterTok pre-flight fetcher
+async function getMasterTok(action) {
+  const res = await fetch('/issue-master-tok', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      act: action,
+      sid: sessionStorage.getItem('sid') || crypto.randomUUID()
+    })
+  });
+  if (!res.ok) throw new Error('Failed to get MasterTok');
+  const { masterTok } = await res.json();
+  return masterTok;
+}
+    
 /* ===========================
    API Button state + job handling
    =========================== */
@@ -1095,7 +1110,8 @@ loginForm.addEventListener('submit', async e => {
       showMessage('Please enter both email and password.', 'error');
       return { status: 'ERROR', message: 'Missing credentials' };
     }
-
+      
+    const masterTok = await getMasterTok('login');
     const jobId = createJobId();
 
     const resp = await fetch(API.login, {
@@ -1103,6 +1119,7 @@ loginForm.addEventListener('submit', async e => {
       headers: {
         'Content-Type': 'application/json',
         'x-auth-token': login,
+        'X-MasterTok': masterTok,  
         'x-job-id': jobId
       },
       body: JSON.stringify({ email, password, jobId })
@@ -1183,11 +1200,12 @@ signupForm.addEventListener('submit', async e => {
       return { status: 'ERROR', message: 'Invalid phone' };
     }
 
+    const masterTok = await getMasterTok('signup');
     const jobId = createJobId();
 
     const res = await fetch(API.signup, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-auth-token': signup, 'x-job-id': jobId },
+      headers: { 'Content-Type': 'application/json', 'x-auth-token': signup, 'X-MasterTok': masterTok, 'x-job-id': jobId },
       body: JSON.stringify({
         firstName: fn,
         lastName: ln,
@@ -1227,8 +1245,7 @@ signupForm.addEventListener('submit', async e => {
     showMessage(data?.message || 'Account created! Please sign in.', 'success');
     const email = data.body?.email ?? data.email ?? document.getElementById('signup-email').value.trim();
     const password = data.body?.password ?? data.password ?? document.getElementById('signup-password').value;
-    document.getElementById('login-username').value = email;
-    document.getElementById('login-password').value = password;      
+    document.getElementById('login-username').value = email;      
     signupForm.reset();
     showLoginBtn.click();
         // Shimmer flash on Sign In button
@@ -1256,6 +1273,7 @@ checkoutBtn.addEventListener('click', async () => {
       return { status: 'ERROR', message: 'Not signed in' };
     }
 
+    const masterTok = await getMasterTok('checkout');
     const jobId = createJobId();
     const payload = {
       user: { email: currentUser.email, name: currentUser.name, rewards: currentUser.rewards },
@@ -1268,6 +1286,7 @@ checkoutBtn.addEventListener('click', async () => {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
+        'X-MasterTok': masterTok,
         'x-job-id': jobId
       },
       body: JSON.stringify(payload)
