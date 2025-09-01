@@ -612,7 +612,7 @@ function normalizeStatus(payload) {
 
     // MasterTok pre-flight fetcher
 async function getMasterTok(action) {
-  const res = await fetch(API.issueMasterTok', {
+  const res = await fetch(API.issueMasterTok, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
