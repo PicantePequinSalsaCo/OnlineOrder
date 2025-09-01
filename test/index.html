@@ -1125,7 +1125,7 @@ loginForm.addEventListener('submit', async e => {
         'Content-Type': 'application/json',
         'x-auth-token': login,
         'X-MasterTok': masterTok,
-        'X-SID': session.Storage.getItem('sid'),
+        'X-SID': sessionStorage.getItem('sid'),
         'x-job-id': jobId
       },
       body: JSON.stringify({ email, password, jobId })
@@ -1293,7 +1293,7 @@ checkoutBtn.addEventListener('click', async () => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
         'X-MasterTok': masterTok,
-        'X-SID': session.Storage.getItem('sid'),
+        'X-SID': sessionStorage.getItem('sid'),
         'x-job-id': jobId
       },
       body: JSON.stringify(payload)
