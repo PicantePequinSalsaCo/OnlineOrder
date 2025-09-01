@@ -303,6 +303,34 @@
       filter: brightness(0.95);
     }
 
+    /* Shimmer effect */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  animation: shimmer-move 2.0s ease-out forwards;
+}
+
+@keyframes shimmer-move {
+  100% {
+    left: 150%;
+  }
+}
+
     footer {
       text-align:center; color:var(--muted);
       font-size:.9rem; margin:20px 0;
@@ -1203,6 +1231,10 @@ signupForm.addEventListener('submit', async e => {
     document.getElementById('login-password').value = password;      
     signupForm.reset();
     showLoginBtn.click();
+        // Shimmer flash on Sign In button
+   const signInBtn = document.getElementById('login-submit'); // adjust selector if needed
+   signInBtn.classList.add('shimmer');
+   setTimeout(() => signInBtn.classList.remove('shimmer'), 800);
   }
 });
 
