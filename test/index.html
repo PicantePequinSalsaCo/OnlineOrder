@@ -322,7 +322,7 @@
     rgba(255, 255, 255, 0.6),
     transparent
   );
-  animation: shimmer-move 2.0s ease-out forwards;
+  animation: shimmer-move 0.8s ease-out forwards;
 }
 
 @keyframes shimmer-move {
@@ -1327,15 +1327,14 @@ checkoutBtn.addEventListener('click', async () => {
 })();
 
 /* ===========================
-   Confirm-on-exit sign-out
+   Confirm-on-exit (always prompt)
    =========================== */
 // Show native prompt; if user proceeds, pagehide will trigger and we sign out.
 window.addEventListener('beforeunload', (e) => {
-  if (isLoggedIn) {
-    e.preventDefault();
-    e.returnValue = 'You are currently signed in. If you leave, you will be signed out.';
-  }
+  e.preventDefault();
+  e.returnValue = ''; // Required for native prompt; text is ignored in modern browsers
 });
+
 // Fires only when actually leaving (refresh/back/close). Safe for cleanup.
 window.addEventListener('pagehide', () => {
   if (isLoggedIn) {
@@ -1352,7 +1351,10 @@ window.addEventListener('beforeunload', () => {
 
 document.addEventListener('DOMContentLoaded', () => {
   const saved = sessionStorage.getItem('cart');
-  if (saved) { cart = JSON.parse(saved); renderCart(); }
+  if (saved) { 
+    cart = JSON.parse(saved); 
+    renderCart(); 
+  }
   renderProducts();
 });
 </script>
