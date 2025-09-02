@@ -516,6 +516,10 @@
             <span>Don't have an account?</span>
             <button id="show-signup" type="button">Create Account</button>
           </div>
+          <div class="auth-switch">
+            <span>Forgot Your Password?</span>
+            <button id="show-reset" type="button">Click Here to Reset</button>
+        </div>
         </form>
 
 <!-- Create Account Form -->
@@ -559,6 +563,49 @@
     <button id="show-login" type="button">Sign In</button>
   </div>
 </form>
+<!-- Reset Password Form -->
+<form
+  id="reset-form"
+  class="login-form hidden"
+  autocomplete="on"
+  novalidate
+>
+  <input type="email" id="reset-email" name="email"
+         placeholder="Email address" required autocomplete="username" />
+
+  <!-- Phone masked like a password, 10 digits max -->
+  <input type="password" id="reset-phone" name="phone"
+         placeholder="Phone (10 digits)" required
+         pattern="^\d{10}$" maxlength="10" inputmode="numeric"
+         oninput="this.value = this.value.replace(/\D/g, '')" />
+
+  <input type="password" id="reset-password" name="password"
+         placeholder="New Password" required autocomplete="new-password" />
+
+  <div id="reset-password-strength-wrapper" style="margin-bottom: 8px;">
+    <div id="reset-password-strength-bar"
+         style="height: 4px; width: 0%; background: red; border-radius: 4px; transition: width 0.3s, background 0.3s;"></div>
+    <small id="reset-password-strength-text"
+           style="display:block; margin-top:4px; font-size:0.8rem; color: var(--muted);">
+      Strength: —
+    </small>
+  </div>
+
+  <input type="password" id="reset-password-confirm" name="passwordConfirm"
+         placeholder="Confirm New Password" required autocomplete="new-password" />
+  <small id="reset-password-match-msg" style="color: var(--accent-red); display: none;">
+    Passwords do not match
+  </small>
+
+  <button type="submit" id="reset-submit" class="api-btn" data-loading-text="Resetting Password" disabled>
+    Reset Password
+  </button>
+
+  <div class="auth-switch">
+    <span>Remembered your password?</span>
+    <button id="show-login-from-reset" type="button">Sign In</button>
+  </div>
+</form>
       </div>
     </div>
   </aside>
@@ -584,10 +631,12 @@ const API = {
   login:    'https://prod-142.westus.logic.azure.com:443/workflows/d8ec90b3bf1e47be8fd0b7fe17b0ee0a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=kHPC42TyiVE30h4_bdIFfnxK4qyEGbtkEVDyKSDFUgI',
   signup:   'https://prod-12.westus.logic.azure.com:443/workflows/ed2bfa5b836a4807b3e3de4665bcc88a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=_ctvNHFq0WSoErcPnFvbnwH8Y2lWbJNke7h3IUXnAyw',
   checkout: 'https://prod-142.westus.logic.azure.com:443/.../checkout',
+  reset:   'https://prod-XXX.westus.logic.azure.com:443/.../reset-password',
   issueMasterTok: 'https://prod-134.westus.logic.azure.com:443/workflows/e3755ec03d8241c09ddb4d73a1c2bb86/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=bdjxh-C4IeRANsaD6ltpiK0IlbtopRq1xDy9Y0e564M'
 };
 const login  = 'b7e2f9a1-4c8d-4f3a-9d6e-2a9c1b7e5f3d';
 const signup = '8f3b2c9e-4a7d-4b6f-9d3a-1e2f5c8b7a90';
+const reset = 'b8f6a2d4-3c1e-4f9a-9e7a-1f4b6d2c8f0a';
 
 // Polling window (≥ 2 minutes)
 const JOB = {
@@ -802,6 +851,10 @@ const authTitle       = document.getElementById('auth-title');
 const usernameDisplay = document.getElementById('username-display');
 const rewardsDisplay  = document.getElementById('rewards-display');
 
+const resetForm     = document.getElementById('reset-form');
+const showResetBtn  = document.getElementById('show-reset');
+const showLoginFromResetBtn = document.getElementById('show-login-from-reset');
+
 /* ===========================
    Live validators
    =========================== */
@@ -886,11 +939,11 @@ function checkSignupValidity() {
     const val = pwInput.value;
     let score = 0;
 
-    if (val.length >= 4) score++;
+    if (val.length >= 8) score++;
     if (/[A-Z]/.test(val)) score++;
     if (/[0-9]/.test(val)) score++;
     if (/[^A-Za-z0-9]/.test(val)) score++;
-    if (val.length >= 8) score++;
+    if (val.length >= 12) score++;
 
     const widths = ['0%', '20%', '40%', '60%', '80%', '100%'];
     const colors = ['red', 'orangered', 'orange', 'gold', 'yellowgreen', 'green'];
@@ -957,6 +1010,114 @@ function checkSignupValidity() {
   // Initial
   checkSignupValidity();
 })();
+
+// ===========================
+// Reset validators + strength
+// ===========================
+function checkResetValidity() {
+  const btn = document.getElementById('reset-submit');
+  const em  = document.getElementById('reset-email').value.trim();
+  const ph  = document.getElementById('reset-phone').value.trim();
+  const pw1 = document.getElementById('reset-password').value;
+  const pw2 = document.getElementById('reset-password-confirm').value;
+
+  const passwordsMatch = pw1 && pw1 === pw2;
+
+  const strengthText = document.getElementById('reset-password-strength-text');
+  const strength = (strengthText?.textContent || '');
+  const strongEnough = strength.includes('Strong') || strength.includes('Excellent');
+
+  const phoneValid = /^\d{10}$/.test(ph);
+  const emailPresent = em.length > 3 && em.includes('@');
+
+  btn.disabled = !(emailPresent && phoneValid && passwordsMatch && strongEnough);
+}
+
+(function resetPasswordStrengthMeter() {
+  const pwInput = document.getElementById('reset-password');
+  const bar = document.getElementById('reset-password-strength-bar');
+  const text = document.getElementById('reset-password-strength-text');
+
+  pwInput.addEventListener('input', () => {
+    const val = pwInput.value;
+    let score = 0;
+
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    if (val.length >= 12) score++;
+
+    const widths = ['0%', '20%', '40%', '60%', '80%', '100%'];
+    const colors = ['red', 'orangered', 'orange', 'gold', 'yellowgreen', 'green'];
+    const labels = ['Too short', 'Weak', 'Fair', 'Good', 'Strong', 'Excellent'];
+
+    bar.style.width = widths[score];
+    bar.style.background = colors[score];
+    text.textContent = `Strength: ${labels[score]}`;
+
+    checkResetValidity();
+  });
+})();
+
+(function resetLivePasswordMatch() {
+  const pw1 = document.getElementById('reset-password');
+  const pw2 = document.getElementById('reset-password-confirm');
+  const msg = document.getElementById('reset-password-match-msg');
+
+  function checkMatch() {
+    if (!pw1.value && !pw2.value) {
+      msg.style.display = 'none';
+      pw1.style.borderColor = '';
+      pw2.style.borderColor = '';
+      checkResetValidity();
+      return;
+    }
+    if (pw1.value === pw2.value) {
+      msg.style.display = 'none';
+      pw1.style.borderColor = 'var(--accent-green)';
+      pw2.style.borderColor = 'var(--accent-green)';
+    } else {
+      msg.style.display = 'block';
+      pw1.style.borderColor = 'var(--accent-red)';
+      pw2.style.borderColor = 'var(--accent-red)';
+    }
+    checkResetValidity();
+  }
+
+  pw1.addEventListener('input', checkMatch);
+  pw2.addEventListener('input', checkMatch);
+})();
+
+// Ensure all reset inputs re-check validity
+(function enableResetButtonWhenValid() {
+  ['reset-email', 'reset-phone', 'reset-password', 'reset-password-confirm']
+    .map(id => document.getElementById(id))
+    .forEach(el => el && el.addEventListener('input', checkResetValidity));
+
+  checkResetValidity();
+})();
+
+    // Clear strength meters when forms are reset
+resetForm.addEventListener('reset', () => {
+  const bar = document.getElementById('reset-password-strength-bar');
+  const text = document.getElementById('reset-password-strength-text');
+  if (bar && text) {
+    bar.style.width = '0%';
+    bar.style.background = 'red';
+    text.textContent = 'Strength: —';
+  }
+});
+
+signupForm.addEventListener('reset', () => {
+  const bar = document.getElementById('password-strength-bar');
+  const text = document.getElementById('password-strength-text');
+  if (bar && text) {
+    bar.style.width = '0%';
+    bar.style.background = 'red';
+    text.textContent = 'Strength: —';
+  }
+});
 
 /* ===========================
    Message helper
@@ -1106,6 +1267,22 @@ showLoginBtn.addEventListener('click', () => {
   authTitle.textContent = 'Sign In';
 });
 
+showResetBtn.addEventListener('click', () => {
+  loginForm.classList.add('hidden');
+  signupForm.classList.add('hidden');
+  resetForm.classList.remove('hidden');
+  authTitle.textContent = 'Reset Password';
+  document.getElementById('reset-email').focus();
+});
+
+showLoginFromResetBtn.addEventListener('click', () => {
+  resetForm.classList.add('hidden');
+  signupForm.classList.add('hidden');
+  loginForm.classList.remove('hidden');
+  authTitle.textContent = 'Sign In';
+  document.getElementById('login-username').focus();
+});
+
 /* ===========================
    Form + button handlers with job correlation
    =========================== */
@@ -1184,6 +1361,96 @@ loginForm.addEventListener('submit', async e => {
   }
 });
 
+// Reset Password
+resetForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = resetForm.querySelector('button[type="submit"]');
+
+  const result = await handleApiButton(btn, async () => {
+    const email    = document.getElementById('reset-email').value.trim();
+    const phone    = document.getElementById('reset-phone').value.trim();
+    const password = document.getElementById('reset-password').value;
+
+    if (!email || !/^\d{10}$/.test(phone) || !password) {
+      showMessage('Please complete all fields correctly.', 'error');
+      return { status: 'ERROR', message: 'Invalid input' };
+    }
+
+    const masterTok = await getMasterTok('reset');
+    const jobId = createJobId();
+
+    const resp = await fetch(API.reset, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-auth-token': reset,
+        'X-MasterTok': masterTok,
+        'X-SID': sessionStorage.getItem('sid'),
+        'x-job-id': jobId
+      },
+      body: JSON.stringify({ email, phone, newPassword: password, jobId })
+    });
+
+    const data = await safeJson(resp);
+
+    // Deferred job support
+    if (data?.jobId && data?.statusUrl) {
+      return { jobId: data.jobId, statusUrl: data.statusUrl };
+    }
+
+    const explicit = normalizeStatus(data);
+    const okByPayload = typeof explicit === 'string'
+      ? explicit === 'OK' || explicit === 'SUCCESS'
+      : resp.ok;
+
+    if (!okByPayload) {
+      const msg = data?.message || 'Password reset failed';
+      showMessage(msg, 'error');
+      return { status: 'ERROR', message: msg };
+    }
+
+    return data;
+  });
+
+if (result.ok) {
+  const data = result.payload || {};
+  const email =
+    (data.body && data.body.email) ??
+    data.email ??
+    document.getElementById('reset-email').value.trim();
+
+  showMessage(data?.message || 'Password reset successful. Please sign in.', 'success');
+
+  // Prefill login email like signup does
+  document.getElementById('login-username').value = email;
+
+  // Clear the reset form for next time
+  resetForm.reset();
+
+ // Clear reset password strength meter UI
+  const resetBar = document.getElementById('reset-password-strength-bar');
+  const resetText = document.getElementById('reset-password-strength-text');
+  if (resetBar && resetText) {
+    resetBar.style.width = '0%';
+    resetBar.style.background = 'red';
+    resetText.textContent = 'Strength: —';
+  }
+
+  // Flip back to login using the same path as signup
+  showLoginFromResetBtn.click();
+
+  // Shimmer flash on Sign In button (same feel as signup)
+  setTimeout(() => {
+    const signInBtn = loginForm.querySelector('button[type="submit"]');
+    if (signInBtn) {
+      signInBtn.classList.remove('shimmer');
+      void signInBtn.offsetWidth; // restart animation
+      signInBtn.classList.add('shimmer');
+      setTimeout(() => signInBtn.classList.remove('shimmer'), 800);
+    }
+  }, 50);
+}})
+
 // Create Account
 signupForm.addEventListener('submit', async e => {
   e.preventDefault();
@@ -1261,6 +1528,14 @@ signupForm.addEventListener('submit', async e => {
     const password = data.body?.password ?? data.password ?? document.getElementById('signup-password').value;
     document.getElementById('login-username').value = email;      
     signupForm.reset();
+     // Clear signup password strength meter UI
+    const signupBar = document.getElementById('password-strength-bar');
+    const signupText = document.getElementById('password-strength-text');
+    if (signupBar && signupText) {
+      signupBar.style.width = '0%';
+      signupBar.style.background = 'red';
+      signupText.textContent = 'Strength: —';
+    }
     showLoginBtn.click();
         // Shimmer flash on Sign In button
 // Wait until login form is visible, then shimmer
