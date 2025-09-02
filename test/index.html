@@ -1377,6 +1377,10 @@ resetForm.addEventListener('submit', async e => {
     }
 
     const masterTok = await getMasterTok('reset');
+    if (!masterTok) {
+      return { status: 'ERROR', message: 'Failed to get MasterTok' };
+    }
+
     const jobId = createJobId();
 
     const resp = await fetch(API.reset, {
@@ -1392,6 +1396,7 @@ resetForm.addEventListener('submit', async e => {
     });
 
     const data = await safeJson(resp);
+    return normalizeStatus(data);
 
     // Deferred job support
     if (data?.jobId && data?.statusUrl) {
