@@ -1377,10 +1377,6 @@ resetForm.addEventListener('submit', async e => {
     }
 
     const masterTok = await getMasterTok('reset');
-    if (!masterTok) {
-      return { status: 'ERROR', message: 'Failed to get MasterTok' };
-    }
-
     const jobId = createJobId();
 
     const resp = await fetch(API.reset, {
