@@ -628,15 +628,8 @@ document.getElementById('y').textContent = new Date().getFullYear();
 
 // Your automation endpoints (unchanged)
 const API = {
-  login:    'https://prod-142.westus.logic.azure.com:443/workflows/d8ec90b3bf1e47be8fd0b7fe17b0ee0a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=kHPC42TyiVE30h4_bdIFfnxK4qyEGbtkEVDyKSDFUgI',
-  signup:   'https://prod-12.westus.logic.azure.com:443/workflows/ed2bfa5b836a4807b3e3de4665bcc88a/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=_ctvNHFq0WSoErcPnFvbnwH8Y2lWbJNke7h3IUXnAyw',
-  checkout: 'https://prod-142.westus.logic.azure.com:443/.../checkout',
-  reset:   'https://prod-167.westus.logic.azure.com:443/workflows/7cd66f21caf34ec48e551c343164ec1b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=TB6gxPzpAkIrwTL7OVZW_n9fRTEFZxAKh1bA73AALg8',
-  issueMasterTok: 'https://prod-134.westus.logic.azure.com:443/workflows/e3755ec03d8241c09ddb4d73a1c2bb86/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=bdjxh-C4IeRANsaD6ltpiK0IlbtopRq1xDy9Y0e564M'
+   issueOmniTok: 'https://prod-134.westus.logic.azure.com:443/workflows/e3755ec03d8241c09ddb4d73a1c2bb86/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=bdjxh-C4IeRANsaD6ltpiK0IlbtopRq1xDy9Y0e564M'
 };
-const login  = 'b7e2f9a1-4c8d-4f3a-9d6e-2a9c1b7e5f3d';
-const signup = '8f3b2c9e-4a7d-4b6f-9d3a-1e2f5c8b7a90';
-const reset = 'b8f6a2d4-3c1e-4f9a-9e7a-1f4b6d2c8f0a';
 
 // Polling window (≥ 2 minutes)
 const JOB = {
@@ -667,24 +660,27 @@ function normalizeStatus(payload) {
   return typeof v === 'string' ? v.toUpperCase() : v;
 }
 
-    // MasterTok pre-flight fetcher
-async function getMasterTok(action) {
+    // OmniTok pre-flight fetcher //
+async function getOmniTok(act) {
   let sid = sessionStorage.getItem('sid');
   if (!sid) {
     sid = crypto.randomUUID();
     sessionStorage.setItem('sid', sid); // persist for the session
   }
 
-  const res = await fetch(API.issueMasterTok, {
+  const res = await fetch(API.issueOmniTok, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ act: action, sid })
+    body: JSON.stringify({ act, sid })
   });
-  if (!res.ok) throw new Error('Failed to get MasterTok');
-  const { masterTok } = await res.json();
-  return masterTok;
-}
 
+  if (!res.ok) throw new Error(`Failed to get OmniTok config for ${act}`);
+
+  // Expecting backend to return all runtime values
+  const { endpoint, authToken, OmniTok } = await res.json();
+
+  return { endpoint, authToken, OmniTok, sid };
+}
     
 /* ===========================
    API Button state + job handling
@@ -1301,18 +1297,18 @@ loginForm.addEventListener('submit', async e => {
       return { status: 'ERROR', message: 'Missing credentials' };
     }
       
-    const masterTok = await getMasterTok('login');
-    const jobId = createJobId();
+const { endpoint, authToken, OmniTok, sid } = await getOmniTok('login');
+const jobId = createJobId();
 
-    const resp = await fetch(API.login, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-auth-token': login,
-        'X-MasterTok': masterTok,
-        'X-SID': sessionStorage.getItem('sid'),
-        'x-job-id': jobId
-      },
+const resp = await fetch(endpoint, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-auth-token': authToken,
+    'X-OmniTok': OmniTok,
+    'X-SID': sid,
+    'x-job-id': jobId
+  },
       body: JSON.stringify({ email, password, jobId })
     });
 
@@ -1376,18 +1372,18 @@ resetForm.addEventListener('submit', async e => {
       return { status: 'ERROR', message: 'Invalid input' };
     }
 
-    const masterTok = await getMasterTok('reset');
-    const jobId = createJobId();
+const { endpoint, authToken, OmniTok, sid } = await getOmniTok('reset');
+const jobId = createJobId();
 
-    const resp = await fetch(API.reset, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-auth-token': reset,
-        'X-MasterTok': masterTok,
-        'X-SID': sessionStorage.getItem('sid'),
-        'x-job-id': jobId
-      },
+const resp = await fetch(endpoint, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-auth-token': authToken,
+    'X-OmniTok': OmniTok,
+    'X-SID': sid,
+    'x-job-id': jobId
+  },
       body: JSON.stringify({ email, phone, newPassword: password, jobId })
     });
 
@@ -1481,12 +1477,18 @@ signupForm.addEventListener('submit', async e => {
       return { status: 'ERROR', message: 'Invalid phone' };
     }
 
-    const masterTok = await getMasterTok('signup');
-    const jobId = createJobId();
+const { endpoint, authToken, OmniTok, sid } = await getOmniTok('signup');
+const jobId = createJobId();
 
-    const res = await fetch(API.signup, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-auth-token': signup, 'X-MasterTok': masterTok, 'X-SID': sessionStorage.getItem('sid'), 'x-job-id': jobId },
+const res = await fetch(endpoint, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-auth-token': authToken,
+    'X-OmniTok': OmniTok,
+    'X-SID': sid,
+    'x-job-id': jobId
+  },
       body: JSON.stringify({
         firstName: fn,
         lastName: ln,
@@ -1562,23 +1564,23 @@ checkoutBtn.addEventListener('click', async () => {
       return { status: 'ERROR', message: 'Not signed in' };
     }
 
-    const masterTok = await getMasterTok('checkout');
-    const jobId = createJobId();
-    const payload = {
-      user: { email: currentUser.email, name: currentUser.name, rewards: currentUser.rewards },
-      items: cart.map(i => ({ id: i.id, qty: i.qty })),
-      jobId
-    };
+const { endpoint, authToken, OmniTok, sid } = await getOmniTok('checkout');
+const jobId = createJobId();
+const payload = {
+  user: { email: currentUser.email, name: currentUser.name, rewards: currentUser.rewards },
+  items: cart.map(i => ({ id: i.id, qty: i.qty })),
+  jobId
+};
 
-    const resp = await fetch(API.checkout, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`,
-        'X-MasterTok': masterTok,
-        'X-SID': sessionStorage.getItem('sid'),
-        'x-job-id': jobId
-      },
+const resp = await fetch(endpoint, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-auth-token': authToken,
+    'X-OmniTok': OmniTok,
+    'X-SID': sid,
+    'x-job-id': jobId
+  },
       body: JSON.stringify(payload)
     });
 
@@ -1608,6 +1610,7 @@ checkoutBtn.addEventListener('click', async () => {
     cart = [];
     renderCart();
     toggleCart();
+    sessionStorage.removeItem('sid');
   }
 });
 
@@ -1635,6 +1638,18 @@ checkoutBtn.addEventListener('click', async () => {
   });
 })();
 
+function signOut() {
+  isLoggedIn = false;
+  currentUser = { email: '', name: '', rewards: 0 };
+  sessionStorage.removeItem('authToken');
+  sessionStorage.removeItem('sid'); // force a new session identity next time
+  usernameDisplay.textContent = 'Guest';
+  rewardsDisplay.textContent = '0';
+  loginBtn.textContent = 'Login';
+  loginBtn.classList.remove('logout');
+  checkoutBtn.disabled = true;
+  checkoutBtn.textContent = 'Sign In to Checkout';
+}
 /* ===========================
    Confirm-on-exit (always prompt)
    =========================== */
