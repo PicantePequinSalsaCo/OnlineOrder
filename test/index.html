@@ -1219,20 +1219,6 @@ function toggleLogin(open = false) {
   loginOverlay.classList.toggle('open', open || !loginOverlay.classList.contains('open'));
 }
 
-/* ===========================
-   Sign out helper
-   =========================== */
-function signOut() {
-  isLoggedIn = false;
-  currentUser = { email: '', name: '', rewards: 0 };
-  sessionStorage.removeItem('authToken');
-  usernameDisplay.textContent = 'Guest';
-  rewardsDisplay.textContent = '0';
-  loginBtn.textContent = 'Login';
-  loginBtn.classList.remove('logout');
-  checkoutBtn.disabled = true;
-  checkoutBtn.textContent = 'Sign In to Checkout';
-}
 
 /* ===========================
    Event bindings
