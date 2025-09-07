@@ -492,6 +492,13 @@
   font-size: 1.2rem;
   color: #fff;
 }
+
+.api-btn.success.success-labeled::after {
+  content: "Payment Success!";
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
 .api-btn.error {
   background: var(--accent-red) !important;
 }
@@ -712,7 +719,7 @@
       <a href="/PrivacyPolicy">Privacy Policy</a>
     </div>
   </footer>
-<script src="https://js.stripe.com/v3/"></script>
+
 <script>
 /* ===========================
    Config
