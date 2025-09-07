@@ -837,10 +837,10 @@ async function handleApiButton(btn, apiCall) {
    Catalog
    =========================== */
 const productsEcom = [
-  { id: 'house-pequin', name: 'House Pequin Salsa',       price: 12, image: 'https://picantepequinsalsaco.com/images/image1.jpg' },
-  { id: 'spicy-green', name: 'Spicy Green Chile Pequin',  price: 12, image: 'https://picantepequinsalsaco.com/images/image2.jpg' },
-  { id: 'red-hot',     name: 'Red Hot Pepper Pequin',     price: 12, image: 'https://picantepequinsalsaco.com/images/image3.jpg' },
-  { id: 'the-crew',    name: 'The Crew',                  price: 36, image: 'https://picantepequinsalsaco.com/images/image4.jpg' }
+  { id: 'house-pequin', sku: 'PPSC-001', name: 'House Pequin Salsa',       price: 12, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image1.jpg', tiktok_sync: true },
+  { id: 'spicy-green', sku: 'PPSC-002', name: 'Spicy Green Chile Pequin',  price: 12, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image2.jpg', tiktok_sync: true },
+  { id: 'red-hot', sku: 'PPSC-003', name: 'Red Hot Pepper Pequin',         price: 12, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image3.jpg', tiktok_sync: true }, 
+  { id: 'the-crew', sku: 'PPSC-004', name: 'The Crew',                     price: 36, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image4.jpg', tiktok_sync: true }
 ];
 
 /* ===========================
@@ -1579,7 +1579,7 @@ const { endpoint, authToken, OmniTok, sid } = await getOmniTok('checkout');
 const jobId = createJobId();
 const payload = {
   user: { email: currentUser.email, name: currentUser.name, rewards: currentUser.rewards },
-  items: cart.map(i => ({ id: i.id, qty: i.qty })),
+  items: cart.map(i => ({ id: i.id, sku=i.sku, name: i.name, price: i.price, currency: i.currency, qty: i.qty })),
   jobId
 };
 
