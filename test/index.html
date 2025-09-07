@@ -1580,6 +1580,7 @@ const jobId = createJobId();
 const payload = {
   user: { email: currentUser.email, name: currentUser.name, rewards: currentUser.rewards },
   items: cart.map(i => ({ id: i.id, sku: i.sku, name: i.name, price: i.price, currency: i.currency, qty: i.qty })),
+  total,
   jobId
 };
 
