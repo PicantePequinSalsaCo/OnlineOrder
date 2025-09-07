@@ -270,36 +270,6 @@
       background:none; border:none;
       color:var(--ink); font-size:1.5rem; cursor:pointer;
     }
-
-    #payment-container {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.8);
-  display: none; align-items: center; justify-content: flex-end;
-  z-index: 100;
-  padding-top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-#payment-container.open { display: flex; }
-
-#payment-container .cart-panel {
-  width: var(--login-width); /* or cart-width if you want wider */
-  max-width: var(--cart-max-width);
-  height: calc(100% - calc(var(--header-h) + env(safe-area-inset-top, 0px)));
-  background: var(--cart-opq);
-  border: solid 1px var(--accent-orange);
-  border-radius: var(--radius-lg);
-  transform: translateX(100%);
-  transition: transform .3s ease;
-  display: flex; flex-direction: column;
-  overscroll-behavior: contain;
-}
-#payment-container.open .cart-panel {
-  transform: translateX(0);
-}
-
-#payment-summary {
-  margin-bottom: 1rem;
-}
     
     .hidden { display: none; }
     .auth-switch {
@@ -455,36 +425,22 @@
   cursor: not-allowed;
   filter: saturate(0.7);
 }
-
-/* Loading state with shimmer overlay */
+    
 .api-btn.loading {
-  position: relative;
-  color: inherit !important; /* keep text visible under shimmer */
-}
-
-.api-btn.loading::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  color: transparent !important;
   background: linear-gradient(
     110deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.4) 40%,
-    transparent 80%
+    rgba(255,255,255,0.1) 8%,
+    rgba(255,255,255,0.3) 18%,
+    rgba(255,255,255,0.1) 33%
   );
   background-size: 200% 100%;
   animation: shimmer 1.2s linear infinite;
-  pointer-events: none;
 }
-
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
-
 .api-btn.loading::after {
   content: attr(data-loading-text);
   position: absolute;
@@ -493,14 +449,10 @@
   transform: translate(-50%, -50%);
   color: #fff;
   font-weight: bold;
-  z-index: 1; /* ensure text is above shimmer overlay */
 }
-
-/* Success state */
 .api-btn.success {
   background: var(--accent-green) !important;
 }
-
 .api-btn.success::after {
   content: "✔";
   position: absolute;
@@ -510,18 +462,9 @@
   font-size: 1.2rem;
   color: #fff;
 }
-
-.api-btn.success.success-labeled::after {
-  content: "Payment Success!";
-  font-weight: 700;
-  letter-spacing: 0.2px;
-}
-
-/* Error state */
 .api-btn.error {
   background: var(--accent-red) !important;
 }
-
 .api-btn.error::after {
   content: "✖";
   position: absolute;
@@ -575,20 +518,6 @@
           <span>Total:</span>
           <strong>$<span id="cart-total-value">0.00</span></strong>
         </div>
-           <div id="cart-breakdown" style="padding: 0.5rem 1rem; border-top: 1px solid var(--card-border);">
-            <div style="display:flex; justify-content:space-between; margin: 6px 0;">
-              <span>Subtotal</span>
-              <strong id="cart-subtotal">$0.00</strong>
-           </div>
-           <div style="display:flex; justify-content:space-between; margin: 6px 0;">
-              <span>Shipping</span>
-              <strong id="cart-shipping">$0.00</strong>
-          </div>
-           <div style="display:flex; justify-content:space-between; margin: 6px 0;">
-               <span>Tax</span>
-              <strong id="cart-tax">$0.00</strong>
-           </div>
-         </div>
         <button id="checkout-btn" class="api-btn" data-loading-text="Processing Order" disabled>Sign In to Checkout</button>
       </div>
     </div>
@@ -706,32 +635,6 @@
     </div>
   </aside>
 
-   <!-- INSERT PAYMENT CONTAINER HERE -->
-  <aside id="payment-container" role="dialog" aria-modal="true" aria-label="Checkout Payment" class="hidden">
-    <div class="cart-panel">
-      <div class="cart-header">
-        <button id="close-payment" aria-label="Close payment window">×</button>
-        <h2>Complete Your Payment</h2>
-      </div>
-      <div class="cart-content">
-        <form id="payment-form">
-        <div id="payment-summary" style="margin-bottom: 12px;"></div>
-          <!-- Stripe Elements mount point -->
-          <div id="payment-element"></div>
- 
-          <!-- Error display -->
-          <div id="payment-errors" role="alert"></div>
- 
-          <!-- Submit -->
-          <button id="submit-payment" type="submit" class="api-btn" data-loading-text="Processing Payment">
-            Pay Now
-          </button>
-        </form>
-      </div>
-    </div>
-  </aside>
-  <!-- END PAYMENT CONTAINER -->
-
   <footer>
     © <span id="y"></span> Picante Pequin Salsa Co.
     <div class="links">
@@ -739,7 +642,7 @@
       <a href="/PrivacyPolicy">Privacy Policy</a>
     </div>
   </footer>
-<script src="https://js.stripe.com/v3/"></script>
+
 <script>
 /* ===========================
    Config
@@ -947,15 +850,6 @@ let cart = [];
 let isLoggedIn = false;
 let currentUser = { email: '', name: '', rewards: 0 };
 
-// Stripe + checkout state
-let stripe = null;
-let elements = null;
-let paymentElement = null;
-
-let currentClientSecret = null;
-let currentOrder = null;         // server-calculated order + totals
-let paymentMounted = false;      // single-mount guard
-
 /* ===========================
    DOM refs
    =========================== */
@@ -981,14 +875,6 @@ const rewardsDisplay  = document.getElementById('rewards-display');
 const resetForm     = document.getElementById('reset-form');
 const showResetBtn  = document.getElementById('show-reset');
 const showLoginFromResetBtn = document.getElementById('show-login-from-reset');
-
-// Payment DOM
-const paymentOverlay   = document.getElementById('payment-container');
-const closePayment     = document.getElementById('close-payment');
-const paymentForm      = document.getElementById('payment-form');
-const submitPaymentBtn = document.getElementById('submit-payment');
-const paymentErrors    = document.getElementById('payment-errors');
-const paymentSummaryEl = document.getElementById('payment-summary');
 
 /* ===========================
    Live validators
@@ -1313,28 +1199,6 @@ function removeFromCart(id) {
   cart = cart.filter(i => i.id !== id);
   renderCart();
 }
-
-// --- Utility functions ---
-function showMessage(msg, type) { /* ... */ }
-function setButtonState(btn, state) { /* ... */ }
-// …any other existing helpers…
-
-function formatUSD(n) {
-  return '$' + n.toFixed(2);
-}
-
-// Very simple estimates — replace with backend values when available
-function estimateShipping(subtotal) {
-  // Example: flat $5 under $50; free at $50 or more
-  return subtotal > 0 && subtotal < 1 ? 0 : 0;
-}
-
-function estimateTax(subtotal, shipping) {
-  // Example: TX sales tax 8.25% on goods only (not shipping). Adjust as needed.
-  const rate = 0.0825;
-  return subtotal * rate;
-}
-
 function renderCart() {
   cartItemsEl.innerHTML = '';
   cart.forEach(item => {
@@ -1361,65 +1225,13 @@ function renderCart() {
     };
     cartItemsEl.appendChild(li);
   });
-  const subtotal = cart.reduce((sum, { id, qty }) => {
+  const total = cart.reduce((sum, { id, qty }) => {
     const prod = productsEcom.find(p => p.id === id);
     return sum + prod.price * qty;
   }, 0);
-
-  const shipping = estimateShipping(subtotal);
-  const tax = estimateTax(subtotal, shipping);
-  const total = subtotal + shipping + tax;
-
   document.getElementById('cart-total-value').textContent = total.toFixed(2);
-  const subEl = document.getElementById('cart-subtotal');
-  const shipEl = document.getElementById('cart-shipping');
-  const taxEl = document.getElementById('cart-tax');
-  if (subEl) subEl.textContent = formatUSD(subtotal);
-  if (shipEl) shipEl.textContent = formatUSD(shipping);
-  if (taxEl) taxEl.textContent = formatUSD(tax);
-
   checkoutBtn.disabled = !isLoggedIn || cart.length === 0;
   checkoutBtn.textContent = !isLoggedIn ? 'Sign In to Checkout' : 'Proceed to Checkout';
-}
-
-function renderPaymentSummary(o = {}) {
-  if (!paymentSummaryEl) return;
-
-  // Expect: cents or formatted strings. Prefer given strings, else format cents.
-  const fmt = (v) => (typeof v === 'string' ? v : ('$' + ((v || 0) / 100).toFixed(2)));
-
-  const lines = Array.isArray(o.lines) ? o.lines : [];
-  const shipping = o.shipping ?? o.ship ?? 0;
-  const tax = o.tax ?? o.taxes ?? 0;
-  const subtotal = o.subtotal ?? o.preTax ?? o.totalPretax ?? 0;
-  const total = o.total ?? 0;
-  const orderNo = o.orderNo || o.order || '';
-
-  const itemsHtml = lines.map(li => `
-    <li style="display:flex;justify-content:space-between;gap:10px;">
-      <span>${li.name ?? li.sku ?? 'Item'} × ${li.qty ?? li.quantity ?? 1}</span>
-      <strong>${fmt(li.subtotal ?? li.amount ?? 0)}</strong>
-    </li>
-  `).join('');
-
-  paymentSummaryEl.innerHTML = `
-    <div style="margin-bottom:8px; font-weight:700;">Order summary ${orderNo ? `• #${orderNo}` : ''}</div>
-    <ul style="list-style:none;margin:0;padding:0;display:grid;gap:6px;">
-      ${itemsHtml}
-      <li style="display:flex;justify-content:space-between;gap:10px;">
-        <span>Subtotal</span><strong>${fmt(subtotal)}</strong>
-      </li>
-      <li style="display:flex;justify-content:space-between;gap:10px;">
-        <span>Shipping</span><strong>${fmt(shipping)}</strong>
-      </li>
-      <li style="display:flex;justify-content:space-between;gap:10px;">
-        <span>Tax</span><strong>${fmt(tax)}</strong>
-      </li>
-      <li style="display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--card-border);padding-top:6px;">
-        <span>Total</span><strong>${fmt(total)}</strong>
-      </li>
-    </ul>
-  `;
 }
 
 /* ===========================
@@ -1432,11 +1244,6 @@ function toggleLogin(open = false) {
   loginOverlay.classList.toggle('open', open || !loginOverlay.classList.contains('open'));
 }
 
-function togglePayment(open = false) {
-  const willOpen = open || !paymentOverlay.classList.contains('open');
-  paymentOverlay.classList.toggle('open', willOpen);
-  paymentOverlay.classList.toggle('hidden', !willOpen);
-}
 
 /* ===========================
    Event bindings
@@ -1810,26 +1617,11 @@ const resp = await fetch(endpoint, {
 
   if (result.ok) {
     const data = result.payload || {};
-
-    // Expect a client secret and order totals from the backend flow
-    const cs =
-      data.cs || data.clientSecret || data.client_secret || (data.stripe && (data.stripe.cs || data.stripe.client_secret));
-
-    if (!cs) {
-      showMessage('Checkout unavailable. Please try again.', 'error');
-      return;
-    }
-
-    // Preserve order for summary; do NOT clear cart yet
-    currentOrder = data;
-    currentClientSecret = cs;
-
-    // Update UI: close cart, open payment, render summary, mount Elements
-    renderPaymentSummary(data);
-    toggleCart(false);
-    togglePayment(true);
-
-    await initStripe(cs);
+    showMessage(data?.message || 'Order submitted successfully!', 'success');
+    cart = [];
+    renderCart();
+    toggleCart();
+    sessionStorage.removeItem('sid');
   }
 });
 
@@ -1856,10 +1648,6 @@ const resp = await fetch(endpoint, {
     openNativeDropdown();
   });
 })();
-
-// Payment overlay close behavior
-closePayment.addEventListener('click', () => togglePayment());
-paymentOverlay.addEventListener('click', (e) => { if (e.target === paymentOverlay) togglePayment(); });
 
 function signOut() {
   isLoggedIn = false;
@@ -1904,89 +1692,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   renderProducts();
 });
-
-// Simple environment switch — refine as needed
-const STRIPE_PK = location.hostname === 'localhost'
-  ? 'pk_test_XXXXXXXXXXXXXXXXXXXXXXXX'  // your test key
-  : 'pk_live_XXXXXXXXXXXXXXXXXXXXXXXX'; // your live key
-
-async function initStripe(clientSecret) {
-  if (!stripe) stripe = Stripe(STRIPE_PK); // use your real key (test in dev)
-
-  const secretChanged = currentClientSecret && currentClientSecret !== clientSecret;
-
-  if (!elements || secretChanged) {
-    elements = stripe.elements({ clientSecret });
-    if (paymentElement) {
-      paymentElement.unmount();
-      paymentElement = null;
-      paymentMounted = false;
-    }
-  }
-  if (!paymentMounted) {
-    paymentElement = elements.create('payment');
-    paymentElement.mount('#payment-element');
-    paymentMounted = true;
-  }
-  currentClientSecret = clientSecret;
-}
-
-// Handle inline confirmation
-paymentForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  if (!stripe || !elements || !currentClientSecret) {
-    showMessage('Please restart checkout.', 'error');
-    return;
-  }
-
-  // Button state UX
-  setButtonState(submitPaymentBtn, 'loading');
-
-  const { error } = await stripe.confirmPayment({
-    elements,
-    // If you want to redirect on certain payment methods, add:
-    // confirmParams: { return_url: 'https://picantepequinsalsaco.com/receipt' },
-    redirect: 'if_required'
-  });
-
-  if (error) {
-    // Opaque error message; do not leak types/codes
-    paymentErrors.textContent = 'Unable to complete payment. Check details or try again.';
-    setButtonState(submitPaymentBtn, 'error');
-    setTimeout(() => setButtonState(submitPaymentBtn, ''), 1200);
-    return;
-  }
-
-  const w = submitPaymentBtn.getBoundingClientRect().width;
-  submitPaymentBtn.style.width = `${w}px`;
-
-  // Success: clean up local state and UI
-  setButtonState(submitPaymentBtn, 'success');
-  submitPaymentBtn.classList.add('shimmer', 'success-labeled');
-
-  setTimeout(() => {
-    submitPaymentBtn.classList.remove('shimmer', 'success-labeled');
-  setButtonState(submitPaymentBtn, '');
-    submitPaymentBtn.style.width = ''; // release width
-  }, 1500);
-
-
-
-  // Clear cart now that payment is confirmed client-side; your backend should also verify server-side
-  cart = [];
-  renderCart();
-
-  // Close payment overlay
-  togglePayment(false);
-
-  // Optional: rotate SID now that checkout is complete
-  sessionStorage.removeItem('sid');
-
-  // Navigate or show receipt UI (your choice)
-  showMessage('Payment successful!', 'success');
-});
-  // ...any other new functions or event listeners...
 </script>
 </body>
 </html>
-
