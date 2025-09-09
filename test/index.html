@@ -1795,6 +1795,7 @@ const resp = await fetch(endpoint, {
 })();
 
 function signOut() {
+  cart = [];
   isLoggedIn = false;
   currentUser = { email: '', name: '', rewards: 0 };
   sessionStorage.removeItem('authToken');
@@ -1805,7 +1806,6 @@ function signOut() {
   loginBtn.classList.remove('logout');
   checkoutBtn.disabled = true;
   checkoutBtn.textContent = 'Sign In to Checkout';
-  cart = [];
 }
 /* ===========================
    Confirm-on-exit (always prompt)
