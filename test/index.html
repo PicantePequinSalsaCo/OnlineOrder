@@ -514,6 +514,18 @@
       </div>
       <div class="cart-content">
         <ul id="cart-items"></ul>
+        <div id="order-info-row" class="cart-total" style="display:none;">
+        <span>Order #:</span>
+          <strong id="order-number"></strong>
+        </div>
+        <div id="shipping-row" class="cart-total" style="display:none;">
+         <span>Shipping:</span>
+          <strong>$<span id="shipping-cost">0.00</span></strong>
+        </div>
+        <div id="tax-row" class="cart-total" style="display:none;">
+        <span>Tax:</span>
+        <strong>$<span id="tax-amount">0.00</span></strong>
+        </div>
         <div class="cart-total">
           <span>Total:</span>
           <strong>$<span id="cart-total-value">0.00</span></strong>
@@ -1564,8 +1576,13 @@ setTimeout(() => {
 }})
 
 // Checkout
+let checkoutPhase = 1;
+let confirmStep = false;
+
 checkoutBtn.addEventListener('click', async () => {
-  const result = await handleApiButton(checkoutBtn, async () => {
+  // Phase 1: Proceed to Checkout
+  if (checkoutPhase === 1) {
+      const result = await handleApiButton(checkoutBtn, async () => {
     if (!cart.length) {
       showMessage('Your cart is empty.', 'error');
       return { status: 'ERROR', message: 'Empty cart' };
@@ -1621,15 +1638,65 @@ const resp = await fetch(endpoint, {
     return data;
   });
 
-  if (result.ok) {
+  if (result.ok && result.payload) {
     const data = result.payload || {};
+    const orderNumberEl = document.getElementById('order-number');
+    const shippingCostEl = document.getElementById('shipping-cost');
+    const taxAmountEl = document.getElementById('tax-amount');
+    const totalAmountEl = document.getElementById('total-amount');
+    const checkoutBtn = document.getElementById('checkout-btn');
+
+  if (orderNumberEl) {
+    orderNumberEl.textContent = data.orderNumber || '';
+    document.getElementById('order-info-row').style.display = 'flex';
+  }
+  if (shippingCostEl) {
+    shippingCostEl.textContent = (data.shippingCost / 100).toFixed(2);
+    document.getElementById('shipping-row').style.display = 'flex';
+  }
+  if (taxAmountEl) {
+    taxAmountEl.textContent = (data.taxAmount / 100).toFixed(2);
+    document.getElementById('tax-row').style.display = 'flex';
+  }
+  if (totalAmountEl) {
+    totalAmountEl.textContent = (data.totalAmount / 100).toFixed(2);
+  }
+  if (checkoutBtn) {
+    checkoutBtn.textContent = 'Pay for Order';
+  }
+// Store data for Phase 2
+      checkoutBtn.dataset.orderData = JSON.stringify(data);
+
+      // Switch button to Phase 2
+    checkoutBtn.textContent = 'Pay for Order';
+    checkoutPhase = 2;
+    confirmStep = false;
+    return;
+  }
+
+  // Phase 2: Pay for Order
+  if (checkoutPhase === 2 && !confirmStep) {
+    // First click in Phase 2 — ask for confirmation
+    checkoutBtn.textContent = 'Confirm & Pay';
+    confirmStep = true;
+    return;
+  }
+
+  // Phase 2: Confirm & Pay
+  if (checkoutPhase === 2 && confirmStep) {
+    const data = JSON.parse(checkoutBtn.dataset.orderData || '{}');
+
+    // Here’s where you’d run Stripe confirmPayment or redirect
+    // using data.clientSecret, data.paymentIntentId, etc.
+
+    // Only after successful payment:
     showMessage(data?.message || 'Order submitted successfully!', 'success');
     cart = [];
     renderCart();
     toggleCart();
     sessionStorage.removeItem('sid');
   }
-});
+}});
 
 /* ===========================
    State dropdown enhancement
