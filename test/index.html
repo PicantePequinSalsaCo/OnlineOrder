@@ -567,7 +567,11 @@
           <span>Total:</span>
           <strong>$<span id="cart-total-value">0.00</span></strong>
         </div>
-        <button id="checkout-btn" class="api-btn" data-loading-text="Processing Order" disabled>Sign In to Checkout</button>
+        <button id="checkout-btn" class="api-btn" data-loading-text="Processing Order" disabled>Sign In to Checkout</button>    
+        <section id="payment-section" style="display:none; margin-top:1rem;">
+        <div id="card-element"></div>
+        <div id="card-errors" role="alert"></div>
+        </section>
       </div>
     </div>
   </aside>
@@ -691,7 +695,8 @@
       <a href="/PrivacyPolicy">Privacy Policy</a>
     </div>
   </footer>
-
+<!-- Load Stripe.js from Stripe's CDN -->
+<script src="https://js.stripe.com/v3/"></script>
 <script>
 /* ===========================
    Config
@@ -924,6 +929,35 @@ const rewardsDisplay  = document.getElementById('rewards-display');
 const resetForm     = document.getElementById('reset-form');
 const showResetBtn  = document.getElementById('show-reset');
 const showLoginFromResetBtn = document.getElementById('show-login-from-reset');
+
+
+// Stripe Elements setup
+let stripe, elements, card, cardMounted = false;
+
+function mountStripeElements() {
+  if (!stripe) {
+    stripe = Stripe('pk_test_xxx'); // TODO: replace with your publishable key
+  }
+  if (!elements) {
+    elements = stripe.elements();
+  }
+  if (!cardMounted) {
+    card = elements.create('card', {
+      hidePostalCode: true,
+      style: {
+        base: {
+          color: '#fff',
+          fontFamily: 'system-ui, sans-serif',
+          fontSize: '16px',
+          '::placeholder': { color: '#9BA3AF' }
+        },
+        invalid: { color: '#ff6b6b' }
+      }
+    });
+    card.mount('#card-element');
+    cardMounted = true;
+  }
+}
 
 /* ===========================
    Live validators
@@ -1629,6 +1663,7 @@ setTimeout(() => {
 // Checkout
 let checkoutPhase = 1;
 let confirmStep = false;
+
 function startShimmer(btn, text) {
   btn.classList.add('loading');
   btn.dataset.loadingText = text || 'Processing...';
@@ -1642,113 +1677,138 @@ function stopShimmer(btn) {
 checkoutBtn.addEventListener('click', async () => {
   // Phase 1: Proceed to Checkout
   if (checkoutPhase === 1) {
-      startShimmer(checkoutBtn, 'Processing Order...');
-      let result;
-      try{
-        result = await handleApiButton(checkoutBtn, async () => {
-    if (!cart.length) {
-      showMessage('Your cart is empty.', 'error');
-      return { status: 'ERROR', message: 'Empty cart' };
+    startShimmer(checkoutBtn, 'Processing Order...');
+    let result;
+    try {
+      result = await handleApiButton(checkoutBtn, async () => {
+        if (!cart.length) {
+          showMessage('Your cart is empty.', 'error');
+          return { status: 'ERROR', message: 'Empty cart' };
+        }
+        if (!isLoggedIn) {
+          showMessage('Please sign in first.', 'error');
+          return { status: 'ERROR', message: 'Not signed in' };
+        }
+
+        const { endpoint, authToken, OmniTok, sid } = await getOmniTok('checkout');
+        const jobId = createJobId();
+        const total = cart.reduce((sum, { id, qty }) => {
+          const prod = productsEcom.find(p => p.id === id);
+          return sum + prod.price * qty;
+        }, 0);
+
+        const payload = {
+          user: {
+            email: currentUser.email,
+            name: currentUser.name,
+            rewards: currentUser.rewards
+          },
+          items: cart.map(i => ({
+            id: i.id,
+            sku: i.sku,
+            name: i.name,
+            price: i.price,
+            currency: i.currency,
+            qty: i.qty
+          })),
+          total,
+          jobId
+        };
+
+        const resp = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-auth-token': authToken,
+            'X-OmniTok': OmniTok,
+            'X-SID': sid,
+            'x-job-id': jobId
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await safeJson(resp);
+
+        if (data?.jobId && data?.statusUrl) {
+          return { jobId: data.jobId, statusUrl: data.statusUrl };
+        }
+
+        const explicit = normalizeStatus(data);
+        const okByPayload = typeof explicit === 'string'
+          ? explicit === 'OK' || explicit === 'SUCCESS'
+          : resp.ok;
+
+        if (!okByPayload) {
+          const msg = data?.message || 'Order submission failed';
+          showMessage(msg, 'error');
+          return { status: 'ERROR', message: msg };
+        }
+
+        return data;
+      });
+    } finally {
+      stopShimmer(checkoutBtn);
     }
-    if (!isLoggedIn) {
-      showMessage('Please sign in first.', 'error');
-      return { status: 'ERROR', message: 'Not signed in' };
+
+    if (result?.ok && result?.payload) {
+      const raw = result.payload || {};
+
+      // Normalize payload for Phase 2
+      const data = {
+        orderNumber: raw.orderNumber || '',
+        shippingCost: Number(raw.shippingCost) || 0,
+        taxAmount: Number(raw.taxAmount) || 0,
+        totalAmount: Number(raw.totalAmount) || 0,
+        currency: raw.currency || 'usd',
+        clientSecret: raw.clientSecret || raw.client_secret || '',
+        paymentIntentId: raw.paymentIntentId || raw.payment_intent_id || ''
+      };
+
+      // Update DOM
+      const orderNumberEl = document.getElementById('order-number');
+      const shippingCostEl = document.getElementById('shipping-cost');
+      const taxAmountEl = document.getElementById('tax-amount');
+      const totalAmountEl = document.getElementById('total-amount');
+
+      if (orderNumberEl) {
+        orderNumberEl.textContent = data.orderNumber;
+        document.getElementById('order-info-row').style.display = 'flex';
+      }
+      if (shippingCostEl) {
+        shippingCostEl.textContent = (data.shippingCost / 100).toFixed(2);
+        document.getElementById('shipping-row').style.display = 'flex';
+      }
+      if (taxAmountEl) {
+        taxAmountEl.textContent = (data.taxAmount / 100).toFixed(2);
+        document.getElementById('tax-row').style.display = 'flex';
+      }
+      if (totalAmountEl) {
+        totalAmountEl.textContent = (data.totalAmount / 100).toFixed(2);
+      }
+
+      // Store for Phase 2
+      checkoutBtn.dataset.orderData = JSON.stringify(data);
+
+      // Update cart total display
+      document.getElementById('cart-total-value').textContent = (data.totalAmount / 100).toFixed(2);
+
+      // Lock cart and re-render
+      cartLocked = true;
+      renderCart();
+
+      // Switch to Phase 2
+      checkoutBtn.textContent = 'Pay for Order';
+      checkoutPhase = 2;
+      confirmStep = false;
+      return;
     }
-
-const { endpoint, authToken, OmniTok, sid } = await getOmniTok('checkout');
-const jobId = createJobId();
-const total = cart.reduce((sum, { id, qty }) => {
-  const prod = productsEcom.find(p => p.id === id);
-  return sum + prod.price * qty;
-}, 0);
-
-const payload = {
-  user: { email: currentUser.email, name: currentUser.name, rewards: currentUser.rewards },
-  items: cart.map(i => ({ id: i.id, sku: i.sku, name: i.name, price: i.price, currency: i.currency, qty: i.qty })),
-  total,
-  jobId
-};
-
-const resp = await fetch(endpoint, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'x-auth-token': authToken,
-    'X-OmniTok': OmniTok,
-    'X-SID': sid,
-    'x-job-id': jobId
-  },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await safeJson(resp);
-
-    if (data?.jobId && data?.statusUrl) {
-      return { jobId: data.jobId, statusUrl: data.statusUrl };
-    }
-
-    const explicit = normalizeStatus(data);
-    const okByPayload = typeof explicit === 'string'
-      ? explicit === 'OK' || explicit === 'SUCCESS'
-      : resp.ok;
-
-    if (!okByPayload) {
-      const msg = data?.message || 'Order submission failed';
-      showMessage(msg, 'error');
-      return { status: 'ERROR', message: msg };
-    }
-
-    return data;
-  });   
-  } finally {
-   stopShimmer(checkoutBtn);   
-  }
-    
-  if (result.ok && result.payload) {
-    const data = result.payload || {};
-    const orderNumberEl = document.getElementById('order-number');
-    const shippingCostEl = document.getElementById('shipping-cost');
-    const taxAmountEl = document.getElementById('tax-amount');
-    const totalAmountEl = document.getElementById('total-amount');
-
-  if (orderNumberEl) {
-    orderNumberEl.textContent = data.orderNumber || '';
-    document.getElementById('order-info-row').style.display = 'flex';
-  }
-  if (shippingCostEl) {
-    shippingCostEl.textContent = (data.shippingCost / 100).toFixed(2);
-    document.getElementById('shipping-row').style.display = 'flex';
-  }
-  if (taxAmountEl) {
-    taxAmountEl.textContent = (data.taxAmount / 100).toFixed(2);
-    document.getElementById('tax-row').style.display = 'flex';
-  }
-  if (totalAmountEl) {
-    totalAmountEl.textContent = (data.totalAmount / 100).toFixed(2);
-  }
-  if (checkoutBtn) {
-    checkoutBtn.textContent = 'Pay for Order';
-  }
-  // Store data for Phase 2
- checkoutBtn.dataset.orderData = JSON.stringify(data);
-      
-  // Update cart total display to backend total
-  document.getElementById('cart-total-value').textContent = (data.totalAmount / 100).toFixed(2);
-
-  // Lock the cart so items can't be changed
-  cartLocked = true;
-  renderCart(); // re-render with controls disabled
-
-  // Switch button to Phase 2
-    checkoutBtn.textContent = 'Pay for Order';
-    checkoutPhase = 2;
-    confirmStep = false;
-    return;
   }
 
   // Phase 2: Pay for Order
   if (checkoutPhase === 2 && !confirmStep) {
-    // First click in Phase 2 — ask for confirmation
+    document.getElementById('payment-section').style.display = 'block';
+    mountStripeElements();
+    checkoutBtn.disabled = false;
     checkoutBtn.textContent = 'Confirm & Pay';
     confirmStep = true;
     return;
@@ -1757,18 +1817,53 @@ const resp = await fetch(endpoint, {
   // Phase 2: Confirm & Pay
   if (checkoutPhase === 2 && confirmStep) {
     const data = JSON.parse(checkoutBtn.dataset.orderData || '{}');
+    const clientSecret = data.clientSecret;
+    const paymentIntentId = data.paymentIntentId;
 
-    // Here’s where you’d run Stripe confirmPayment or redirect
-    // using data.clientSecret, data.paymentIntentId, etc.
+    if (!clientSecret) {
+      showMessage('Missing client secret for payment.', 'error');
+      return;
+    }
 
-    // Only after successful payment:
-    showMessage(data?.message || 'Order submitted successfully!', 'success');
-    cart = [];
-    renderCart();
-    toggleCart();
-    sessionStorage.removeItem('sid');
+    startShimmer(checkoutBtn, 'Confirming...');
+
+    try {
+      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card,
+          billing_details: {
+            name: currentUser?.name || '',
+            email: currentUser?.email || ''
+          }
+        }
+      });
+
+      if (error) {
+        document.getElementById('card-errors').textContent = error.message || 'Payment failed. Try another card.';
+        showMessage(error.message || 'Payment failed.', 'error');
+        return;
+      }
+
+      if (paymentIntent && paymentIntent.status === 'succeeded') {
+        showMessage('Payment successful!', 'success');
+        cart = [];
+        renderCart();
+        toggleCart();
+        sessionStorage.removeItem('sid');
+        document.getElementById('payment-section').style.display = 'none';
+        checkoutPhase = 1;
+        confirmStep = false;
+        checkoutBtn.textContent = 'Proceed to Checkout';
+      } else {
+        showMessage(`Payment status: ${paymentIntent?.status || 'unknown'}`, 'info');
+      }
+    } finally {
+      stopShimmer(checkoutBtn);
+    }
+
+    return;
   }
-}});
+});
 
 /* ===========================
    State dropdown enhancement
