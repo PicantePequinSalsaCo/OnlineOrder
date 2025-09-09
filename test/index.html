@@ -228,6 +228,43 @@
     #checkout-btn[disabled] {
       background:var(--muted); cursor:not-allowed;
     }
+#checkout-btn.loading {
+  position: relative;
+  overflow: hidden;
+  color: transparent; /* hide text, we'll use a pseudo-element for shimmer text */
+}
+
+#checkout-btn.loading::before {
+  content: attr(data-loading-text); /* dynamic text from JS */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    110deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.4) 40%,
+    rgba(255,255,255,0) 60%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  color: #fff; /* shimmer text color */
+  font-weight: bold;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+    
 
     /* Login container with both forms */
     #login-container {
@@ -1592,10 +1629,22 @@ setTimeout(() => {
 // Checkout
 let checkoutPhase = 1;
 let confirmStep = false;
+function startShimmer(btn, text) {
+  btn.classList.add('loading');
+  btn.dataset.loadingText = text || 'Processing...';
+}
+
+function stopShimmer(btn) {
+  btn.classList.remove('loading');
+  delete btn.dataset.loadingText;
+}
 
 checkoutBtn.addEventListener('click', async () => {
   // Phase 1: Proceed to Checkout
   if (checkoutPhase === 1) {
+      startShimmer(checkoutBtn, 'Processing Order...');
+      let result;
+      try{
       const result = await handleApiButton(checkoutBtn, async () => {
     if (!cart.length) {
       showMessage('Your cart is empty.', 'error');
@@ -1650,8 +1699,11 @@ const resp = await fetch(endpoint, {
     }
 
     return data;
-  });
-
+  });   
+  } finally {
+   stopShimmer(checkoutBtn);   
+  }
+    
   if (result.ok && result.payload) {
     const data = result.payload || {};
     const orderNumberEl = document.getElementById('order-number');
@@ -1679,7 +1731,7 @@ const resp = await fetch(endpoint, {
     checkoutBtn.textContent = 'Pay for Order';
   }
   // Store data for Phase 2
-    checkoutBtn.dataset.orderData = JSON.stringify(data);
+ checkoutBtn.dataset.orderData = JSON.stringify(data);
       
   // Update cart total display to backend total
   document.getElementById('cart-total-value').textContent = (data.totalAmount / 100).toFixed(2);
@@ -1754,6 +1806,7 @@ function signOut() {
   loginBtn.classList.remove('logout');
   checkoutBtn.disabled = true;
   checkoutBtn.textContent = 'Sign In to Checkout';
+  cart = [];
 }
 /* ===========================
    Confirm-on-exit (always prompt)
