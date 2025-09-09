@@ -1645,7 +1645,7 @@ checkoutBtn.addEventListener('click', async () => {
       startShimmer(checkoutBtn, 'Processing Order...');
       let result;
       try{
-      const result = await handleApiButton(checkoutBtn, async () => {
+        result = await handleApiButton(checkoutBtn, async () => {
     if (!cart.length) {
       showMessage('Your cart is empty.', 'error');
       return { status: 'ERROR', message: 'Empty cart' };
