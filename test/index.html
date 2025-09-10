@@ -1878,6 +1878,24 @@ checkoutBtn.addEventListener('click', async () => {
         checkoutPhase = 1;
         confirmStep = false;
         sessionStorage.removeItem('sid');
+            // Create countdown element under the button
+     let countdownSeconds = 5;
+     let countdownEl = document.createElement('div');
+        countdownEl.style.marginTop = '0.5rem';
+        countdownEl.style.fontSize = '0.9rem';
+        countdownEl.style.color = '#555';
+        countdownEl.textContent = `Redirecting in ${countdownSeconds}...`;
+        checkoutBtn.insertAdjacentElement('afterend', countdownEl);
+          // Update countdown every second
+     let countdownTimer = setInterval(() => {
+        countdownSeconds--;
+        countdownEl.textContent = `Redirecting in ${countdownSeconds}...`;
+     if (countdownSeconds <= 0) {
+      clearInterval(countdownTimer);
+      signOut();
+      window.location.href = 'https://picantepequinsalsaco.com/';
+    }
+  }, 1000);
       } else {
         showMessage(`Payment status: ${paymentIntent?.status || 'unknown'}`, 'info');
       }
@@ -1914,17 +1932,45 @@ checkoutBtn.addEventListener('click', async () => {
 })();
 
 function signOut() {
+  // Core state resets
   cart = [];
   isLoggedIn = false;
   currentUser = { email: '', name: '', rewards: 0 };
+  checkoutPhase = 1;
+  confirmStep = false;
+  cartLocked = false;
+
+  // Clear session storage
   sessionStorage.removeItem('authToken');
   sessionStorage.removeItem('sid'); // force a new session identity next time
+
+  // Reset UI elements
   usernameDisplay.textContent = 'Guest';
   rewardsDisplay.textContent = '0';
   loginBtn.textContent = 'Login';
   loginBtn.classList.remove('logout');
+
   checkoutBtn.disabled = true;
   checkoutBtn.textContent = 'Sign In to Checkout';
+  checkoutBtn.style.backgroundColor = ''; // remove success green if set
+  checkoutBtn.style.cursor = 'pointer';
+
+  // Hide payment section if visible
+  document.getElementById('payment-section').style.display = 'none';
+
+  // Hide order info rows
+  document.getElementById('order-info-row').style.display = 'none';
+  document.getElementById('shipping-row').style.display = 'none';
+  document.getElementById('tax-row').style.display = 'none';
+
+  // Reset cart total display
+  document.getElementById('cart-total-value').textContent = '0.00';
+
+  // Clear any stored order data
+  checkoutBtn.dataset.orderData = '';
+
+  // Re-render cart UI to show empty state
+  renderCart();
 }
 /* ===========================
    Confirm-on-exit (always prompt)
