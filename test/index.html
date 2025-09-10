@@ -272,7 +272,6 @@
     background-position: 200% 0;
   }
 }
-    
 
     /* Login container with both forms */
     #login-container {
@@ -1871,12 +1870,14 @@ checkoutBtn.addEventListener('click', async () => {
         showMessage('Payment successful!', 'success');
         cart = [];
         renderCart();
-        toggleCart();
-        sessionStorage.removeItem('sid');
         document.getElementById('payment-section').style.display = 'none';
+        checkoutBtn.textContent = 'Payment Successful';
+        checkoutBtn.disabled = true;
+        checkoutBtn.style.backgroundColor = '#28a745';
+        checkoutBtn.style.cursor = 'default';
         checkoutPhase = 1;
         confirmStep = false;
-        checkoutBtn.textContent = 'Proceed to Checkout';
+        sessionStorage.removeItem('sid');
       } else {
         showMessage(`Payment status: ${paymentIntent?.status || 'unknown'}`, 'info');
       }
