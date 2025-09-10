@@ -1761,8 +1761,17 @@ checkoutBtn.addEventListener('click', async () => {
         totalAmount: Number(raw.totalAmount) || 0,
         currency: raw.currency || 'usd',
         clientSecret: raw.clientSecret || raw.client_secret || '',
-        paymentIntentId: raw.paymentIntentId || raw.payment_intent_id || ''
+        paymentIntentId: raw.paymentIntentId || raw.payment_intent_id || '',
       };
+        // 2. Hydrate currentUser with billing details
+        currentUser.name = raw.billingName || currentUser.name;
+        currentUser.email = raw.billingEmail || currentUser.email;
+        currentUser.addressLine1 = raw.billingLine1 || '';
+        currentUser.city = raw.billingCity || '';
+        currentUser.state = raw.billingState || '';
+        currentUser.zip = raw.billingPostal || '';
+        currentUser.country = raw.billingCountry || 'US';
+
 
       // Update DOM
       const orderNumberEl = document.getElementById('order-number');
@@ -1833,7 +1842,13 @@ checkoutBtn.addEventListener('click', async () => {
           card,
           billing_details: {
             name: currentUser?.name || '',
-            email: currentUser?.email || ''
+            email: currentUser?.email || '',
+            address: {
+                line1: currentUser.addressLine1,
+                city: currenUser.city,
+                state: currentUser.state,
+                postal_code: currentUser.zip,
+                country: currentUser.country
           }
         }
       });
