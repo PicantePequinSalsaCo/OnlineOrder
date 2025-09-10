@@ -582,7 +582,17 @@
       </div>
     </div>
   </aside>
-
+<div id="signout-confirm" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:#fff; padding:1.5rem; border-radius:6px; max-width:400px; width:90%; text-align:center;">
+    <p style="margin-bottom:1rem; font-size:1rem; color:#333;">
+      If you sign out now, your cart and any pending payments will be lost.
+    </p>
+    <div style="display:flex; gap:0.5rem; justify-content:center;">
+      <button id="cancel-signout" style="padding:0.5rem 1rem; background:#ccc; border:none; border-radius:4px; cursor:pointer;">Cancel</button>
+      <button id="confirm-signout" style="padding:0.5rem 1rem; background:#d9534f; color:#fff; border:none; border-radius:4px; cursor:pointer;">Sign Out</button>
+    </div>
+  </div>
+</div>
   <aside id="login-container" role="dialog" aria-modal="true" aria-label="Customer Authentication">
     <div class="cart-panel">
       <div class="cart-header">
@@ -1358,11 +1368,22 @@ cartOverlay.addEventListener('click', e => { if (e.target === cartOverlay) toggl
 
 loginBtn.addEventListener('click', () => {
   if (isLoggedIn) {
-    signOut();
+    // Show the custom sign-out confirmation modal
+    document.getElementById('signout-confirm').style.display = 'flex';
   } else {
     toggleLogin(true);
     document.getElementById('login-username').focus();
   }
+});
+
+// Confirmation modal buttons
+document.getElementById('cancel-signout').addEventListener('click', () => {
+  document.getElementById('signout-confirm').style.display = 'none';
+});
+
+document.getElementById('confirm-signout').addEventListener('click', () => {
+  document.getElementById('signout-confirm').style.display = 'none';
+  signOut();
 });
 closeLogin.addEventListener('click', () => toggleLogin());
 loginOverlay.addEventListener('click', e => { if (e.target === loginOverlay) toggleLogin(); });
