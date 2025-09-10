@@ -256,6 +256,11 @@
   font-weight: bold;
 }
 
+/* Prevent double text overlay on checkout button */
+#checkout-btn.api-btn.loading::after {
+  content: transparent !important;
+}
+
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
