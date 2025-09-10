@@ -14,6 +14,7 @@
       --bg-deep:        #1e1e1e00;
       --ink:            #ececec;
       --muted:          #b0b0b0;
+      --accent-trans:   #000000;
       --accent-orange:  #f57c00;
       --accent-green:   #558b2f;
       --accent-red:     #d84315;
@@ -232,6 +233,7 @@
   position: relative;
   overflow: hidden;
   color: transparent !important; /* hide text, we'll use a pseudo-element for shimmer text */
+  text-shadow: none !important;
 }
 
 #checkout-btn.loading::before {
@@ -244,6 +246,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: var(--accent-trans);
   background: linear-gradient(
     110deg,
     rgba(255,255,255,0) 0%,
@@ -258,7 +261,7 @@
 
 /* Prevent double text overlay on checkout button */
 #checkout-btn.api-btn.loading::after {
-  content: transparent !important;
+  content: none !important;
 }
 
 @keyframes shimmer {
