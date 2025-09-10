@@ -1883,13 +1883,13 @@ checkoutBtn.addEventListener('click', async () => {
      let countdownEl = document.createElement('div');
         countdownEl.style.marginTop = '0.5rem';
         countdownEl.style.fontSize = '0.9rem';
-        countdownEl.style.color = '#555';
-        countdownEl.textContent = `Redirecting in ${countdownSeconds}...`;
+        countdownEl.style.color = '#a76e28';
+        countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
         checkoutBtn.insertAdjacentElement('afterend', countdownEl);
           // Update countdown every second
      let countdownTimer = setInterval(() => {
         countdownSeconds--;
-        countdownEl.textContent = `Redirecting in ${countdownSeconds}...`;
+        countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
      if (countdownSeconds <= 0) {
       clearInterval(countdownTimer);
       signOut();
