@@ -1014,17 +1014,23 @@ function mountStripeElements() {
    =========================== */
 
 // Shared handler for both Request verification code buttons
-function setupRequestCodeHandler(btnId, codeInputId, act) {
+function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
   const btn = document.getElementById(btnId);
   const codeInput = document.getElementById(codeInputId);
+  const emailInput = emailInputId ? document.getElementById(emailInputId) : null;
 
   if (!btn || !codeInput) return;
 
   btn.addEventListener('click', async () => {
-    // Use the same button state handling as other API buttons
+    const sid = localStorage.getItem('sid');
+    const email = emailInput ? emailInput.value.trim() : undefined;
+
     const result = await handleApiButton(btn, async () => {
+      const payload = { act, sid };
+      if (email) payload.email = email;
+      
       // Call OmniTok with the given act (e.g., "signup_code" or "reset_code")
-      const { /* endpoint, authToken, OmniTok, sid */ } = await getOmniTok(act);
+      const { /* endpoint, authToken, OmniTok, sid */ } = await getOmniTok(payload);
 
       // In this branch, your backend will just return a minimal success payload
       // No endpoint or GUIDs needed — just something like { status: "OK" }
@@ -1045,8 +1051,19 @@ function setupRequestCodeHandler(btnId, codeInputId, act) {
 }
 
 // Init for both forms
-setupRequestCodeHandler('signup-request-code', 'signup-verification-code', 'signup_code');
-setupRequestCodeHandler('reset-request-code', 'reset-verification-code', 'reset_code');  
+setupRequestCodeHandler(
+  'signup-request-code',
+  'signup-verification-code',
+  'signup_code',
+  'signup-email'
+);
+
+setupRequestCodeHandler(
+  'reset-request-code',
+  'reset-verification-code',
+  'reset_code',
+  'reset-email'
+);
 
     // Single source of truth for enabling the signup button
 function checkSignupValidity() {
