@@ -641,7 +641,20 @@
   <input type="text" id="signup-phone" name="phone" placeholder="Phone (10 digits)" required pattern="^\d{10}$" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '')" />
   <input type="email" id="signup-email" name="email" placeholder="Email address" required autocomplete="username" />
   <small id="email-error-msg" style="color: var(--accent-red); font-weight: bold; display: none;">Please enter a valid email address</small>
+<button type="button" id="signup-request-code" class="api-btn" style="background-color: orange;" disabled>
+  Request verification code
+</button>
 
+<input
+  type="text"
+  id="signup-verification-code"
+  name="verificationCode"
+  placeholder="Enter 6-digit code"
+  maxlength="6"
+  pattern="^\d{6}$"
+  inputmode="numeric"
+  disabled
+/>
   <input type="password" id="signup-password" name="password" placeholder="Password" required autocomplete="new-password" />
   <div id="password-strength-wrapper" style="margin-bottom: 8px;">
     <div id="password-strength-bar" style="height: 4px; width: 0%; background: red; border-radius: 4px; transition: width 0.3s, background 0.3s;"></div>
@@ -673,7 +686,20 @@
          placeholder="Phone (10 digits)" required
          pattern="^\d{10}$" maxlength="10" inputmode="numeric"
          oninput="this.value = this.value.replace(/\D/g, '')" />
+<button type="button" id="reset-request-code" class="api-btn" style="background-color: orange;" disabled>
+  Request verification code
+</button>
 
+<input
+  type="text"
+  id="reset-verification-code"
+  name="verificationCode"
+  placeholder="Enter 6-digit code"
+  maxlength="6"
+  pattern="^\d{6}$"
+  inputmode="numeric"
+  disabled
+/>
   <input type="password" id="reset-password" name="password"
          placeholder="New Password" required autocomplete="new-password" />
 
@@ -946,6 +972,11 @@ const rewardsDisplay  = document.getElementById('rewards-display');
 const resetForm     = document.getElementById('reset-form');
 const showResetBtn  = document.getElementById('show-reset');
 const showLoginFromResetBtn = document.getElementById('show-login-from-reset');
+// New: verification code controls
+const signupRequestCodeBtn = document.getElementById('signup-request-code');
+const signupCodeInput      = document.getElementById('signup-verification-code');
+const resetRequestCodeBtn  = document.getElementById('reset-request-code');
+const resetCodeInput       = document.getElementById('reset-verification-code');
 
 
 // Stripe Elements setup
@@ -979,9 +1010,49 @@ function mountStripeElements() {
 /* ===========================
    Live validators
    =========================== */
+
+// Shared handler for both Request verification code buttons
+function setupRequestCodeHandler(btnId, codeInputId, act) {
+  const btn = document.getElementById(btnId);
+  const codeInput = document.getElementById(codeInputId);
+
+  if (!btn || !codeInput) return;
+
+  btn.addEventListener('click', async () => {
+    // Use the same button state handling as other API buttons
+    const result = await handleApiButton(btn, async () => {
+      // Call OmniTok with the given act (e.g., "signup_code" or "reset_code")
+      const { /* endpoint, authToken, OmniTok, sid */ } = await getOmniTok(act);
+
+      // In this branch, your backend will just return a minimal success payload
+      // No endpoint or GUIDs needed — just something like { status: "OK" }
+      return { status: 'OK', message: 'Verification code sent' };
+    });
+
+    if (result.ok) {
+      // Flip UI state: enable code input, lock request button
+      codeInput.disabled = false;
+      btn.disabled = true;
+      btn.style.backgroundColor = 'var(--accent-green)';
+      btn.textContent = 'Enter Code';
+      showMessage('Verification code sent. Please check your email/phone.', 'success');
+    } else {
+      showMessage('Failed to send verification code. Try again.', 'error');
+    }
+  });
+}
+
+// Init for both forms
+setupRequestCodeHandler('signup-request-code', 'signup-verification-code', 'signup_code');
+setupRequestCodeHandler('reset-request-code', 'reset-verification-code', 'reset_code');  
+
     // Single source of truth for enabling the signup button
 function checkSignupValidity() {
   const signupBtn = signupForm.querySelector('button[type="submit"]');
+  const signupRequestCodeBtn = document.getElementById('signup-request-code');
+  const signupCodeInput = document.getElementById('signup-verification-code');
+
+  // IDs for all the original required fields (excluding the code field)
   const ids = [
     'signup-firstname',
     'signup-lastname',
@@ -1018,8 +1089,19 @@ function checkSignupValidity() {
   const domainPattern = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const domainValid = atIndex !== -1 && domainPattern.test(domain);
 
-  // Final gate
-  signupBtn.disabled = !(allFilled && passwordsMatch && strongEnough && domainValid);
+  // ✅ Enable/disable the Request verification code button
+  if (signupRequestCodeBtn) {
+    const codeAlreadyEnabled = signupCodeInput && !signupCodeInput.disabled;
+    signupRequestCodeBtn.disabled = !(allFilled && passwordsMatch && strongEnough && domainValid) || codeAlreadyEnabled;
+  }
+
+  // ✅ Require valid 6-digit code for main button (only after code input is enabled)
+  const codeOk = signupCodeInput && !signupCodeInput.disabled
+    ? /^\d{6}$/.test(signupCodeInput.value.trim())
+    : false;
+
+  // Final gate for main submit button
+  signupBtn.disabled = !(allFilled && passwordsMatch && strongEnough && domainValid && codeOk);
 }
     
 (function emailDomainValidation() {
@@ -1121,14 +1203,20 @@ function checkSignupValidity() {
     'signup-password-confirm'
   ].map(id => document.getElementById(id));
 
-  // Input listeners
+  // Input listeners for the original fields
   fields.forEach(el => el && el.addEventListener('input', checkSignupValidity));
 
   // Ensure select emits on change in all browsers
   const stateSelect = document.getElementById('signup-state');
   if (stateSelect) stateSelect.addEventListener('change', checkSignupValidity);
 
-  // Initial
+  // NEW: watch the verification code field too
+  const signupCodeInput = document.getElementById('signup-verification-code');
+  if (signupCodeInput) {
+    signupCodeInput.addEventListener('input', checkSignupValidity);
+  }
+
+  // Initial check
   checkSignupValidity();
 })();
 
@@ -1137,6 +1225,9 @@ function checkSignupValidity() {
 // ===========================
 function checkResetValidity() {
   const btn = document.getElementById('reset-submit');
+  const resetRequestCodeBtn = document.getElementById('reset-request-code');
+  const resetCodeInput = document.getElementById('reset-verification-code');
+
   const em  = document.getElementById('reset-email').value.trim();
   const ph  = document.getElementById('reset-phone').value.trim();
   const pw1 = document.getElementById('reset-password').value;
@@ -1151,7 +1242,19 @@ function checkResetValidity() {
   const phoneValid = /^\d{10}$/.test(ph);
   const emailPresent = em.length > 3 && em.includes('@');
 
-  btn.disabled = !(emailPresent && phoneValid && passwordsMatch && strongEnough);
+  // ✅ Enable/disable the Request verification code button
+  if (resetRequestCodeBtn) {
+    const codeAlreadyEnabled = resetCodeInput && !resetCodeInput.disabled;
+    resetRequestCodeBtn.disabled = !(emailPresent && phoneValid) || codeAlreadyEnabled;
+  }
+
+  // ✅ Require valid 6-digit code for main button (only after code input is enabled)
+  const codeOk = resetCodeInput && !resetCodeInput.disabled
+    ? /^\d{6}$/.test(resetCodeInput.value.trim())
+    : false;
+
+  // Final gate for main submit button
+  btn.disabled = !(emailPresent && phoneValid && passwordsMatch && strongEnough && codeOk);
 }
 
 (function resetPasswordStrengthMeter() {
@@ -1215,6 +1318,12 @@ function checkResetValidity() {
   ['reset-email', 'reset-phone', 'reset-password', 'reset-password-confirm']
     .map(id => document.getElementById(id))
     .forEach(el => el && el.addEventListener('input', checkResetValidity));
+
+  // NEW: watch the verification code field too
+  const resetCodeInput = document.getElementById('reset-verification-code');
+  if (resetCodeInput) {
+    resetCodeInput.addEventListener('input', checkResetValidity);
+  }
 
   checkResetValidity();
 })();
@@ -1502,6 +1611,7 @@ resetForm.addEventListener('submit', async e => {
     const email    = document.getElementById('reset-email').value.trim();
     const phone    = document.getElementById('reset-phone').value.trim();
     const password = document.getElementById('reset-password').value;
+    const verificationCode = document.getElementById('reset-verification-code').value.trim();
 
     if (!email || !/^\d{10}$/.test(phone) || !password) {
       showMessage('Please complete all fields correctly.', 'error');
@@ -1520,7 +1630,7 @@ const resp = await fetch(endpoint, {
     'X-SID': sid,
     'x-job-id': jobId
   },
-      body: JSON.stringify({ email, phone, newPassword: password, jobId })
+      body: JSON.stringify({ email, phone, newPassword: password, verificationCode, jobId })
     });
 
     const data = await safeJson(resp);
@@ -1599,6 +1709,7 @@ signupForm.addEventListener('submit', async e => {
     const em   = document.getElementById('signup-email').value.trim();
     const pw1  = document.getElementById('signup-password').value;
     const pw2  = document.getElementById('signup-password-confirm').value;
+    const verificationCode = document.getElementById('signup-verification-code').value.trim();
 
     if (pw1 !== pw2) {
       showMessage('Passwords do not match.', 'error');
@@ -1635,6 +1746,7 @@ const res = await fetch(endpoint, {
         phone: ph,
         email: em,
         password: pw1,
+        verificationCode,
         jobId
       })
     });
