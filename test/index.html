@@ -786,24 +786,36 @@ function normalizeStatus(payload) {
 
     // OmniTok pre-flight fetcher //
 async function getOmniTok(act) {
+  // Ensure sid exists
   let sid = sessionStorage.getItem('sid');
   if (!sid) {
     sid = crypto.randomUUID();
     sessionStorage.setItem('sid', sid); // persist for the session
   }
 
+  // Build the request body
+  let body;
+  if (typeof act === 'string') {
+    // Normal flows: login, signup, reset, checkout
+    body = { act, sid };
+  } else if (act && typeof act === 'object') {
+    // Verification code flows: pass act + email, sid injected here
+    body = { sid, ...act };
+  } else {
+    throw new Error('Invalid getOmniTok argument');
+  }
+
   const res = await fetch(API.issueOmniTok, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ act, sid })
+    body: JSON.stringify(body)
   });
 
-  if (!res.ok) throw new Error(`Failed to get OmniTok config for ${act}`);
+  if (!res.ok) throw new Error(`Failed to get OmniTok config for ${body.act}`);
 
-  // Expecting backend to return all runtime values
-  const { endpoint, authToken, OmniTok } = await res.json();
-
-  return { endpoint, authToken, OmniTok, sid };
+  // Heavy flows get endpoint/authToken/OmniTok; _code flows may just return { status: 'OK' }
+  const data = await res.json();
+  return { ...data, sid };
 }
     
 /* ===========================
@@ -1014,6 +1026,7 @@ function mountStripeElements() {
    =========================== */
 
 // Shared handler for both Request verification code buttons
+// Shared handler for both Request verification code buttons
 function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
   const btn = document.getElementById(btnId);
   const codeInput = document.getElementById(codeInputId);
@@ -1022,23 +1035,16 @@ function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
   if (!btn || !codeInput) return;
 
   btn.addEventListener('click', async () => {
-    const sid = localStorage.getItem('sid');
     const email = emailInput ? emailInput.value.trim() : undefined;
 
     const result = await handleApiButton(btn, async () => {
-      const payload = { act, sid };
-      if (email) payload.email = email;
-      
-      // Call OmniTok with the given act (e.g., "signup_code" or "reset_code")
-      const { /* endpoint, authToken, OmniTok, sid */ } = await getOmniTok(payload);
-
-      // In this branch, your backend will just return a minimal success payload
-      // No endpoint or GUIDs needed — just something like { status: "OK" }
+      // Build a flat payload; getOmniTok will inject sid
+      const payload = email ? { act, email } : { act };
+      await getOmniTok(payload); // backend returns minimal OK/FAIL for _code flows
       return { status: 'OK', message: 'Verification code sent' };
     });
 
     if (result.ok) {
-      // Flip UI state: enable code input, lock request button
       codeInput.disabled = false;
       btn.disabled = true;
       btn.style.backgroundColor = 'var(--accent-green)';
