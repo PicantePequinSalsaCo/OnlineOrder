@@ -1039,11 +1039,10 @@ function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
   const btn = document.getElementById(btnId);
   const codeInput = document.getElementById(codeInputId);
   const emailInput = emailInputId ? document.getElementById(emailInputId) : null;
-  const sid = refreshSid();
-
   if (!btn || !codeInput) return;
 
   btn.addEventListener('click', async () => {
+    const sid = refreshSid();
     const email = emailInput ? emailInput.value.trim() : undefined;
 
     const result = await handleApiButton(btn, async () => {
