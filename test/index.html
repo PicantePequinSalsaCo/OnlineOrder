@@ -1710,7 +1710,7 @@ if (result.ok) {
   resetForm.reset();
   checkResetValidity();
   document.getElementById('reset-verification-code').disabled = true;
-  resetRequestCodeBtn.dataset.codeSent = 'false';
+  resetRequestCodeBtn.dataset.codeSent = 'true';
 
  // Clear reset password strength meter UI
   const resetBar = document.getElementById('reset-password-strength-bar');
@@ -1823,7 +1823,7 @@ const res = await fetch(endpoint, {
     signupForm.reset();
     checkSignupValidity();
     document.getElementById('signup-verification-code').disabled = true;
-    signupRequestCodeBtn.dataset.codeSent = 'false';
+    signupRequestCodeBtn.dataset.codeSent = 'true';
       
      // Clear signup password strength meter UI
     const signupBar = document.getElementById('password-strength-bar');
