@@ -1122,7 +1122,7 @@ function checkSignupValidity() {
 
   // ✅ Require valid 6-digit code for main button (only after code input is enabled)
   const codeOk = signupCodeInput && !signupCodeInput.disabled
-    ? /^\d{6}$/.test(signupCodeInput.value.trim())
+    ? /^[A-Za-z0-9]{6}$/.test(signupCodeInput.value.trim())
     : false;
 
   // Final gate for main submit button
@@ -1275,7 +1275,7 @@ function checkResetValidity() {
 
   // ✅ Require valid 6-digit code for main button (only after code input is enabled)
   const codeOk = resetCodeInput && !resetCodeInput.disabled
-    ? /^\d{6}$/.test(resetCodeInput.value.trim())
+    ? /^[A-Za-z0-9]{6}$/.test(resetCodeInput.value.trim())
     : false;
 
   // Final gate for main submit button
