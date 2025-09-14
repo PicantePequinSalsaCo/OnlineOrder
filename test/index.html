@@ -1701,6 +1701,7 @@ if (result.ok) {
 
   // Clear the reset form for next time
   resetForm.reset();
+  checkResetValidity();
 
  // Clear reset password strength meter UI
   const resetBar = document.getElementById('reset-password-strength-bar');
@@ -1811,6 +1812,7 @@ const res = await fetch(endpoint, {
     const password = data.body?.password ?? data.password ?? document.getElementById('signup-password').value;
     document.getElementById('login-username').value = email;      
     signupForm.reset();
+    checkSignupValidity();
      // Clear signup password strength meter UI
     const signupBar = document.getElementById('password-strength-bar');
     const signupText = document.getElementById('password-strength-text');
