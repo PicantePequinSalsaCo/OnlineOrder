@@ -1702,6 +1702,7 @@ if (result.ok) {
   // Clear the reset form for next time
   resetForm.reset();
   checkResetValidity();
+  document.getElementById('reset-verification-code').disabled = true;
 
  // Clear reset password strength meter UI
   const resetBar = document.getElementById('reset-password-strength-bar');
@@ -1813,6 +1814,8 @@ const res = await fetch(endpoint, {
     document.getElementById('login-username').value = email;      
     signupForm.reset();
     checkSignupValidity();
+    document.getElementById('signup-verification-code').disabled = true;
+      
      // Clear signup password strength meter UI
     const signupBar = document.getElementById('password-strength-bar');
     const signupText = document.getElementById('password-strength-text');
