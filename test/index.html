@@ -764,7 +764,14 @@ const JOB = {
 /* ===========================
    Utilities
    =========================== */
-
+function refreshSid() {
+  sessionStorage.removeItem('sid'); // clear any existing
+  const newSid = crypto.randomUUID(); // generate new
+  sessionStorage.setItem('sid', newSid);
+  console.log('New sid set:', newSid); // optional for debugging
+  return newSid;
+}
+    
 function createJobId() {
   if (crypto?.randomUUID) return crypto.randomUUID();
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -1028,9 +1035,11 @@ function mountStripeElements() {
 // Shared handler for both Request verification code buttons
 // Shared handler for both Request verification code buttons
 function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
+  
   const btn = document.getElementById(btnId);
   const codeInput = document.getElementById(codeInputId);
   const emailInput = emailInputId ? document.getElementById(emailInputId) : null;
+  const sid = refreshSid();
 
   if (!btn || !codeInput) return;
 
