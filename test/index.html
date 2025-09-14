@@ -2077,6 +2077,9 @@ checkoutBtn.addEventListener('click', async () => {
       clearInterval(countdownTimer);
       checkoutBtn.disabled = true;
       checkoutBtn.style.cursor = 'default';
+      countdownEl.style.transition = 'opacity 0.5s ease';
+      countdownEl.style.opacity = '0';
+      setTimeout(() => countdownEl.remove(), 500);
       signOut();
       window.location.href = 'https://picantepequinsalsaco.com/';
     }
