@@ -1113,13 +1113,11 @@ function checkSignupValidity() {
   const domain = atIndex !== -1 ? emailVal.slice(atIndex + 1) : '';
   const domainPattern = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   const domainValid = atIndex !== -1 && domainPattern.test(domain);
-  const phoneValid = /^\d{10}$/.test(ph);
-
 
   // ✅ Enable/disable the Request verification code button
   if (signupRequestCodeBtn) {
     const codeAlreadyEnabled = signupCodeInput && !signupCodeInput.disabled;
-    signupRequestCodeBtn.disabled = !(domainValid && phoneValid) || codeAlreadyEnabled;
+    signupRequestCodeBtn.disabled = !(allFilled && passwordsMatch && strongEnough && domainValid) || codeAlreadyEnabled;
   }
 
   // ✅ Require valid 6-digit code for main button (only after code input is enabled)
@@ -1281,7 +1279,7 @@ function checkResetValidity() {
     : false;
 
   // Final gate for main submit button
-  btn.disabled = !(passwordsMatch && strongEnough && codeOk);
+  btn.disabled = !(emailPresent && phoneValid && passwordsMatch && strongEnough && codeOk);
 }
 
 (function resetPasswordStrengthMeter() {
