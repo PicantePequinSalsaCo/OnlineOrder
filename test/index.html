@@ -2066,12 +2066,17 @@ checkoutBtn.addEventListener('click', async () => {
         countdownEl.style.color = '#a76e28';
         countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
         checkoutBtn.insertAdjacentElement('afterend', countdownEl);
+        checkoutBtn.disabled = false;
+        checkoutBtn.style.cursor = 'pointer';
+
           // Update countdown every second
      let countdownTimer = setInterval(() => {
         countdownSeconds--;
         countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
      if (countdownSeconds <= 0) {
       clearInterval(countdownTimer);
+      checkoutBtn.disabled = true;
+      checkoutBtn.style.cursor = 'default';
       signOut();
       window.location.href = 'https://picantepequinsalsaco.com/';
     }
