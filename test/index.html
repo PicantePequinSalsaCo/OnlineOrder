@@ -1041,7 +1041,11 @@ function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
   const emailInput = emailInputId ? document.getElementById(emailInputId) : null;
   if (!btn || !codeInput) return;
 
+  btn.dataset.codeSent = 'false';
+
   btn.addEventListener('click', async () => {
+    if (btn.dataset.codeSent === 'true') return;
+
     const sid = refreshSid();
     const email = emailInput ? emailInput.value.trim() : undefined;
 
@@ -1057,6 +1061,7 @@ function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
       btn.disabled = true;
       btn.style.backgroundColor = 'var(--accent-green)';
       btn.textContent = 'Enter Code';
+      btn.dataset.codeSent = 'true';
       showMessage('Verification code sent. Please check your email/phone.', 'success');
     } else {
       showMessage('Failed to send verification code. Try again.', 'error');
@@ -1125,6 +1130,7 @@ function checkSignupValidity() {
   // ✅ Enable/disable the Request verification code button
   if (signupRequestCodeBtn) {
     const codeAlreadyEnabled = signupCodeInput && !signupCodeInput.disabled;
+    const codeSent = signupRequestCodeBtn.dataset.codeSent === 'true';
     signupRequestCodeBtn.disabled = !(domainValid) || codeAlreadyEnabled;
   }
 
@@ -1278,6 +1284,7 @@ function checkResetValidity() {
   // ✅ Enable/disable the Request verification code button
   if (resetRequestCodeBtn) {
     const codeAlreadyEnabled = resetCodeInput && !resetCodeInput.disabled;
+    const codeSent = resetRequestCodeBtn.dataset.codeSent === 'true';
     resetRequestCodeBtn.disabled = !(emailPresent && phoneValid) || codeAlreadyEnabled;
   }
 
@@ -1703,6 +1710,7 @@ if (result.ok) {
   resetForm.reset();
   checkResetValidity();
   document.getElementById('reset-verification-code').disabled = true;
+  resetRequestCodeBtn.dataset.codeSent = 'false';
 
  // Clear reset password strength meter UI
   const resetBar = document.getElementById('reset-password-strength-bar');
@@ -1815,6 +1823,7 @@ const res = await fetch(endpoint, {
     signupForm.reset();
     checkSignupValidity();
     document.getElementById('signup-verification-code').disabled = true;
+    signupRequestCodeBtn.dataset.codeSent = 'false';
       
      // Clear signup password strength meter UI
     const signupBar = document.getElementById('password-strength-bar');
