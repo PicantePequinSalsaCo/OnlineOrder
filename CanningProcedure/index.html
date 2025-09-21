@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Picante Pequin Salsa Co – Smoked Salsa Canning Procedure</title>
+  <meta name="description" content="Official Picante Pequin™ Smoked Salsa Canning Procedure — flavor, safety, and shelf stability in every jar.">
+  <meta name="color-scheme" content="dark light" />
+
+  <!-- OG / Twitter meta same as your template -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Picante Pequin Salsa Co">
+  <meta property="og:title" content="Picante Pequin Salsa Co – Smoked Salsa Canning Procedure">
+  <meta property="og:description" content="Official Picante Pequin™ Smoked Salsa Canning Procedure — flavor, safety, and shelf stability in every jar.">
+  <meta property="og:image" content="https://picantepequinsalsaco.com/images/social-preview.png">
+  <meta property="og:url" content="https://picantepequinsalsaco.com">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" type="image/x-icon" href="/images/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" href="/images/favicon.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+
+  <link rel="preload" as="image" href="https://picantepequinsalsaco.com/images/bg.png">
+
+  <style>
+  :root {
+    /* Old site palette preserved */
+    --bg-deep: #1e1e1e00;
+    --ink: #ececec;
+    --muted: #b0b0b0;
+
+    --accent-orange: #f57c00;
+    --accent-green: #558b2f;
+    --accent-red: #d84315;
+
+    --card: #2e2e2e60;      /* glass card tint from old table bg */
+    --card-border: #3a3a3a; /* old table row divider */
+    --row-alt: #262626;     /* old alternating row */
+
+    --radius: 16px;
+    --radius-sm: 12px;
+    --shadow: 0 10px 30px #00000066;
+    --accent-glow: 0 0 0 2px #f57c0033, 0 10px 20px #f57c0022;
+
+    --maxw: 1100px;
+
+    /* Subtle dark gradient base with soft red/green light to echo header gradient */
+    --grad: linear-gradient(135deg, #1f1f1f70 0%, #1b1b1b70 40%, #15151570 100%);
+
+    --tile-w: 300px;
+    --tile-h: 300px;
+    --rail-pad: 14px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-deep); /* fallback */
+    scroll-behavior: smooth;
+  }
+
+  a { color: inherit; text-decoration: none; }
+  img { display: block; max-width: 100%; }
+
+  /* Background image + atmospheric overlay (image inside .bg so filter applies) */
+  .bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1; /* push behind all content */
+    background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover no-repeat;
+    filter: blur(0px) saturate(1.05) brightness(.9);
+    transform: translateZ(0) scale(1.02);
+  }
+
+  .bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: none;
+  }
+
+  /* Sticky header */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: saturate(140%) blur(10px);
+    background: #161616cc;
+    border-bottom: 1px solid #ffffff14;
+  }
+
+  .nav {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: .3px;
+  }
+
+  .logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background-image: url('https://picantepequinsalsaco.com/images/bg.png');
+    background-size: cover;
+    background-position: center;
+    box-shadow: var(--accent-glow);
+  }
+
+  .tag { color: var(--muted); font-size: .95rem; }
+
+  nav ul {
+    display: flex;
+    gap: 10px;
+    list-style: none;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+  }
+   /* 1px white outline around orange text */
+.outlined {
+  color: #ffffffdc;                    /* your fill color */
+  
+  /* Chrome, Safari & modern WebKit-based browsers */
+  -webkit-text-stroke: 1px #ffffff10;  
+  text-stroke: 1px #ffffff10;         /* non-prefixed if supported */
+
+  /* fallback for other browsers using multi-layer text-shadow */
+  text-shadow:
+    /* top-left */     -1px -1px 0 #ffffff10,
+    /* top-right */     1px -1px 0 #ffffff10,
+    /* bottom-left */  -1px  1px 0 #ffffff10,
+    /* bottom-right */  1px  1px 0 #ffffff10;
+}
+  
+  .link {
+    padding: 8px 12px;
+    border-radius: 999px;
+    color: var(--muted);
+    border: 1px solid transparent;
+    transition: .2s ease;
+  }
+
+  .link:hover {
+    color: var(--ink);
+    border-color: #ffffff22;
+    background: #ffffff10;
+  }
+   
+  .cta {
+    background: #050f46a9;
+    color: #c06a00b5;
+    backdrop-filter: 6px;
+    font-weight: 700;
+    padding: 9px 14px;
+    border-radius: 999px;
+    box-shadow: var(--accent-glow);
+  }
+
+  .cta:hover { filter: brightness(.95); }
+
+  /* Hero */
+  .hero {
+    max-width: var(--maxw);
+    margin: 36px auto 18px;
+    padding: 0 18px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+  }
+
+  .hero-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+  }
+
+  .hero .hero-gallery { align-self: start; }
+
+  .kicker {
+    color: var(--accent-green);
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-size: .8rem;
+  }
+
+  h1 {
+    font-size: clamp(1.9rem, 3.2vw, 3rem);
+    line-height: 1.1;
+    margin: .4rem 0 .8rem;
+  }
+
+  .sub { color: var(--muted); font-size: 1.05rem; }
+
+  .badges {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pill {
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: .8rem;
+    color: #0d0a05;
+    background: #3d8700ad;
+    border: 1px solid #ffffff22;
+  }
+
+  .pill.alt {
+    color: #0a0f08;
+    background: #cf7c00d8;
+  }
+
+  .hero-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1px solid #ffffff1f;
+    background: #ffffff0f;
+    color: #fff;
+    backdrop-filter: blur(6px);
+    transition: transform .15s ease, background .2s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-1px);
+    background: #ffffff1a;
+  }
+
+  .btn.primary {
+    background: linear-gradient(180deg, var(--accent-orange), #e46f00);
+    color: #fff;
+    border: none;
+    font-weight: 800;
+  }
+
+  /* Menu section */
+  .section {
+    max-width: var(--maxw);
+    margin: 20px auto;
+    padding: 0 18px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    padding: 18px;
+    box-shadow: var(--shadow);
+  }
+
+  .section h2 { font-size: 1.4rem; margin: 0 0 10px; }
+
+  .table-wrap {
+    overflow: auto;
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    background: #1a1a1acc;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 520px;
+  }
+
+  thead {
+    background: linear-gradient(90deg, var(--accent-red), var(--accent-green));
+  }
+
+  thead th {
+    color: #fff;
+    font-weight: 600;
+    padding: .8em 1em;
+    text-align: left;
+  }
+
+  tbody td {
+    padding: .8em 1em;
+    border-top: 1px solid var(--card-border);
+    color: var(--ink);
+  }
+
+  tbody tr:nth-child(even) { background: var(--row-alt); }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1.2fr .8fr;
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  .list { margin: 0; padding-left: 1.2em; }
+  .list li { margin: .4em 0; }
+
+  .order-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .order-cta a {
+    background-color: var(--accent-orange);
+    color: #fff;
+    padding: .9em 1.4em;
+    border-radius: 10px;
+    font-weight: 800;
+    text-align: center;
+    box-shadow: var(--accent-glow);
+  }
+
+  .small { font-size: .9rem; color: var(--muted); margin-top: 10px; }
+
+  /* Highlights gallery */
+  .gallery-wrap {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    border: 1px solid var(--card-border);
+    background: #1e1e1e60;
+    box-shadow: var(--shadow);
+    width: calc(var(--tile-w) + 2 * var(--rail-pad));
+    height: calc(var(--tile-h) + 2 * var(--rail-pad));
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .rail {
+    display: flex;
+    gap: 12px;
+    padding: var(--rail-pad);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .rail::-webkit-scrollbar { display: none; }
+
+  .tile {
+    flex: 0 0 auto;
+    width: var(--tile-w);
+    height: var(--tile-h);
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    scroll-snap-align: center;
+    border: 1px solid #ffffff1a;
+    background: #141414;
+  }
+
+  .tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: .95;
+    transition: .25s;
+  }
+
+  .tile:hover img { transform: scale(1.03); opacity: 1; }
+
+  .tile .label {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #161616cc;
+    border: 1px solid #ffffff22;
+    color: #fff;
+    font-size: .8rem;
+  }
+
+  .gallery-controls {
+    position: absolute;
+    inset: auto 10px 10px auto;
+    display: flex;
+    gap: 8px;
+    z-index: 2;
+  }
+
+  .ctrl {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: #161616cc;
+    border: 1px solid #ffffff2a;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .ctrl:hover { background: #161616e0; }
+
+  /* Footer */
+  footer {
+    margin: 40px 0 28px;
+    color: var(--muted);
+    text-align: center;
+    font-size: .9rem;
+  }
+
+  .links {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .links a { color: var(--accent-orange); font-weight: 700; }
+
+  /* ========================= */
+  /* Responsive Styles         */
+  /* ========================= */
+
+  @media (max-width: 960px) {
+    .hero { grid-template-columns: 1fr; }
+    .info-grid { grid-template-columns: 1fr; }
+
+    /* Keep gallery fixed size & centered */
+    .gallery-wrap {
+      width: calc(var(--tile-w) + 2 * var(--rail-pad));
+      height: calc(var(--tile-h) + 2 * var(--rail-pad));
+      margin: 0 auto;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .nav {
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+    }
+    .brand {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    nav ul {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+    nav ul li {
+      display: flex;
+      justify-content: center;
+    }
+    nav a {
+      width: 100%;
+      text-align: center;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+    /* Additional SOP-specific tweaks */
+    .sop-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      margin-top: 24px;
+    }
+    .sop-card h2 {
+      font-size: 1.6rem;
+      margin-bottom: 10px;
+      color: var(--accent-orange);
+      text-align: center;
+    }
+    .sop-card p.intro {
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+    .sop-table-wrap {
+      overflow: auto;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      background: #1a1a1acc;
+    }
+    .sop-table thead {
+      background: linear-gradient(90deg, var(--accent-red), var(--accent-orange), var(--accent-green));
+    }
+    .sop-table thead th {
+      color: #fff;
+      font-weight: 600;
+      padding: .8em 1em;
+      text-align: center;
+    }
+    .sop-table tbody td {
+      padding: .8em 1em;
+      border-top: 1px solid var(--card-border);
+      color: var(--ink);
+      vertical-align: top;
+    }
+    .sop-table tbody tr:nth-child(even) {
+      background: var(--row-alt);
+    }
+    .sop-small {
+      font-size: .85rem;
+      color: var(--muted);
+      margin-top: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <header>
+    <div class="nav">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <strong>Picante Pequin Salsa Co</strong>
+      </div>
+      <nav aria-label="Primary">
+        <ul>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <div class="sop-card">
+        <h2>🫙 Smoked Salsa Canning Procedure</h2>
+        <p class="intro">Flavor, safety, and shelf stability — perfected in every jar.</p>
+
+        <div class="sop-table-wrap">
+          <table class="sop-table">
+            <thead>
+              <tr>
+                <th>Smoke</th>
+                <th>Blend & Acidify</th>
+                <th>Prepare Jars</th>
+                <th>Fill Jars</th>
+                <th>Pasteurize</th>
+                <th>Seal & Store</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Smoke tomatoes, peppers, onions, garlic, and optional fruits at <strong>250–300°F</strong> for <strong>1–2 hrs</strong> using mesquite or hickory.</td>
+                <td>Blend to desired texture. Add fresh lime juice and food-grade citric acid until <strong>pH ≤ 4.5</strong> (target 4.1–4.3). Simmer 10–15 mins.<br><strong>Test pH</strong> with a calibrated meter or quality strips before jarring.</td>
+                <td>Wash jars, lids, and rings in hot soapy water; rinse well. Sanitize jars and keep warm until filling. Use new lids.</td>
+                <td>Ladle salsa into jars, leaving <strong>½" headspace</strong>. Wipe rims clean. Apply lid and band finger-tight.</td>
+                <td><strong>Water Bath:</strong> Fully submerge jars in boiling water (212°F). Process for <strong>15 minutes</strong> after water returns to a full boil. Maintain water above jar tops.</td>
+                <td>Cool jars undisturbed for <strong>12–24 hrs</strong>. Check seals — lids should be concave and not flex.<br><strong>Label:</strong><ul><li>“Picante Pequin — Sealed Date”</li><li>“Picante Pequin — Flavor & Product Info QR”</li></ul>Store sealed jars in a cool, dry, dark place (55–70°F). Shelf life: 12–18 months unopened.</td>
+              </tr>
+              <tr>
+                <td>Smoking deepens flavor and aroma; softens texture for blending.</td>
+                <td>Acidification ensures shelf safety. pH ≤ 4.6 required; ≤ 4.5 preferred for margin.</td>
+                <td>Warm jars prevent thermal shock; clean rims ensure reliable seals.</td>
+                <td>Correct headspace reduces spoilage risk; clean rims improve seal success.</td>
+                <td>Consistent temperature and full submersion are critical for safety.</td>
+                <td>Unsealed jars: refrigerate and consume promptly.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © <span id="y"></span> Picante Pequin Salsa Co. All rights reserved.
+    <div class="links">
+      <a href="/ShippingPolicy">Shipping & Delivery Policy</a>
+      <a href="/PrivacyPolicy">Customer Communication & Privacy Policy</a>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
