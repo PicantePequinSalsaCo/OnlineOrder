@@ -2,61 +2,66 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Picante Pequin Trading Post — Coming Soon</title>
+  <title>Shipping & Delivery Policy – Picante Pequin Salsa Co.</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark light" />
-  <link rel="icon" href="/images/favicon.ico" />
+  <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
   <link rel="preload" as="image" href="https://picantepequinsalsaco.com/images/bg.png" />
 
   <style>
-    /* Root variables */
+    /*————————————————————————————
+      Root vars + reset
+    ————————————————————————————*/
     :root {
       --bg-deep: #1e1e1e00;
       --ink: #ececec;
       --muted: #b0b0b0;
       --accent-orange: #f57c00;
       --accent-glow: 0 0 0 2px #f57c0033, 0 10px 20px #f57c0022;
-      --glass: rgba(30, 30, 30, 0.6);
-      --border: #ffffff14;
-      --radius: 12px;
-      --radius-sm: 10px;
       --maxw: 1100px;
-      --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     }
 
-    /* Reset & base */
-    *,
-    *::before,
-    *::after { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; }
     html, body {
       margin: 0;
       padding: 0;
-      width: 100%;
       height: 100%;
-      font-family: ui-sans-serif, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: var(--bg-deep);
-      color: var(--ink);
+      font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-deep);
+      color: #fff;
       scroll-behavior: smooth;
     }
-    a { color: inherit; text-decoration: none; }
 
-    /* Background image */
+    /*————————————————————————————
+      Global link reset
+    ————————————————————————————*/
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /*————————————————————————————
+      Background
+    ————————————————————————————*/
     .bg {
       position: fixed;
       inset: 0;
       z-index: -1;
-      background: url("https://picantepequinsalsaco.com/images/bg.png") center/cover no-repeat;
-      filter: brightness(0.9) saturate(1.05);
+      background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover no-repeat;
+      filter: blur(0) saturate(1.05) brightness(.9);
+      transform: translateZ(0) scale(1.02);
     }
 
-    /* Header */
+    /*————————————————————————————
+      Sticky header
+    ————————————————————————————*/
     header {
       position: sticky;
       top: 0;
       z-index: 50;
       backdrop-filter: saturate(140%) blur(10px);
       background: #161616cc;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid #ffffff14;
     }
     .nav {
       max-width: var(--maxw);
@@ -70,12 +75,13 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      cursor: pointer;
     }
     .logo {
       width: 34px;
       height: 34px;
       border-radius: 10px;
-      background: url("https://picantepequinsalsaco.com/images/bg.png") center/cover no-repeat;
+      background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover no-repeat;
       box-shadow: var(--accent-glow);
     }
     nav ul {
@@ -89,128 +95,75 @@
       padding: 8px 12px;
       border-radius: 999px;
       color: var(--muted);
-      transition: 0.2s;
+      transition: .2s;
     }
     .link:hover {
       color: var(--ink);
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: #ffffff10;
+      border: 1px solid #ffffff22;
     }
 
-    /* Main “coming soon” card */
+    /*————————————————————————————
+      Main + centering
+    ————————————————————————————*/
     main {
-      min-height: calc(100vh - 64px);
+      max-width: var(--maxw);
+      margin: 24px auto;
+      padding: 0 18px;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
       text-align: center;
-    }
-    .card {
-      width: min(680px, 92vw);
-      background: var(--glass);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px;
-      box-shadow: var(--shadow);
-      transition: transform 0.16s ease, box-shadow 0.2s ease;
-    }
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-    }
-    .kicker {
-      display: inline-block;
-      font-size: 0.8rem;
-      font-weight: 800;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      padding: 6px 10px;
-      border-radius: 999px;
-      color: #fff;
-      background: var(--accent-orange);
     }
     h1 {
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
-      margin: 12px 0 6px;
-      color: #fff;
-    }
-    .sub {
-      color: var(--muted);
-      margin: 0 0 18px;
+      font-size: clamp(2rem, 5vw, 2.5rem);
+      margin-bottom: 16px;
+      background-color: rgba(0,0,0,0.4);
+      padding: 12px 18px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(255,87,34,0.6);
     }
 
-    /* Countdown */
-    .countdown {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(70px, 1fr));
-      gap: 12px;
-      margin: 16px 0 10px;
+    /*————————————————————————————
+      Section & card
+    ————————————————————————————*/
+    .section {
+      width: 100%;
+      margin: 24px 0;
     }
-    .unit {
-      background: var(--glass);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 12px 10px;
+    .card {
+      background: var(--card, #2e2e2e60);
+      border: 1px solid var(--card-border, #3a3a3a);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: var(--shadow, 0 10px 30px #00000066);
+      max-width: 800px;
+      margin: 0 auto;
     }
-    .num {
+    .policy-title {
+      color: var(--accent-orange);
+      margin-top: 0;
+      margin-bottom: 1rem;
       font-size: 1.6rem;
-      font-weight: 800;
     }
-    .lbl {
-      font-size: 0.78rem;
-      color: var(--muted);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+    .list {
+      margin: 0;
+      padding-left: 1.2em;
+      text-align: left;
     }
-
-    /* Notify form */
-    form {
-      margin-top: 16px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    input[type="email"] {
-      width: min(360px, 80vw);
-      background: #222;
-      color: #fff;
-      border: 1px solid #444;
-      padding: 12px 14px;
-      border-radius: 10px;
-      font-size: 0.98rem;
-      box-shadow: inset 0 0 0 1px #0003;
-    }
-    input::placeholder {
-      color: var(--muted);
-    }
-    button {
-      background: var(--accent-orange);
-      color: #fff;
-      border: none;
-      padding: 12px 16px;
-      font-weight: 800;
-      border-radius: 10px;
-      box-shadow: var(--accent-glow);
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    button:hover {
-      filter: brightness(0.9);
-    }
-    .note {
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 0.9rem;
+    .list li {
+      margin: .6em 0;
+      line-height: 1.6;
     }
 
-    /* Footer links */
+    /*————————————————————————————
+      Footer
+    ————————————————————————————*/
     footer {
       margin: 40px 0 28px;
-      text-align: center;
       color: var(--muted);
-      font-size: 0.9rem;
+      text-align: center;
+      font-size: .9rem;
     }
     .links {
       display: flex;
@@ -219,142 +172,79 @@
       justify-content: center;
       margin-top: 8px;
     }
-    .links a {
-      color: var(--accent-orange);
-      font-weight: 700;
-    }
+    .links a { color: var(--accent-orange); font-weight: 700; }
 
-    /* Reduced motion */
     @media (prefers-reduced-motion: reduce) {
       * { animation: none !important; transition: none !important; }
     }
-
-    /* Responsive tweaks */
-    @media (max-width: 640px) {
-      .nav { flex-direction: column; gap: 8px; text-align: center; }
-      nav ul { flex-direction: column; gap: 6px; }
-      .logo { margin-bottom: 4px; }
-    }
-    @media (max-width: 520px) {
-      .countdown { grid-template-columns: repeat(2, minmax(90px, 1fr)); }
-    }
   </style>
 </head>
-<body data-target="2026-03-01T17:00:00Z">
+<body>
   <div class="bg" aria-hidden="true"></div>
 
   <header>
     <div class="nav">
       <a class="brand" href="https://picantepequinsalsaco.com">
         <div class="logo" aria-hidden="true"></div>
-        <strong>Picante Pequin Trading Post</strong>
+        <strong>Picante Pequin Salsa Co</strong>
       </a>
       <nav aria-label="Primary">
         <ul>
-          <li><a class="link" href="/PrivacyPolicy">Privacy Policy</a></li>
-          <li><a class="link"href="mailto:support@picantepequinsalsaco.com?subject=Trading%20Post%20Feedback">Support</a></li>
+          <li><a class="link" href="/ShippingPolicy">Shipping</a></li>
+          <li><a class="link" href="/PrivacyPolicy">Privacy</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <main>
-    <section class="card" aria-labelledby="title">
-      <span class="kicker">Coming soon!</span>
-      <h1 id="title">Our Trading Post is on the Grill</h1>
-      <p class="sub">Crafted with heat-Delivered with heart</p>
+<main>
+  <h1>🎁 Rewards Trading Post – Points Redemption Policy</h1>
 
-      <div class="countdown" role="timer" aria-live="polite">
-        <div class="unit">
-          <div class="num" id="d">—</div>
-          <div class="lbl">Days</div>
-        </div>
-        <div class="unit">
-          <div class="num" id="h">—</div>
-          <div class="lbl">Hours</div>
-        </div>
-        <div class="unit">
-          <div class="num" id="m">—</div>
-          <div class="lbl">Minutes</div>
-        </div>
-        <div class="unit">
-          <div class="num" id="s">—</div>
-          <div class="lbl">Seconds</div>
-        </div>
-      </div>
+  <section class="section" id="rewards">
+    <div class="card">
+      <ol class="list">
+        <li><strong>Earning Points</strong><br>
+          Rewards Points are earned on the <em>total purchase price</em>, including sales tax and shipping. 
+          For every $1 spent, you earn 100 points. 
+          Put simply: every $10 spent earns you $1 in Rewards Points.</li>
 
-      <form id="notify" aria-label="Notify me form">
-        <label for="email" class="sr-only" style="position:absolute;left:-9999px;">Email address</label>
-        <input id="email" name="email" type="email" placeholder="you@domain.com" autocomplete="email" required />
-        <button type="submit">Share Feedback</button>
-      </form>
-      <div class="note" id="note">We’ll only use your email for this launch.</div>
-    </section>
-  </main>
+        <li><strong>Point Value</strong><br>
+          Each point is worth $0.10 toward future purchases. 
+          Your points balance is automatically updated after each completed order.</li>
 
+        <li><strong>Redemption at Checkout</strong><br>
+          Points can be applied directly during checkout. 
+          You may only redeem up to the amount available in your balance. 
+          The checkout field will automatically restrict entry to your current balance.</li>
+
+        <li><strong>Partial Redemptions</strong><br>
+          You may choose to redeem all or part of your available points. 
+          Any unused points remain in your account for future orders.</li>
+
+        <li><strong>Expiration</strong><br>
+          Points do not expire as long as your account remains active. 
+          Inactive accounts (no purchases for 18 months) may forfeit unused points.</li>
+
+        <li><strong>Non‑Transferable</strong><br>
+          Rewards Points are tied to your account and cannot be transferred, exchanged for cash, or gifted.</li>
+
+        <li><strong>Program Updates</strong><br>
+          Picante Pequin Salsa Co. reserves the right to adjust earning rates, redemption values, or program rules. 
+          Any changes will be posted here in advance.</li>
+      </ol>
+    </div>
+  </section>
+</main>
   <footer>
     © <span id="y"></span> Picante Pequin Salsa Co. All rights reserved.
     <div class="links">
+      <a href="/ShippingPolicy">Shipping & Delivery Policy</a>
       <a href="/PrivacyPolicy">Privacy Policy</a>
     </div>
   </footer>
 
   <script>
-    // Dynamic year
     document.getElementById('y').textContent = new Date().getFullYear();
-
-    // Countdown timer
-    (function() {
-      const [elD, elH, elM, elS] = [
-        'd','h','m','s'
-      ].map(id => document.getElementById(id));
-      const targetAttr = document.body.getAttribute('data-target');
-      const target = targetAttr ? new Date(targetAttr) : null;
-      if (!target || isNaN(target.getTime())) {
-        document.querySelector('.countdown').style.display = 'none';
-        return;
-      }
-      function pad(n) { return n.toString().padStart(2, '0'); }
-      function tick() {
-        const now = new Date();
-        let diff = Math.max(0, target - now);
-        const days = Math.floor(diff / (1000*60*60*24));
-        diff -= days * (1000*60*60*24);
-        const hours = Math.floor(diff / (1000*60*60));
-        diff -= hours * (1000*60*60);
-        const mins = Math.floor(diff / (1000*60));
-        diff -= mins * (1000*60);
-        const secs = Math.floor(diff / 1000);
-
-        elD.textContent = days;
-        elH.textContent = pad(hours);
-        elM.textContent = pad(mins);
-        elS.textContent = pad(secs);
-
-        if (target - now <= 0) {
-          clearInterval(timer);
-          [elD, elH, elM, elS].forEach(el => el.textContent = '00');
-          document.getElementById('note').textContent = 'We’re live. Refresh to check availability.';
-        }
-      }
-      const timer = setInterval(tick, 1000);
-      tick();
-    })();
-
-    // Notify form (mailto fallback)
-    (function() {
-      const form = document.getElementById('notify');
-      const note = document.getElementById('note');
-      form.addEventListener('submit', e => {
-        e.preventDefault();
-        const email = document.getElementById('email').value.trim();
-        if (!email) return;
-        const subject = encodeURIComponent('Trading Post Feedback');
-        const body = encodeURIComponent('Please notify me at ' + email + ' when you launch Picante Pequin.');
-        window.location.href = `mailto:support@picantepequinsalsaco.com?subject=${subject}&body=${body}`;
-        note.textContent = 'Thanks — your mail client will open. If it didn’t, email us directly.';
-      });
-    })();
   </script>
 </body>
 </html>
