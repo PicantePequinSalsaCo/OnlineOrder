@@ -107,11 +107,13 @@
       gap: 16px;
     }    
 .prod-card {
+  background: var(--card);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-sm);
+  padding: 16px;
   box-shadow: var(--shadow);
-  perspective: 1000px;
-  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Inner wrapper that flips */
