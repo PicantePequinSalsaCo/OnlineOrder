@@ -1518,6 +1518,12 @@ function renderProducts() {
       <button class="add-to-cart">Add to Cart</button>
     `;
     const qtyInput = card.querySelector('.qty-input');
+      // Prevent negative or invalid manual entry
+qtyInput.addEventListener('input', () => {
+  if (qtyInput.value === '' || parseInt(qtyInput.value, 10) < 0) {
+    qtyInput.value = 0;
+  }
+});
     card.querySelector('.qty-btn.minus').onclick = () =>
       qtyInput.value = Math.max(0, +qtyInput.value - 1);
     card.querySelector('.qty-btn.plus').onclick = () =>
@@ -1559,7 +1565,7 @@ function renderCart() {
       <span class="cart-name">${prod.name}</span>
       <div class="cart-quantity">
         <button class="qty-btn minus">−</button>
-        <span class="qty-display">${item.qty}</span>
+        <input type="number" class="cart-qty-input" value="${item.qty}" min="0">
         <button class="qty-btn plus">+</button>
       </div>
     `;
@@ -1574,6 +1580,22 @@ function renderCart() {
     li.querySelector('.qty-btn.plus').onclick = () => {
       item.qty++; renderCart();
     };
+
+    const qtyInput = li.querySelector('.cart-qty-input');
+      qtyInput.addEventListener('input', () => {
+        let qty = parseInt(qtyInput.value, 10);
+        if (isNaN(qty) || qty < 0) qty = 0;
+        qtyInput.value = qty;
+        item.qty = qty;
+
+        if (qty === 0) {
+          li.classList.add('removing');
+          setTimeout(() => removeFromCart(item.id), 300);
+        } else {
+          renderCart();
+        }
+      });
+
 } else {
           li.querySelectorAll('.qty-btn').forEach(btn => {
         btn.disabled = true;
