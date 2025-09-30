@@ -585,6 +585,17 @@
     * { animation: none !important; transition: none !important; }
   }
 </style>
+  
+  <!-- Samsung QR NUL guard -->
+  <script>
+    (function() {
+      const path = window.location.pathname;
+      if (path.includes('%00') || path.includes('\0')) {
+        window.location.replace("https://picantepequinsalsaco.com/");
+      }
+    })();
+  </script>
+
 </head>
 <body>
   <div class="bg" aria-hidden="true"></div>
