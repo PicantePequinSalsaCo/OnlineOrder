@@ -21,24 +21,6 @@
   <link rel="manifest" href="/manifest.webmanifest">
 
   <link rel="preload" as="image" href="https://picantepequinsalsaco.com/images/bg.png">
-
-  <script>
-(function() {
-  var clean = window.location.href
-    .replace(/%00/g, '')   // strip encoded nulls
-    .replace(/\x00/g, ''); // strip raw nulls
-
-  // Force canonical domain
-  clean = clean.replace(
-    /^https?:\/\/(www\.)?(picantepequin|picantepequinsalsa)\.com/i,
-    'https://picantepequinsalsaco.com'
-  );
-
-  if (clean !== window.location.href) {
-    window.location.replace(clean);
-  }
-})();
-</script>
   
 <style>
   :root {
@@ -705,6 +687,7 @@
   </script>
 </body>
 </html>
+
 
 
 
