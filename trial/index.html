@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Picante Pequin Salsa Co – Fresh Chile Pequin Salsa from Texas</title>
+  <title>Page Not Found – Picante Pequin Salsa Co</title>
   <meta name="description" content="Picante Pequin Salsa Co crafts fresh, locally sourced chile pequin salsas in Texas. Order online for delivery or pickup.">
+  <meta name="robots" content="noindex" />
   <meta name="color-scheme" content="dark light" />
 
   <meta property="og:type" content="website">
@@ -21,571 +22,7 @@
   <link rel="manifest" href="/manifest.webmanifest">
 
   <link rel="preload" as="image" href="https://picantepequinsalsaco.com/images/bg.png">
-  
-<style>
-  :root {
-    /* Old site palette preserved */
-    --bg-deep: #1e1e1e00;
-    --ink: #ececec;
-    --muted: #b0b0b0;
-    --banner: #00001b63;
 
-    --accent-orange: #f57c00;
-    --accent-green: #558b2f;
-    --accent-red: #d84315;
-
-    --card: #2e2e2e60;      /* glass card tint from old table bg */
-    --card-border: #3a3a3a; /* old table row divider */
-    --row-alt: #262626;     /* old alternating row */
-
-    --radius: 16px;
-    --radius-sm: 12px;
-    --shadow: 0 10px 30px #00000066;
-    --accent-glow: 0 0 0 2px #f57c0033, 0 10px 20px #f57c0022;
-
-    --maxw: 1100px;
-
-    /* Subtle dark gradient base with soft red/green light to echo header gradient */
-    --grad: linear-gradient(135deg, #1f1f1f70 0%, #1b1b1b70 40%, #15151570 100%);
-
-    --tile-w: 300px;
-    --tile-h: 300px;
-    --rail-pad: 14px;
-  }
-
-  * { box-sizing: border-box; }
-
-  html, body {
-    margin: 0;
-    padding: 0;
-    font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--bg-deep); /* fallback */
-    scroll-behavior: smooth;
-  }
-
-  a { color: inherit; text-decoration: none; }
-  img { display: block; max-width: 100%; }
-
-  /* Background image + atmospheric overlay (image inside .bg so filter applies) */
-  .bg {
-    position: fixed;
-    inset: 0;
-    z-index: -1; /* push behind all content */
-    background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover no-repeat;
-    filter: blur(0px) saturate(1.05) brightness(.9);
-    transform: translateZ(0) scale(1.02);
-  }
-
-  .bg::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: none;
-  }
-
-  /* Sticky header */
-  header {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    backdrop-filter: saturate(140%) blur(10px);
-    background: #161616cc;
-    border-bottom: 1px solid #ffffff14;
-  }
-
-  .nav {
-    max-width: var(--maxw);
-    margin: 0 auto;
-    padding: 12px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-  }
-
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    letter-spacing: .3px;
-  }
-
-  .logo {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    background-image: url('https://picantepequinsalsaco.com/images/bg.png');
-    background-size: cover;
-    background-position: center;
-    box-shadow: var(--accent-glow);
-  }
-
-  .tag { color: var(--muted); font-size: .95rem; }
-
-  nav ul {
-    display: flex;
-    gap: 10px;
-    list-style: none;
-    align-items: center;
-    margin: 0;
-    padding: 0;
-  }
-   /* 1px white outline around orange text */
-.outlined {
-  color: #ffffffdc;                    /* your fill color */
-  
-  /* Chrome, Safari & modern WebKit-based browsers */
-  -webkit-text-stroke: 1px #ffffff10;  
-  text-stroke: 1px #ffffff10;         /* non-prefixed if supported */
-
-  /* fallback for other browsers using multi-layer text-shadow */
-  text-shadow:
-    /* top-left */     -1px -1px 0 #ffffff10,
-    /* top-right */     1px -1px 0 #ffffff10,
-    /* bottom-left */  -1px  1px 0 #ffffff10,
-    /* bottom-right */  1px  1px 0 #ffffff10;
-}
-  
-  .link {
-    padding: 8px 12px;
-    border-radius: 999px;
-    color: var(--muted);
-    border: 1px solid transparent;
-    transition: .2s ease;
-  }
-
-  .link:hover {
-    color: var(--ink);
-    border-color: #ffffff22;
-    background: #ffffff10;
-  }
-   
-  .cta {
-    background: #050f46a9;
-    color: #c06a00b5;
-    backdrop-filter: 6px;
-    font-weight: 700;
-    padding: 9px 14px;
-    border-radius: 999px;
-    box-shadow: var(--accent-glow);
-  }
-
-  .cta:hover { filter: brightness(.95); }
-
-  /* Hero */
-  .hero {
-    max-width: var(--maxw);
-    margin: 36px auto 18px;
-    padding: 0 18px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 24px;
-  }
-
-  .hero-card {
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius);
-    padding: 28px;
-    box-shadow: var(--shadow);
-  }
-
-  .hero .hero-gallery { align-self: start; }
-
-  .kicker {
-    color: var(--accent-green);
-    font-weight: 800;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    font-size: .8rem;
-  }
-
-  h1 {
-    font-size: clamp(1.9rem, 3.2vw, 3rem);
-    line-height: 1.1;
-    margin: .4rem 0 .8rem;
-  }
-
-  .sub { color: var(--muted); font-size: 1.05rem; }
-
-  .badges {
-    margin-top: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .pill {
-    padding: 6px 10px;
-    border-radius: 999px;
-    font-weight: 700;
-    font-size: .8rem;
-    color: #0d0a05;
-    background: #3d8700ad;
-    border: 1px solid #ffffff22;
-  }
-
-  .pill.alt {
-    color: #0a0f08;
-    background: #cf7c00d8;
-  }
-
-  .hero-actions {
-    margin-top: 16px;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .btn {
-    font-family: inherit;
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    text-decoration: none;
-    display: inline-block;
-    cursor: pointer;
-    padding: 11px 14px;
-    border-radius: 12px;
-    border: 1px solid #ffffff1f;
-    background: #ffffff0f;
-    color: #fff;
-    backdrop-filter: blur(6px);
-    transition: transform .15s ease, background .2s ease;
-  }
-
-  .btn:hover {
-    transform: translateY(-1px);
-    background: #ffffff1a;
-  }
-
-  .btn.primary {
-    background: linear-gradient(180deg, var(--accent-orange), #e46f00);
-    color: #fff;
-    border: none;
-    font-weight: 800;
-  }
-
-  /* Menu section */
-  .section {
-    max-width: var(--maxw);
-    margin: 20px auto;
-    padding: 0 18px;
-  }
-
-  .card {
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-sm);
-    padding: 18px;
-    box-shadow: var(--shadow);
-  }
-
-  .section h2 { font-size: 1.4rem; margin: 0 0 10px; }
-
-  .table-wrap {
-    overflow: auto;
-    border-radius: 12px;
-    border: 1px solid var(--card-border);
-    background: #1a1a1acc;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    min-width: 520px;
-  }
-
-  thead {
-    background: linear-gradient(90deg, var(--accent-red), var(--accent-green));
-  }
-
-  thead th {
-    color: #fff;
-    font-weight: 600;
-    padding: .8em 1em;
-    text-align: left;
-  }
-
-  tbody td {
-    padding: .8em 1em;
-    border-top: 1px solid var(--card-border);
-    color: var(--ink);
-  }
-
-  tbody tr:nth-child(even) { background: var(--row-alt); }
-
-  .info-grid {
-    display: grid;
-    grid-template-columns: 1.2fr .8fr;
-    gap: 16px;
-    margin-top: 12px;
-  }
-
-  .list { margin: 0; padding-left: 1.2em; }
-  .list li { margin: .4em 0; }
-
-  .order-cta {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .order-cta a {
-    background-color: var(--accent-orange);
-    color: #fff;
-    padding: .9em 1.4em;
-    border-radius: 10px;
-    font-weight: 800;
-    text-align: center;
-    box-shadow: var(--accent-glow);
-  }
-
-  .small { font-size: .9rem; color: var(--muted); margin-top: 10px; }
-
-  /* Highlights gallery */
-  .gallery-wrap {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--radius);
-    border: 1px solid var(--card-border);
-    background: #1e1e1e60;
-    box-shadow: var(--shadow);
-    width: calc(var(--tile-w) + 2 * var(--rail-pad));
-    height: calc(var(--tile-h) + 2 * var(--rail-pad));
-    max-width: 100%;
-    margin: 0 auto;
-  }
-
-  .rail {
-    display: flex;
-    gap: 12px;
-    padding: var(--rail-pad);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .rail::-webkit-scrollbar { display: none; }
-
-  .tile {
-    flex: 0 0 auto;
-    width: var(--tile-w);
-    height: var(--tile-h);
-    position: relative;
-    border-radius: 12px;
-    overflow: hidden;
-    scroll-snap-align: center;
-    border: 1px solid #ffffff1a;
-    background: #141414;
-  }
-
-  .tile img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: .95;
-    transition: .25s;
-  }
-
-  .tile:hover img { transform: scale(1.03); opacity: 1; }
-
-  .tile .label {
-    position: absolute;
-    left: 10px;
-    bottom: 10px;
-    padding: 6px 10px;
-    border-radius: 999px;
-    background: #161616cc;
-    border: 1px solid #ffffff22;
-    color: #fff;
-    font-size: .8rem;
-  }
-
-  .gallery-controls {
-    position: absolute;
-    inset: auto 10px 10px auto;
-    display: flex;
-    gap: 8px;
-    z-index: 2;
-  }
-
-  .ctrl {
-    width: 36px;
-    height: 36px;
-    display: grid;
-    place-items: center;
-    border-radius: 10px;
-    background: #161616cc;
-    border: 1px solid #ffffff2a;
-    color: #fff;
-    cursor: pointer;
-  }
-
-  .ctrl:hover { background: #161616e0; }
-
-  /* Footer */
-  footer {
-    margin: 40px 0 28px;
-    color: var(--muted);
-    text-align: center;
-    font-size: .9rem;
-  }
-
-  .links {
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 8px;
-  }
-
-  .links a { color: var(--accent-orange); font-weight: 700; }
-
-  /* ========================= */
-  /* Responsive Styles         */
-  /* ========================= */
-
-  @media (max-width: 960px) {
-    .hero { grid-template-columns: 1fr; }
-    .info-grid { grid-template-columns: 1fr; }
-
-    /* Keep gallery fixed size & centered */
-    .gallery-wrap {
-      width: calc(var(--tile-w) + 2 * var(--rail-pad));
-      height: calc(var(--tile-h) + 2 * var(--rail-pad));
-      margin: 0 auto;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .nav {
-      flex-direction: column;
-      align-items: stretch;
-      text-align: center;
-    }
-    .brand {
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 6px;
-      margin-bottom: 6px;
-    }
-    nav ul {
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-    }
-    nav ul li {
-      display: flex;
-      justify-content: center;
-    }
-    nav a {
-      width: 100%;
-      text-align: center;
-    }
-  }
-
-  /* Contact modal */
-.contact-popup {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-}
-
-.contact-hidden {
-  display: none;
-}
-
-.contact-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(2px);
-}
-
-.contact-card {
-  position: relative;
-  margin: 0 auto;
-  top: 50%;
-  transform: translateY(-50%);
-  max-width: 520px;
-  width: calc(100% - 32px);
-  background: var(--card);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  color: var(--ink);
-  padding: 20px 22px;
-}
-
-.contact-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin: 10px 0 8px;
-  flex-wrap: nowrap;
-}
-
-.contact-email {
-  flex: 1;
-  color: #fff;
-  font-weight: 700;
-  word-break: break-all;
-  border-bottom: 1px dashed #ffffff22;
-}
-
-.contact-copy {
-  margin-left: 12px;
-  flex-shrink: 0;
-  padding: 6px 10px;
-  border-radius: 10px;
-  border: 1px solid #ffffff1f;
-  background: #ffffff10;
-  color: #fff;
-  cursor: pointer;
-  transition: background .2s ease, transform .15s ease;
-}
-
-.contact-copy:hover { background: #ffffff1a; transform: translateY(-1px); }
-
-.contact-actions {
-  margin-top: 12px;
-  display: flex;
-  justify-content: flex-end;
-}
-
-/* Inline toast inside modal */
-.contact-toast {
-  margin-top: 10px;
-  background: #333;
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 10px;
-  opacity: 0;
-  transition: opacity .25s ease;
-  pointer-events: none;
-}
-
-.contact-toast.show { opacity: 1; }
-
-/* Prevent background scroll when modal is open */
-.body-lock {
-  overflow: hidden;
-}
-
-  @media (max-width: 420px) {
-  .contact-card { padding: 18px; }
-  .contact-email { font-size: .95rem; }
-}
-
-  @media (prefers-reduced-motion: reduce) {
-    * { animation: none !important; transition: none !important; }
-  }
-</style>
-  
   <!-- Samsung QR NUL guard -->
   <script>
     (function() {
@@ -596,300 +33,82 @@
     })();
   </script>
 
-</head>
-<body>
-  <div class="bg" aria-hidden="true"></div>
-
-  <header>
-    <div class="nav">
-      <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <strong>Picante Pequin Salsa Co</strong>
-      </div>
-      <nav aria-label="Primary">
-        <ul>
-          <li><a class="link" href="https://picantepequinsalsaco.com/ShippingPolicy">Shipping</a></li>
-          <li><a class="link" href="https://picantepequinsalsaco.com/PrivacyPolicy">Privacy</a></li>
-          <li><a class="cta" href="https://picantepequinsalsaco.com/TradingPost">Rewards Trading Post</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
-  
-   <!-- Scrolling Banner -->
-<div style="
-    overflow: hidden;
-    background: var(--banner);
-    color: var(--ink);
-    padding: 8px 0;
-    font-weight: 600;
-    font-size: 1rem;
-    text-align: center;
-    max-width: var(--maxw);
-    margin: 0 auto;
-    position: relative;
-    white-space: nowrap;
-    ">
-    <div style="
-    display: inline-block;
-    padding-left: 100%;
-    animation: scroll-left 20s linear infinite;
-  ">
-    🌶️ Rewards Points Redemption Coming Soon! 🧄 We are Cooking Up a Spicy Redemption Process for Future Checkouts. 🍅 Checkout the Rewards Trading Post for Details on How Our Point System Works! 🧅
-  </div>
-</div>
-  
-    <style>
-    @keyframes scroll-left {
-      0%   { transform: translateX(0); }
-      100% { transform: translateX(-100%); }
+  <style>
+    :root {
+      --card: #1a1a1a;
+      --card-border: #ffffff1f;
+      --radius: 12px;
+      --shadow: 0 0 20px rgba(0,0,0,0.5);
+      --ink: #fff;
+      --accent-red: #e74c3c;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: #000 url('/images/bg.png') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+    }
+    main {
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px 24px;
+      max-width: 600px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .btn {
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid #ffffff1f;
+      background: #ffffff0f;
+      color: #fff;
+      backdrop-filter: blur(6px);
+      transition: transform .15s ease, background .2s ease;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .btn:hover {
+      background: #ffffff1a;
+      transform: translateY(-1px);
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.9rem;
+      color: #aaa;
     }
   </style>
-
+</head>
+<body>
   <main>
-    <!-- Contact modal -->
-<div id="contactPopup" class="contact-popup contact-hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
-  <div class="contact-overlay" data-close="true"></div>
-  <div class="contact-card" role="document">
-    <h2 id="contactTitle">Contact Support</h2>
-
-    <div class="contact-row">
-      <a id="supportEmail" class="contact-email" href="mailto:support@picantepequinsalsaco.com?subject=Order%20Support">
-        support@picantepequinsalsaco.com
-      </a>
-      <button class="contact-copy" id="copyEmailBtn" type="button" aria-label="Copy email address" title="Copy email">
-        📋
-      </button>
+    <div class="card">
+      <h2 style="color:var(--accent-red)">Oops — Page Not Found</h2>
+      <p class="sub">Looks like the salsa spilled. Let’s get you back to the main menu.</p>
+      <div class="hero-actions">
+        <a class="btn" href="https://picantepequinsalsaco.com/">Return Home</a>
+      </div>
     </div>
 
-    <div id="contactToast" class="contact-toast" role="status" aria-live="polite">
-      Email address copied to clipboard
-    </div>
-
-    <div class="contact-actions">
-      <button class="btn" id="closeContactBtn" type="button">Close</button>
-    </div>
-  </div>
-</div>
-    <!-- HERO with gallery on the right (desktop), stacked (mobile) -->
-    <section class="hero">
-      <div class="hero-card">
-        <h1 class="outlined">Homegrown, locally sourced, guaranteed fresh</h1>
-        <p class="sub">Salsas in 16 oz mason jars at $10 per jar + tax.</p>
-        <div class="badges">
-          <span class="pill">Free shipping over $120</span>
-          <span class="pill alt">Free local delivery within 25 mi of League City, TX (77573)</span>
-        </div>
-        <div class="hero-actions">
-          <a class="btn primary" href="https://picantepequinsalsaco.com/OrderNow/">Order Now!</a>
-          <button class="btn" id="supportBtn" type="button">Contact Support</button>
-        </div>
-      </div>
-
-      <!-- Gallery moved next to hero content -->
-      <div class="hero-gallery">
-        <div class="gallery-wrap" aria-labelledby="highlights-title">
-          <h2 id="highlights-title" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">Highlights</h2>
-          <div class="gallery-controls" aria-hidden="true">
-            <button class="ctrl" id="prev" title="Previous">◀</button>
-            <button class="ctrl" id="next" title="Next">▶</button>
-          </div>
-          <div class="rail" id="rail" aria-label="Auto-scrolling highlights"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- MENU (Flavors) -->
-    <section class="section" id="menu">
-      <div class="card">
-        <h2>Flavors</h2>
-        <div class="table-wrap" role="region" aria-label="Flavor descriptions" tabindex="0">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Flavor</th>
-                <th scope="col">Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>House Pequin</td>
-                <td>A mild, bright blend of serrano, chile pequin, fresh tomatoes, white onion, garlic & cilantro.</td>
-              </tr>
-              <tr>
-                <td>Spicy Green Chile Pequin</td>
-                <td>Smokey-citrusy salsa of serrano, chile pequin, fresh tomatillos, yellow onion, garlic, cilantro & lime.</td>
-              </tr>
-              <tr>
-                <td>Red Hot Pepper Pequin</td>
-                <td>Hot & sweet: fresno peppers, chile pequin, fresh tomatoes, yellow onion & garlic.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="info-grid">
-          <div>
-            <p><strong style="color:var(--accent-green)">Shelf life</strong></p>
-            <ul class="list">
-              <li><strong style="color:var(--accent-green)">Unopened & sealed:</strong><span class="small"> up to 18 months in a cool, dark place.</span></li>
-              <li><strong style="color:var(--accent-green)">Opened & refrigerated:</strong><span class="small"> best consumed within 7–14 days.</span></li>
-            </ul>
-            <p class="small">
-              All ingredients are home-grown or locally sourced first. Some peppers, when unavailable locally, may be sourced through other small business pepper distributors. We guarantee the freshest salsa in every jar.
-            </p>
-          </div>
-          <div class="order-cta">
-            <a href="https://picantepequinsalsaco.com/OrderNow/" aria-label="Order now from Picante Pequin Salsa Co">Order Now!</a>
-          </div>
-        </div>
-      </div>
-    </section>
+    <!-- Optional: highlights/gallery could go here if you want consistency -->
   </main>
 
   <footer>
-    © <span id="y"></span> Picante Pequin Salsa Co. All rights reserved.
-    <div class="links">
-      <a href="https://picantepequinsalsaco.com/ShippingPolicy">Shipping & Delivery Policy</a>
-      <a href="https://picantepequinsalsaco.com/PrivacyPolicy">Customer Communication & Privacy Policy</a>
-    </div>
+    &copy; <span id="y"></span> Picante Pequin Salsa Co. All rights reserved.
   </footer>
 
-<script>
-  // Year
-  document.getElementById('y').textContent = new Date().getFullYear();
-
-  // Highlights data: defaults, then optional assets/gallery.json override
-  const defaults = [
-    {src:'https://picantepequinsalsaco.com/images/image1.jpg', label:'House Pequin'},
-    {src:'https://picantepequinsalsaco.com/images/image2.jpg', label:'Spicy Green Chile Pequin'},
-    {src:'https://picantepequinsalsaco.com/images/image3.jpg', label:'Red Hot Pepper Pequin'},
-    {src:'https://picantepequinsalsaco.com/images/image4.jpg', label:'The Crew'}
-  ];
-
-  async function loadGallery() {
-    try {
-      const r = await fetch('images/gallery.json', {cache:'no-store'});
-      if (!r.ok) throw new Error('no json');
-      const items = await r.json();
-      if (!Array.isArray(items) || !items.length) throw new Error('empty');
-      return items;
-    } catch { return defaults; }
-  }
-
-  const rail = document.getElementById('rail');
-
-  function render(items){
-    rail.innerHTML = '';
-    const loop = [...items, ...items.slice(0, 4)];
-    loop.forEach((it)=>{
-      const tile = document.createElement('div');
-      tile.className = 'tile';
-      tile.innerHTML = `
-        <img src="${it.src}" alt="${it.alt || it.label || 'Highlight'}" loading="lazy">
-        <span class="label">${it.label || ''}</span>
-      `;
-      rail.appendChild(tile);
-    });
-  }
-
-  let idx = 0, timer, allowMotion = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  function step(dir = 1) {
-    const tiles = rail.children;
-    if (!tiles.length) return;
-
-    idx = (idx + dir + tiles.length) % tiles.length;
-    const el = tiles[idx];
-
-    // Scroll only the gallery rail, not the whole page
-    rail.scrollTo({
-      left: el.offsetLeft - rail.offsetLeft,
-      behavior: 'smooth'
-    });
-  }
-  function play(){ if (allowMotion){ timer = setInterval(()=>step(1), 3600); } }
-  function pause(){ clearInterval(timer); }
-
-  loadGallery().then(items=>{
-    render(items);
-    play();
-  });
-
-  rail.addEventListener('mouseenter', pause);
-  rail.addEventListener('mouseleave', play);
-  document.getElementById('prev').addEventListener('click', ()=>{ pause(); step(-1); });
-  document.getElementById('next').addEventListener('click', ()=>{ pause(); step(1); });
-
-
-  // -------------------------------
-  // Contact Modal + Copy-to-Clipboard
-  // -------------------------------
-  (function(){
-    const supportBtn = document.getElementById('supportBtn');
-    const popup = document.getElementById('contactPopup');
-    if (!supportBtn || !popup) return; // safety check if markup not present
-
-    const closeBtn = document.getElementById('closeContactBtn');
-    const overlay = popup.querySelector('.contact-overlay');
-    const emailLink = document.getElementById('supportEmail');
-    const copyBtn = document.getElementById('copyEmailBtn');
-    const toast = document.getElementById('contactToast');
-
-    const EMAIL = 'support@picantepequinsalsaco.com';
-
-    function openPopup() {
-      popup.classList.remove('contact-hidden');
-      popup.setAttribute('aria-hidden', 'false');
-      document.body.classList.add('body-lock');
-      emailLink.focus();
-      document.addEventListener('keydown', keyHandler);
-    }
-
-    function closePopup() {
-      popup.classList.add('contact-hidden');
-      popup.setAttribute('aria-hidden', 'true');
-      document.body.classList.remove('body-lock');
-      document.removeEventListener('keydown', keyHandler);
-      supportBtn.focus();
-    }
-
-    function keyHandler(e) {
-      if (e.key === 'Escape') { closePopup(); }
-    }
-
-    function showToast() {
-      toast.classList.add('show');
-      setTimeout(() => { toast.classList.remove('show'); }, 1800);
-    }
-
-    async function copyEmail() {
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          await navigator.clipboard.writeText(EMAIL);
-          showToast();
-        } else {
-          const tmp = document.createElement('input');
-          tmp.value = EMAIL;
-          document.body.appendChild(tmp);
-          tmp.select();
-          document.execCommand('copy');
-          document.body.removeChild(tmp);
-          showToast();
-        }
-      } catch {
-        // fail silently
-      }
-    }
-
-    supportBtn.addEventListener('click', openPopup);
-    closeBtn.addEventListener('click', closePopup);
-    overlay.addEventListener('click', (e) => {
-      if (e.target.dataset.close) closePopup();
-    });
-    copyBtn.addEventListener('click', copyEmail);
-  })();
-</script>
+  <script>
+    // Year
+    document.getElementById('y').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
-
