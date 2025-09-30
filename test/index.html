@@ -1589,20 +1589,28 @@ function renderCart() {
       item.qty++; renderCart();
     };
 
-    const qtyInput = li.querySelector('.cart-qty-input');
-      qtyInput.addEventListener('input', () => {
-        let qty = parseInt(qtyInput.value, 10);
-        if (isNaN(qty) || qty < 0) qty = 0;
-        qtyInput.value = qty;
-        item.qty = qty;
+const qtyInput = li.querySelector('.cart-qty-input');
+qtyInput.addEventListener('input', () => {
+  const raw = qtyInput.value;
 
-        if (qty === 0) {
-          li.classList.add('removing');
-          setTimeout(() => removeFromCart(item.id), 300);
-        } else {
-          renderCart();
-        }
-      });
+  // Allow empty string while typing
+  if (raw === '') {
+    return;
+  }
+
+  let qty = parseInt(raw, 10);
+  if (isNaN(qty) || qty < 0) qty = 0;
+
+  qtyInput.value = qty;
+  item.qty = qty;
+
+  if (qty === 0) {
+    li.classList.add('removing');
+    setTimeout(() => removeFromCart(item.id), 300);
+  } else {
+    renderCart();
+  }
+});
 
 } else {
           li.querySelectorAll('.qty-btn').forEach(btn => {
