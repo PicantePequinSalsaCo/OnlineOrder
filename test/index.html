@@ -106,15 +106,24 @@
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 16px;
     }
-    .prod-card {
-      background: var(--card);
-      border:1px solid var(--card-border);
-      border-radius: var(--radius-sm);
-      padding:16px; box-shadow:var(--shadow);
-      display:flex; flex-direction:column; 
-      perspective: 1000px; /* enables 3D flip */
-      position: relative;  /* needed for absolute front/back faces */
-    }
+
+    /* The container that holds all product cards */
+#gallery, .gallery, .galleryEl {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+    
+.prod-card {
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+
+  /* flip essentials */
+  perspective: 1000px;  /* enables 3D flip */
+  position: relative;   /* needed for absolute front/back faces */
+}
 
 /* Inner wrapper that flips */
 .card-inner {
@@ -139,27 +148,18 @@
   border-radius: var(--radius-sm);
   padding: 16px;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Front face (normal product view) */
 .card-front {
   background: var(--card);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
 }
 
-/* Back face (info view) */
 .card-back {
-  background: rgba(20,20,20,0.95); /* opaque overlay */
+  background: rgba(20,20,20,0.95);
   color: var(--ink);
   transform: rotateY(180deg);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start; /* left-align text for readability */
-  padding: 20px;
-  line-height: 1.4;
 }
 
 /* Info button (on the front, next to +) */
