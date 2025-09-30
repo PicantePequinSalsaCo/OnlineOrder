@@ -523,12 +523,14 @@
 .contact-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
   margin: 10px 0 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .contact-email {
+  flex: 1;
   color: #fff;
   font-weight: 700;
   word-break: break-all;
@@ -536,6 +538,8 @@
 }
 
 .contact-copy {
+  margin-left: 12px;
+  flex-shrink: 0;
   padding: 6px 10px;
   border-radius: 10px;
   border: 1px solid #ffffff1f;
