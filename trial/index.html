@@ -2,26 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <title>Page Not Found — Picante Pequin Salsa Co</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Page Not Found – Picante Pequin Salsa Co</title>
-  <meta name="description" content="Picante Pequin Salsa Co crafts fresh, locally sourced chile pequin salsas in Texas. Order online for delivery or pickup.">
-  <meta name="robots" content="noindex" />
   <meta name="color-scheme" content="dark light" />
-
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Picante Pequin Salsa Co">
-  <meta property="og:title" content="Picante Pequin Salsa Co – Fresh Chile Pequin Salsas from Texas">
-  <meta property="og:description" content="Picante Pequin Salsa Co crafts fresh, locally sourced chile pequin salsas in Texas. Order online for delivery or pickup.">
-  <meta property="og:image" content="https://picantepequinsalsaco.com/images/social-preview.png">
-  <meta property="og:url" content="https://picantepequinsalsaco.com">
-  <meta name="twitter:card" content="summary_large_image">
-
-  <link rel="icon" type="image/x-icon" href="/images/favicon.ico" sizes="48x48">
-  <link rel="icon" type="image/png" href="/images/favicon.png" sizes="192x192">
-  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
-  <link rel="manifest" href="/manifest.webmanifest">
-
-  <link rel="preload" as="image" href="https://picantepequinsalsaco.com/images/bg.png">
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="/images/favicon.ico" />
+  <link rel="preload" as="image" href="https://picantepequinsalsaco.com/images/bg.png" />
 
   <!-- Samsung QR NUL guard -->
   <script>
@@ -35,80 +21,176 @@
 
   <style>
     :root {
-      --card: #1a1a1a;
-      --card-border: #ffffff1f;
+      --bg-deep: #1e1e1e00;
+      --ink: #ececec;
+      --muted: #b0b0b0;
+      --accent-orange: #f57c00;
+      --accent-glow: 0 0 0 2px #f57c0033, 0 10px 20px #f57c0022;
+      --glass: rgba(30, 30, 30, 0.6);
+      --border: #ffffff14;
       --radius: 12px;
-      --shadow: 0 0 20px rgba(0,0,0,0.5);
-      --ink: #fff;
-      --accent-red: #e74c3c;
+      --radius-sm: 10px;
+      --maxw: 1100px;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     }
-    body {
-      margin: 0;
-      font-family: system-ui, sans-serif;
-      background: #000 url('/images/bg.png') no-repeat center center fixed;
-      background-size: cover;
-      color: #fff;
+    *,*::before,*::after { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      font-family: ui-sans-serif, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-deep); color: var(--ink);
     }
+    .bg {
+      position: fixed; inset: 0; z-index: -1;
+      background: url("https://picantepequinsalsaco.com/images/bg.png") center/cover no-repeat;
+      filter: brightness(0.9) saturate(1.05);
+    }
+    header {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: saturate(140%) blur(10px);
+      background: #161616cc; border-bottom: 1px solid var(--border);
+    }
+    .nav {
+      max-width: var(--maxw); margin: 0 auto; padding: 12px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .logo {
+      width: 34px; height: 34px; border-radius: 10px;
+      background: url("https://picantepequinsalsaco.com/images/bg.png") center/cover no-repeat;
+      box-shadow: var(--accent-glow);
+    }
+    nav ul { display: flex; gap: 10px; list-style: none; margin: 0; padding: 0; }
+    .link {
+      padding: 8px 12px; border-radius: 999px; color: var(--muted);
+      transition: 0.2s;
+    }
+    .link:hover { color: var(--ink); background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+
     main {
-      padding: 40px 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      min-height: calc(100vh - 64px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px 20px; text-align: center;
     }
     .card {
-      background: var(--card);
-      border: 1px solid var(--card-border);
+      width: min(680px, 92vw);
+      background: var(--glass);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
+      padding: 28px;
       box-shadow: var(--shadow);
-      padding: 20px 24px;
-      max-width: 600px;
-      text-align: center;
-      margin-bottom: 20px;
+      transition: transform 0.16s ease, box-shadow 0.2s ease;
     }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+    .kicker {
+      display: inline-block; font-size: 0.8rem; font-weight: 800;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      padding: 6px 10px; border-radius: 999px;
+      color: #fff; background: var(--accent-orange);
+    }
+    h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 12px 0 6px; color: #fff; }
+    .sub { color: var(--muted); margin: 0 0 18px; }
+
+    .countdown {
+      display: grid; grid-template-columns: repeat(4, minmax(70px, 1fr));
+      gap: 12px; margin: 16px 0 10px;
+    }
+    .unit {
+      background: var(--glass); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 12px 10px;
+    }
+    .num { font-size: 1.6rem; font-weight: 800; }
+    .lbl { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+
     .btn {
-      padding: 11px 14px;
-      border-radius: 12px;
-      border: 1px solid #ffffff1f;
-      background: #ffffff0f;
-      color: #fff;
-      backdrop-filter: blur(6px);
-      transition: transform .15s ease, background .2s ease;
-      cursor: pointer;
-      text-decoration: none;
-      font-weight: 600;
+      background: var(--accent-orange); color: #fff; border: none;
+      padding: 12px 16px; font-weight: 800; border-radius: 10px;
+      box-shadow: var(--accent-glow); cursor: pointer; transition: 0.2s;
+      margin-top: 16px; display: inline-block;
     }
-    .btn:hover {
-      background: #ffffff1a;
-      transform: translateY(-1px);
-    }
+    .btn:hover { filter: brightness(0.9); }
+
     footer {
-      text-align: center;
-      padding: 20px;
-      font-size: 0.9rem;
-      color: #aaa;
+      margin: 40px 0 28px; text-align: center; color: var(--muted); font-size: 0.9rem;
     }
+    .links { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+    .links a { color: var(--accent-orange); font-weight: 700; }
   </style>
 </head>
-<body>
-  <main>
-    <div class="card">
-      <h2 style="color:var(--accent-red)">Oops — Page Not Found</h2>
-      <p class="sub">Looks like the salsa spilled. Let’s get you back to the main menu.</p>
-      <div class="hero-actions">
-        <a class="btn" href="https://picantepequinsalsaco.com/">Return Home</a>
-      </div>
-    </div>
+<body data-target="2025-12-31T23:59:59Z">
+  <div class="bg" aria-hidden="true"></div>
 
-    <!-- Optional: highlights/gallery could go here if you want consistency -->
+  <header>
+    <div class="nav">
+      <a class="brand" href="https://picantepequinsalsaco.com">
+        <div class="logo" aria-hidden="true"></div>
+        <strong>Picante Pequin Salsa Co</strong>
+      </a>
+      <nav aria-label="Primary">
+        <ul>
+          <li><a class="link" href="/ShippingPolicy">Shipping</a></li>
+          <li><a class="link" href="/PrivacyPolicy">Privacy</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="title">
+      <span class="kicker">404 Error</span>
+      <h1 id="title">Oops — Page Not Found</h1>
+      <p class="sub">Looks like the salsa spilled. Let’s get you back home.</p>
+
+      <!-- Decorative countdown -->
+      <div class="countdown" role="timer" aria-live="polite">
+        <div class="unit"><div class="num" id="d">—</div><div class="lbl">Days</div></div>
+        <div class="unit"><div class="num" id="h">—</div><div class="lbl">Hours</div></div>
+        <div class="unit"><div class="num" id="m">—</div><div class="lbl">Minutes</div></div>
+        <div class="unit"><div class="num" id="s">—</div><div class="lbl">Seconds</div></div>
+      </div>
+
+      <a href="https://picantepequinsalsaco.com" class="btn">Return Home</a>
+     </section>
   </main>
 
   <footer>
-    &copy; <span id="y"></span> Picante Pequin Salsa Co. All rights reserved.
+    <p>&copy; <span id="y"></span> Picante Pequin Salsa Co. All rights reserved.</p>
+    <div class="links">
+      <a href="/ShippingPolicy">Shipping Policy</a>
+      <a href="/PrivacyPolicy">Privacy Policy</a>
+    </div>
   </footer>
 
   <script>
     // Year
     document.getElementById('y').textContent = new Date().getFullYear();
+
+    // Countdown (decorative)
+    const target = new Date(document.body.dataset.target || "2025-12-31T23:59:59Z").getTime();
+    const dEl = document.getElementById("d");
+    const hEl = document.getElementById("h");
+    const mEl = document.getElementById("m");
+    const sEl = document.getElementById("s");
+
+    function tick() {
+      const now = new Date().getTime();
+      let diff = Math.max(0, target - now);
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      diff -= days * (1000 * 60 * 60 * 24);
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      diff -= hours * (1000 * 60 * 60);
+      const minutes = Math.floor(diff / (1000 * 60));
+      diff -= minutes * (1000 * 60);
+      const seconds = Math.floor(diff / 1000);
+
+      dEl.textContent = days;
+      hEl.textContent = hours.toString().padStart(2, "0");
+      mEl.textContent = minutes.toString().padStart(2, "0");
+      sEl.textContent = seconds.toString().padStart(2, "0");
+    }
+
+    tick();
+    setInterval(tick, 1000);
   </script>
 </body>
 </html>
