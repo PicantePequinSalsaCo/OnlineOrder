@@ -470,9 +470,9 @@
     }
     .state-select-wrapper select {
       flex: 1;
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
+      appearance: auto;
+      -webkit-appearance: auto;
+      -moz-appearance: auto;
       padding: 8px;
       padding-right: 44px; /* space for the caret button */
       border: 1px solid var(--card-border);
@@ -481,26 +481,6 @@
       color: var(--ink);
       font: inherit;
       line-height: 1.2;
-    }
-    .state-dropdown-btn {
-      position: absolute;
-      right: 4px;
-      height: calc(100% - 8px);
-      aspect-ratio: 1 / 1;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background-color: var(--cart-opq) !important;
-      border: 1px solid var(--accent-orange);
-      border-radius: 6px;
-      font-size: 1rem;
-      color: #fff;
-      cursor: pointer;
-      pointer-events: auto;
-      user-select: none;
-    }
-    .state-dropdown-btn:hover {
-      filter: brightness(0.95);
     }
 
     /* Shimmer effect */
@@ -820,7 +800,6 @@
     <option value="WI">WI</option>
     <option value="WY">WY</option>
   </select>
-  <button type="button" class="state-dropdown-btn" aria-label="Open state list">⌄</button>
 </div>
 
   <input type="text" id="signup-zip" name="zip" placeholder="ZIP Code (5 digits)" required pattern="^\d{5}$" maxlength="5" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '')" />
