@@ -844,7 +844,7 @@
 />
   <div class="password-wrapper">
   <input type="password" id="signup-password" name="password" placeholder="Password" required autocomplete="new-password" />
-  <button type="button" class="reveal-btn" data-target="signup-password" aria-label="Toggle password visibility">🪇</button>
+  <button type="button" class="reveal-btn" data-target="signup-password" aria-label="Toggle password visibility">🪅</button>
 </div>
 
 
@@ -895,7 +895,7 @@
 />
   <div class="password-wrapper">
   <input type="password" id="reset-password" name="password" placeholder="New Password" required autocomplete="new-password" />
-  <button type="button" class="reveal-btn" data-target="signup-password" aria-label="Toggle password visibility">🪇</button>
+  <button type="button" class="reveal-btn" data-target="reset-password" aria-label="Toggle password visibility">🪅</button>
 </div>
 
   <div id="reset-password-strength-wrapper" style="margin-bottom: 8px;">
@@ -1029,9 +1029,9 @@ function setButtonState(btn, state) {
 
 // Dev/test config
 const DEV = {
-  stubJobs: true,         // true = bypass real polling
+  stubJobs: false,         // true = bypass real polling
   stubDelayMs: 3500,      // auto-success after this delay
-  manualEvent: true       // allow manual confirmation via window.dispatchEvent(...)
+  manualEvent: false       // allow manual confirmation via window.dispatchEvent(...)
 };
 
 /**
@@ -1148,10 +1148,10 @@ async function handleApiButton(btn, apiCall) {
    Catalog
    =========================== */
 const productsEcom = [
-  { id: 'house-pequin', sku: 'PPSC-001', name: 'House Pequin Salsa',       price: 10, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image1.jpg', tiktok_sync: true },
-  { id: 'spicy-green', sku: 'PPSC-002', name: 'Spicy Green Chile Pequin',  price: 10, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image2.jpg', tiktok_sync: true },
-  { id: 'red-hot', sku: 'PPSC-003', name: 'Red Hot Pepper Pequin',         price: 10, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image3.jpg', tiktok_sync: true }, 
-  { id: 'the-crew', sku: 'PPSC-004', name: 'The Crew',                     price: 30, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image4.jpg', tiktok_sync: true }
+  { id: 'house-pequin', sku: 'PPSC-001', name: 'House Pequin Salsa',       price: 10, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image1.jpg', tiktok_sync: true, desc: 'A mild, bright blend of serrano, chile pequin, fresh tomatoes, white onion, garlic & cilantro.'},
+  { id: 'spicy-green', sku: 'PPSC-002', name: 'Spicy Green Chile Pequin',  price: 10, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image2.jpg', tiktok_sync: true, desc: 'Smokey-citrusy salsa of serrano, chile pequin, fresh tomatillos, yellow onion, garlic, cilantro & lime.' },
+  { id: 'red-hot', sku: 'PPSC-003', name: 'Red Hot Pepper Pequin',         price: 10, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image3.jpg', tiktok_sync: true, desc: 'Hot & sweet: fresno peppers, chile pequin, fresh tomatoes, yellow onion & garlic.' }, 
+  { id: 'the-crew', sku: 'PPSC-004', name: 'The Crew',                     price: 30, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image4.jpg', tiktok_sync: true, desc: 'All three of our full‑size pequin salsas in one pack — perfect for sharing, gifting, or keeping your pantry stocked with every flavor we make.' }
 ];
 
 /* ===========================
@@ -1230,7 +1230,7 @@ document.querySelectorAll('.reveal-btn').forEach(btn => {
     input.type = isHidden ? 'text' : 'password';
 
     // Optional: swap emoji for feedback
-    btn.textContent = isHidden ? '🙈' : '🪇';
+    btn.textContent = isHidden ? '🪇' : '🪅';
   });
 });
 
@@ -1633,7 +1633,7 @@ function renderProducts() {
           <ul>
             <li>SKU: ${p.sku || '—'}</li>
             <li>Price: $${p.price.toFixed(2)}</li>
-            <li>Perfect for TikTok Shop sync</li>
+            <li>${p.desc}</li>
           </ul>
           <button class="close-info">Close</button>
         </div>
