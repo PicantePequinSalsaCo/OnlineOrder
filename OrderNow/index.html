@@ -35,6 +35,7 @@
 
     }
 
+    
     * { box-sizing: border-box; }
     html, body {
       margin: 0; padding: 0;
@@ -104,14 +105,93 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 16px;
-    }
-    .prod-card {
-      background: var(--card);
-      border:1px solid var(--card-border);
-      border-radius: var(--radius-sm);
-      padding:16px; box-shadow:var(--shadow);
-      display:flex; flex-direction:column;
-    }
+    }    
+/* Outer card remains your floating “tile” */
+.prod-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+
+  /* 3D context for flip */
+  perspective: 1000px;
+  overflow: hidden; /* prevent bleed during flip */
+}
+
+/* The inner wrapper that flips */
+.card-inner {
+  display: grid;             /* overlay faces without absolute positioning */
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Flipped state rotates the inner wrapper */
+.prod-card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+/* Both faces overlay the same grid cell */
+.card-front,
+.card-back {
+  grid-area: 1 / 1;          /* overlay both faces */
+  backface-visibility: hidden;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  /* Optional: keep padding here or on front/back separately */
+  padding: 0;                 /* front already gets padding from .prod-card */
+}
+
+/* Front: uses parent card’s background/padding */
+.card-front {
+  /* no background needed; .prod-card provides it */
+}
+
+/* Back: opaque info panel that fully covers front */
+.card-back {
+  background: rgba(20,20,20,0.95);
+  color: var(--ink);
+  transform: rotateY(180deg);
+  padding: 16px;             /* own padding for the info side */
+}
+
+/* Info button (on the front, next to +) */
+.info-btn {
+  margin-left: 6px;
+  padding: 4px 6px;
+  font-size: 0.9em;
+  border: none;
+  background: var(--button-opq);
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.info-btn:hover {
+  background: var(--accent-green-dark);
+}
+
+/* Close button (on the back) */
+.close-info {
+  margin-top: auto;
+  align-self: center;
+  padding: 6px 12px;
+  border: none;
+  background: var(--accent-green);
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.close-info:hover {
+  background: var(--accent-green-dark);
+}
+    
     .prod-card img {
       border-radius: var(--radius-sm);
       margin-bottom:12px;
@@ -192,6 +272,14 @@
       border-top: 1px solid var(--card-border);
       font-size: 1.1rem;
     }
+    .cart-qty-input {
+  width: 3.5em;       /* keeps it compact, enough for 2–3 digits */
+  text-align: center; /* centers the number */
+  padding: 2px 4px;   /* trims down the default padding */
+  font-size: 0.9em;   /* match your cart’s font scale */
+  border: 1px solid var(--accent-green); /* optional: styled border */
+  border-radius: 4px; /* optional: soften edges */
+}
     #cart-items { list-style:none; margin:0; padding:0; }
     #cart-items li {
       display:flex; align-items:center; justify-content:space-between;
@@ -220,6 +308,26 @@
     #cart-items li .qty-display {
       min-width:24px; text-align:center; color:var(--ink);
     }
+/* Product card quantity input */
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.qty-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Cart overlay quantity input */
+.cart-qty-input::-webkit-outer-spin-button,
+.cart-qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.cart-qty-input[type=number] {
+  -moz-appearance: textfield;
+}
+    
     #checkout-btn {
       margin-top:1rem; width:100%;
       padding:.75rem; border:none; border-radius:4px;
@@ -289,7 +397,7 @@
   right: 0.5rem;
   top: 50%;
   transform: translateY(-75%);
-  background-color: var(--cart-opq) !important;
+  background-color: var(--row-alt)!important;
   border: none;
   font-size: 1rem;
   cursor: pointer;
@@ -362,37 +470,16 @@
     }
     .state-select-wrapper select {
       flex: 1;
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
+      appearance: auto;
+      -webkit-appearance: auto;
+      -moz-appearance: auto;
       padding: 8px;
-      padding-right: 44px; /* space for the caret button */
       border: 1px solid var(--card-border);
       border-radius: var(--radius-sm);
       background: var(--row-alt);
-      color: var(--ink);
+      color: var(--muted);
       font: inherit;
-      line-height: 1.2;
-    }
-    .state-dropdown-btn {
-      position: absolute;
-      right: 4px;
-      height: calc(100% - 8px);
-      aspect-ratio: 1 / 1;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background-color: var(--cart-opq) !important;
-      border: 1px solid var(--accent-orange);
-      border-radius: 6px;
-      font-size: 1rem;
-      color: #fff;
-      cursor: pointer;
-      pointer-events: auto;
-      user-select: none;
-    }
-    .state-dropdown-btn:hover {
-      filter: brightness(0.95);
+      line-height: 1.0;
     }
 
     /* Shimmer effect */
@@ -567,7 +654,7 @@
       <nav aria-label="Primary">
         <ul>
           <li><button id="cart-icon" class="cta" aria-label="Toggle Cart">🛒</button></li>
-          <li><button id="login-btn" class="cta">Login</button></li>
+          <li><button id="login-btn" class="cta">Sign In</button></li>
         </ul>
       </nav>
     </div>
@@ -712,7 +799,6 @@
     <option value="WI">WI</option>
     <option value="WY">WY</option>
   </select>
-  <button type="button" class="state-dropdown-btn" aria-label="Open state list">⌄</button>
 </div>
 
   <input type="text" id="signup-zip" name="zip" placeholder="ZIP Code (5 digits)" required pattern="^\d{5}$" maxlength="5" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '')" />
@@ -736,7 +822,7 @@
 />
   <div class="password-wrapper">
   <input type="password" id="signup-password" name="password" placeholder="Password" required autocomplete="new-password" />
-  <button type="button" class="reveal-btn" data-target="signup-password" aria-label="Toggle password visibility">🪇</button>
+  <button type="button" class="reveal-btn" data-target="signup-password" aria-label="Toggle password visibility">🪅</button>
 </div>
 
 
@@ -787,7 +873,7 @@
 />
   <div class="password-wrapper">
   <input type="password" id="reset-password" name="password" placeholder="New Password" required autocomplete="new-password" />
-  <button type="button" class="reveal-btn" data-target="signup-password" aria-label="Toggle password visibility">🪇</button>
+  <button type="button" class="reveal-btn" data-target="reset-password" aria-label="Toggle password visibility">🪅</button>
 </div>
 
   <div id="reset-password-strength-wrapper" style="margin-bottom: 8px;">
@@ -820,10 +906,6 @@
 
   <footer>
     © <span id="y"></span> Picante Pequin Salsa Co.
-    <div class="links">
-      <a href="/ShippingPolicy">Shipping &amp; Delivery</a>
-      <a href="/PrivacyPolicy">Privacy Policy</a>
-    </div>
   </footer>
 <!-- Load Stripe.js from Stripe's CDN -->
 <script src="https://js.stripe.com/v3/"></script>
@@ -921,9 +1003,9 @@ function setButtonState(btn, state) {
 
 // Dev/test config
 const DEV = {
-  stubJobs: true,         // true = bypass real polling
+  stubJobs: false,         // true = bypass real polling
   stubDelayMs: 3500,      // auto-success after this delay
-  manualEvent: true       // allow manual confirmation via window.dispatchEvent(...)
+  manualEvent: false       // allow manual confirmation via window.dispatchEvent(...)
 };
 
 /**
@@ -1040,10 +1122,10 @@ async function handleApiButton(btn, apiCall) {
    Catalog
    =========================== */
 const productsEcom = [
-  { id: 'house-pequin', sku: 'PPSC-001', name: 'House Pequin Salsa',       price: 10, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image1.jpg', tiktok_sync: true },
-  { id: 'spicy-green', sku: 'PPSC-002', name: 'Spicy Green Chile Pequin',  price: 10, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image2.jpg', tiktok_sync: true },
-  { id: 'red-hot', sku: 'PPSC-003', name: 'Red Hot Pepper Pequin',         price: 10, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image3.jpg', tiktok_sync: true }, 
-  { id: 'the-crew', sku: 'PPSC-004', name: 'The Crew',                     price: 30, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image4.jpg', tiktok_sync: true }
+  { id: 'house-pequin', sku: 'PPSC-001', name: 'House Pequin Salsa',       price: 10, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image1.jpg', tiktok_sync: true, desc: 'A mild, bright blend of serrano, chile pequin, fresh tomatoes, white onion, garlic & cilantro.'},
+  { id: 'spicy-green', sku: 'PPSC-002', name: 'Spicy Green Chile Pequin',  price: 10, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image2.jpg', tiktok_sync: true, desc: 'Smokey-citrusy salsa of serrano, chile pequin, fresh tomatillos, yellow onion, garlic, cilantro & lime.' },
+  { id: 'red-hot', sku: 'PPSC-003', name: 'Red Hot Pepper Pequin',         price: 10, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image3.jpg', tiktok_sync: true, desc: 'Hot & sweet: fresno peppers, chile pequin, fresh tomatoes, yellow onion & garlic.' }, 
+  { id: 'the-crew', sku: 'PPSC-004', name: 'The Crew',                     price: 30, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image4.jpg', tiktok_sync: true, desc: 'All three of our full‑size pequin salsas in one pack — perfect for sharing, gifting, or keeping your pantry stocked with every flavor we make.' }
 ];
 
 /* ===========================
@@ -1122,7 +1204,7 @@ document.querySelectorAll('.reveal-btn').forEach(btn => {
     input.type = isHidden ? 'text' : 'password';
 
     // Optional: swap emoji for feedback
-    btn.textContent = isHidden ? '🙈' : '🪇';
+    btn.textContent = isHidden ? '🪇' : '🪅';
   });
 });
 
@@ -1507,21 +1589,46 @@ function renderProducts() {
     const card = document.createElement('div');
     card.className = 'prod-card';
     card.innerHTML = `
-      <img src="${p.image}" alt="${p.name}">
-      <h3 class="prod-name">${p.name}</h3>
-      <p class="prod-price">$${p.price.toFixed(2)}</p>
-      <div class="quantity">
-        <button class="qty-btn minus">−</button>
-        <input type="number" class="qty-input" value="0" min="0">
-        <button class="qty-btn plus">+</button>
+      <div class="card-inner">
+        <div class="card-front">
+          <img src="${p.image}" alt="${p.name}">
+          <h3 class="prod-name">${p.name}</h3>
+          <p class="prod-price">$${p.price.toFixed(2)}</p>
+          <div class="quantity">
+            <button class="qty-btn minus">−</button>
+            <input type="number" class="qty-input" value="0" min="0">
+            <button class="qty-btn plus">+</button>
+            <button class="info-btn" title="More Info">ⓘ</button>
+          </div>
+          <button class="add-to-cart">Add to Cart</button>
+        </div>
+        <div class="card-back">
+          <h4>Quick Facts</h4>
+          <ul>
+            <li>SKU: ${p.sku || '—'}</li>
+            <li>Price: $${p.price.toFixed(2)}</li>
+            <li>${p.desc}</li>
+          </ul>
+          <button class="close-info">Close</button>
+        </div>
       </div>
-      <button class="add-to-cart">Add to Cart</button>
     `;
+
+    // Quantity input guard
     const qtyInput = card.querySelector('.qty-input');
+    qtyInput.addEventListener('input', () => {
+      if (qtyInput.value === '' || parseInt(qtyInput.value, 10) < 0) {
+        qtyInput.value = 0;
+      }
+    });
+
+    // Plus/minus buttons
     card.querySelector('.qty-btn.minus').onclick = () =>
       qtyInput.value = Math.max(0, +qtyInput.value - 1);
     card.querySelector('.qty-btn.plus').onclick = () =>
       qtyInput.value = +qtyInput.value + 1;
+
+    // Add to cart
     card.querySelector('.add-to-cart').onclick = () => {
       const qty = +qtyInput.value;
       if (!qty) return;
@@ -1529,6 +1636,11 @@ function renderProducts() {
       qtyInput.value = 0;
       toggleCart(true);
     };
+
+    // Flip handlers
+    card.querySelector('.info-btn').onclick = () => card.classList.add('flipped');
+    card.querySelector('.close-info').onclick = () => card.classList.remove('flipped');
+
     galleryEl.appendChild(card);
   });
 }
@@ -1559,7 +1671,7 @@ function renderCart() {
       <span class="cart-name">${prod.name}</span>
       <div class="cart-quantity">
         <button class="qty-btn minus">−</button>
-        <span class="qty-display">${item.qty}</span>
+        <input type="number" class="cart-qty-input" value="${item.qty}" min="0">
         <button class="qty-btn plus">+</button>
       </div>
     `;
@@ -1574,6 +1686,30 @@ function renderCart() {
     li.querySelector('.qty-btn.plus').onclick = () => {
       item.qty++; renderCart();
     };
+
+const qtyInput = li.querySelector('.cart-qty-input');
+qtyInput.addEventListener('input', () => {
+  const raw = qtyInput.value;
+
+  // Allow empty string while typing
+  if (raw === '') {
+    return;
+  }
+
+  let qty = parseInt(raw, 10);
+  if (isNaN(qty) || qty < 0) qty = 0;
+
+  qtyInput.value = qty;
+  item.qty = qty;
+
+  if (qty === 0) {
+    li.classList.add('removing');
+    setTimeout(() => removeFromCart(item.id), 300);
+  } else {
+    renderCart();
+  }
+});
+
 } else {
           li.querySelectorAll('.qty-btn').forEach(btn => {
         btn.disabled = true;
