@@ -17,7 +17,7 @@
       --accent-trans:   #000000;
       --accent-orange:  #f57c00;
       --accent-green:   #558b2f;
-      --accent-red:     #d84315;
+      --accent-red:     #d84315; 
       --card:           #2e2e2e60;
       --card-border:    #3a3a3a;
       --row-alt:        #262626;
@@ -686,6 +686,19 @@
         <span>Tax:</span>
         <strong>$<span id="tax-amount">0.00</span></strong>
         </div>
+                <!-- ⭐ New Rewards Redemption Row -->
+      <div id="rewards-row" class="cart-total" style="display:none;">
+        <span>Rewards Applied:</span>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <input type="number"
+                 id="rewards-input"
+                 min="0"
+                 step="1"
+                 style="width:5em; text-align:right;"
+                 aria-label="Rewards points to redeem" />
+          <strong>- $<span id="rewards-applied">0.00</span></strong>
+        </div>
+      </div>
         <div class="cart-total">
           <span>Total:</span>
           <strong>$<span id="cart-total-value">0.00</span></strong>
@@ -1003,9 +1016,9 @@ function setButtonState(btn, state) {
 
 // Dev/test config
 const DEV = {
-  stubJobs: false,         // true = bypass real polling
+  stubJobs: true,         // true = bypass real polling
   stubDelayMs: 3500,      // auto-success after this delay
-  manualEvent: false       // allow manual confirmation via window.dispatchEvent(...)
+  manualEvent: true       // allow manual confirmation via window.dispatchEvent(...)
 };
 
 /**
@@ -1725,7 +1738,26 @@ qtyInput.addEventListener('input', () => {
     const prod = productsEcom.find(p => p.id === id);
     return sum + prod.price * qty;
   }, 0);
-  document.getElementById('cart-total-value').textContent = total.toFixed(2);
+    // --- Rewards handling ---
+    const rewardsInput = document.getElementById('rewards-input');
+    const rewardsAppliedEl = document.getElementById('rewards-applied');
+    const rewardsDisplayEl = document.getElementById('rewards-display');
+
+    let applied = 0;
+    if (rewardsInput && currentUser.rewards > 0) {
+      const raw = parseInt(rewardsInput.value || "0", 10);
+      applied = Math.max(0, Math.min(raw, currentUser.rewards));
+      rewardsInput.value = applied; // clamp
+      rewardsAppliedEl.textContent = (applied / 100).toFixed(2);
+
+      // ⭐ Update header to show remaining balance live
+      const remaining = currentUser.rewards - applied;
+      rewardsDisplayEl.textContent = remaining;
+    }
+
+    // --- Update totals ---
+    const newTotal = Math.max(0, subtotal - applied);
+    document.getElementById('cart-total-value').textContent = (newTotal / 100).toFixed(2);
   checkoutBtn.disabled = !isLoggedIn || cart.length === 0;
   checkoutBtn.textContent = !isLoggedIn ? 'Sign In to Checkout' : 'Proceed to Checkout';
  }
@@ -1866,6 +1898,17 @@ const resp = await fetch(endpoint, {
 
     usernameDisplay.textContent = currentUser.name;
     rewardsDisplay.textContent = currentUser.rewards;
+        // ⭐ NEW: configure rewards row
+  const rewardsRow = document.getElementById('rewards-row');
+  const rewardsInput = document.getElementById('rewards-input');
+  if (currentUser.rewards > 0) {
+    rewardsRow.style.display = 'flex';
+    rewardsInput.max = currentUser.rewards;
+    rewardsInput.value = 0;
+    document.getElementById('rewards-applied').textContent = '0.00';
+  } else {
+    rewardsRow.style.display = 'none';
+  }
     loginBtn.textContent = 'Logout';
     loginBtn.classList.add('logout');
     checkoutBtn.disabled = false;
@@ -2133,6 +2176,7 @@ checkoutBtn.addEventListener('click', async () => {
             qty: i.qty
           })),
           total,
+          pointsRedeemed,
           jobId
         };
 
@@ -2183,6 +2227,8 @@ checkoutBtn.addEventListener('click', async () => {
         currency: raw.currency || 'usd',
         clientSecret: raw.clientSecret || raw.client_secret || '',
         paymentIntentId: raw.paymentIntentId || raw.payment_intent_id || '',
+        pointsRedeemed: Number(raw.pointsRedeemed) || 0   // ⭐ NEW
+
       };
         // 2. Hydrate currentUser with billing details
         currentUser.name = raw.billingName || currentUser.name;
@@ -2215,7 +2261,61 @@ checkoutBtn.addEventListener('click', async () => {
       if (totalAmountEl) {
         totalAmountEl.textContent = (data.totalAmount / 100).toFixed(2);
       }
+        // ⭐ NEW: Update rewards row with backend authoritative value
+if (data.pointsRedeemed > 0) {
+  document.getElementById('rewards-applied').textContent = (data.pointsRedeemed / 100).toFixed(2);
+  document.getElementById('rewards-row').style.display = 'flex';
+}
 
+// If total is zero, skip Stripe entirely
+if (data.totalAmount === 0) {
+  showMessage('Order completed using rewards points!', 'success');
+
+  // Clear cart and re-render
+  cart = [];
+  renderCart();
+
+  // Hide payment section if it was visible
+  document.getElementById('payment-section').style.display = 'none';
+
+  // Style checkout button as success
+  checkoutBtn.textContent = 'Payment Successful';
+  checkoutBtn.disabled = true;
+  checkoutBtn.style.backgroundColor = '#28a745';
+  checkoutBtn.style.cursor = 'default';
+
+  // Reset phases
+  checkoutPhase = 1;
+  confirmStep = false;
+  sessionStorage.removeItem('sid');
+
+  // Reuse the same redirect countdown you use for Stripe success
+  let countdownSeconds = 5;
+  let countdownEl = document.createElement('div');
+  countdownEl.style.marginTop = '0.5rem';
+  countdownEl.style.fontSize = '0.9rem';
+  countdownEl.style.color = '#a76e28';
+  countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
+  checkoutBtn.insertAdjacentElement('afterend', countdownEl);
+
+  let countdownTimer = setInterval(() => {
+    countdownSeconds--;
+    countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
+    if (countdownSeconds <= 0) {
+      clearInterval(countdownTimer);
+      checkoutBtn.disabled = true;
+      checkoutBtn.style.cursor = 'default';
+      countdownEl.style.transition = 'opacity 0.5s ease';
+      countdownEl.style.opacity = '0';
+      setTimeout(() => countdownEl.remove(), 500);
+      signOut();
+      window.location.href = 'https://picantepequinsalsaco.com/';
+    }
+  }, 1000);
+
+  return; // ⭐ bail out before Phase 2
+}        
+        
       // Store for Phase 2
       checkoutBtn.dataset.orderData = JSON.stringify(data);
 
@@ -2329,6 +2429,28 @@ checkoutBtn.addEventListener('click', async () => {
   }
 });
 
+    // ... your loginForm.addEventListener('submit', ...) code
+// ... your checkoutBtn.addEventListener('click', ...) code
+
+// ⭐ Rewards input handler goes here, after currentUser/cart/productsEcom exist
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'rewards-input') {
+    let raw = parseInt(e.target.value || "0", 10);
+    let applied = Math.max(0, Math.min(raw, currentUser.rewards));
+    e.target.value = applied;
+
+    document.getElementById('rewards-applied').textContent = (applied / 100).toFixed(2);
+
+    const subtotal = cart.reduce((sum, { id, qty }) => {
+      const prod = productsEcom.find(p => p.id === id);
+      return sum + prod.price * qty;
+    }, 0);
+
+    const newTotal = Math.max(0, subtotal - applied);
+    document.getElementById('cart-total-value').textContent = (newTotal / 100).toFixed(2);
+  }
+});
+    
 /* ===========================
    State dropdown enhancement
    =========================== */
