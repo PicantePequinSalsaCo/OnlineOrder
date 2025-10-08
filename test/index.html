@@ -1733,34 +1733,89 @@ qtyInput.addEventListener('input', () => {
     cartItemsEl.appendChild(li);
   });
 
-    if (!cartLocked) {
-  const total = cart.reduce((sum, { id, qty }) => {
-    const prod = productsEcom.find(p => p.id === id);
-    return sum + prod.price * qty;
-  }, 0);
-    // --- Rewards handling ---
-    const rewardsInput = document.getElementById('rewards-input');
-    const rewardsAppliedEl = document.getElementById('rewards-applied');
-    const rewardsDisplayEl = document.getElementById('rewards-display');
+// Phase 2: Confirm & Pay
+if (checkoutPhase === 2 && confirmStep) {
+  const data = JSON.parse(checkoutBtn.dataset.orderData || '{}');
+  const clientSecret = data.clientSecret;
+  const paymentIntentId = data.paymentIntentId;
 
-    let applied = 0;
-    if (rewardsInput && currentUser.rewards > 0) {
-      const raw = parseInt(rewardsInput.value || "0", 10);
-      applied = Math.max(0, Math.min(raw, currentUser.rewards));
-      rewardsInput.value = applied; // clamp
-      rewardsAppliedEl.textContent = (applied / 100).toFixed(2);
+  if (!clientSecret) {
+    showMessage('Missing client secret for payment.', 'error');
+    return;
+  }
 
-      // ⭐ Update header to show remaining balance live
-      const remaining = currentUser.rewards - applied;
-      rewardsDisplayEl.textContent = remaining;
+  startShimmer(checkoutBtn, 'Confirming...');
+
+  try {
+    const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card,
+        billing_details: {
+          name: currentUser?.name || '',
+          email: currentUser?.email || '',
+          address: {
+            line1: currentUser.addressLine1,
+            city: currentUser.city,
+            state: currentUser.state,
+            postal_code: currentUser.zip,
+            country: currentUser.country
+          }
+        }
+      }
+    }); // <-- exactly one closing brace, then parenthesis
+
+    if (error) {
+      document.getElementById('card-errors').textContent = error.message || 'Payment failed. Try another card.';
+      showMessage(error.message || 'Payment failed.', 'error');
+      return;
     }
 
-    // --- Update totals ---
-    const newTotal = Math.max(0, subtotal - applied);
-    document.getElementById('cart-total-value').textContent = (newTotal / 100).toFixed(2);
-  checkoutBtn.disabled = !isLoggedIn || cart.length === 0;
-  checkoutBtn.textContent = !isLoggedIn ? 'Sign In to Checkout' : 'Proceed to Checkout';
- }
+    if (paymentIntent && paymentIntent.status === 'succeeded') {
+      showMessage('Payment successful!', 'success');
+      cart = [];
+      renderCart();
+      document.getElementById('payment-section').style.display = 'none';
+      checkoutBtn.textContent = 'Payment Successful';
+      checkoutBtn.disabled = true;
+      checkoutBtn.style.backgroundColor = '#28a745';
+      checkoutBtn.style.cursor = 'default';
+      checkoutPhase = 1;
+      confirmStep = false;
+      sessionStorage.removeItem('sid');
+
+      // Countdown redirect (unchanged)
+      let countdownSeconds = 5;
+      let countdownEl = document.createElement('div');
+      countdownEl.style.marginTop = '0.5rem';
+      countdownEl.style.fontSize = '0.9rem';
+      countdownEl.style.color = '#a76e28';
+      countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
+      checkoutBtn.insertAdjacentElement('afterend', countdownEl);
+      checkoutBtn.disabled = false;
+      checkoutBtn.style.cursor = 'pointer';
+
+      let countdownTimer = setInterval(() => {
+        countdownSeconds--;
+        countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
+        if (countdownSeconds <= 0) {
+          clearInterval(countdownTimer);
+          checkoutBtn.disabled = true;
+          checkoutBtn.style.cursor = 'default';
+          countdownEl.style.transition = 'opacity 0.5s ease';
+          countdownEl.style.opacity = '0';
+          setTimeout(() => countdownEl.remove(), 500);
+          signOut();
+          window.location.href = 'https://picantepequinsalsaco.com/';
+        }
+      }, 1000);
+    } else {
+      showMessage(`Payment status: ${paymentIntent?.status || 'unknown'}`, 'info');
+    }
+  } finally {
+    stopShimmer(checkoutBtn);
+  }
+
+  return;
 }
 
 /* ===========================
@@ -1901,6 +1956,7 @@ const resp = await fetch(endpoint, {
         // ⭐ NEW: configure rewards row
   const rewardsRow = document.getElementById('rewards-row');
   const rewardsInput = document.getElementById('rewards-input');
+  const pointsRedeemed = parseInt(rewardsInput?.value || "0", 10); 
   if (currentUser.rewards > 0) {
     rewardsRow.style.display = 'flex';
     rewardsInput.max = currentUser.rewards;
@@ -2344,94 +2400,94 @@ if (data.totalAmount === 0) {
     return;
   }
 
-  // Phase 2: Confirm & Pay
-  if (checkoutPhase === 2 && confirmStep) {
-    const data = JSON.parse(checkoutBtn.dataset.orderData || '{}');
-    const clientSecret = data.clientSecret;
-    const paymentIntentId = data.paymentIntentId;
+// Phase 2: Confirm & Pay
+if (checkoutPhase === 2 && confirmStep) {
+  const data = JSON.parse(checkoutBtn.dataset.orderData || '{}');
+  const clientSecret = data.clientSecret;
+  const paymentIntentId = data.paymentIntentId;
 
-    if (!clientSecret) {
-      showMessage('Missing client secret for payment.', 'error');
-      return;
-    }
-
-    startShimmer(checkoutBtn, 'Confirming...');
-
-    try {
-      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card,
-          billing_details: {
-            name: currentUser?.name || '',
-            email: currentUser?.email || '',
-            address: {
-                line1: currentUser.addressLine1,
-                city: currentUser.city,
-                state: currentUser.state,
-                postal_code: currentUser.zip,
-                country: currentUser.country
-          }
-        }
-       }
-      });
-
-      if (error) {
-        document.getElementById('card-errors').textContent = error.message || 'Payment failed. Try another card.';
-        showMessage(error.message || 'Payment failed.', 'error');
-        return;
-      }
-
-      if (paymentIntent && paymentIntent.status === 'succeeded') {
-        showMessage('Payment successful!', 'success');
-        cart = [];
-        renderCart();
-        document.getElementById('payment-section').style.display = 'none';
-        checkoutBtn.textContent = 'Payment Successful';
-        checkoutBtn.disabled = true;
-        checkoutBtn.style.backgroundColor = '#28a745';
-        checkoutBtn.style.cursor = 'default';
-        checkoutPhase = 1;
-        confirmStep = false;
-        sessionStorage.removeItem('sid');
-            // Create countdown element under the button
-     let countdownSeconds = 5;
-     let countdownEl = document.createElement('div');
-        countdownEl.style.marginTop = '0.5rem';
-        countdownEl.style.fontSize = '0.9rem';
-        countdownEl.style.color = '#a76e28';
-        countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
-        checkoutBtn.insertAdjacentElement('afterend', countdownEl);
-        checkoutBtn.disabled = false;
-        checkoutBtn.style.cursor = 'pointer';
-
-          // Update countdown every second
-     let countdownTimer = setInterval(() => {
-        countdownSeconds--;
-        countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
-     if (countdownSeconds <= 0) {
-      clearInterval(countdownTimer);
-      checkoutBtn.disabled = true;
-      checkoutBtn.style.cursor = 'default';
-      countdownEl.style.transition = 'opacity 0.5s ease';
-      countdownEl.style.opacity = '0';
-      setTimeout(() => countdownEl.remove(), 500);
-      signOut();
-      window.location.href = 'https://picantepequinsalsaco.com/';
-    }
-  }, 1000);
-      } else {
-        showMessage(`Payment status: ${paymentIntent?.status || 'unknown'}`, 'info');
-      }
-    } finally {
-      stopShimmer(checkoutBtn);
-    }
-
+  if (!clientSecret) {
+    showMessage('Missing client secret for payment.', 'error');
     return;
   }
 
+  startShimmer(checkoutBtn, 'Confirming...');
 
-    // ... your loginForm.addEventListener('submit', ...) code
-// ... your checkoutBtn.addEventListener('click', ...) code
+  try {
+    const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card,
+        billing_details: {
+          name: currentUser?.name || '',
+          email: currentUser?.email || '',
+          address: {
+            line1: currentUser.addressLine1,
+            city: currentUser.city,
+            state: currentUser.state,
+            postal_code: currentUser.zip,
+            country: currentUser.country
+          }
+        }
+      }
+    }); // <-- exactly one closing brace, then parenthesis
+
+    if (error) {
+      document.getElementById('card-errors').textContent = error.message || 'Payment failed. Try another card.';
+      showMessage(error.message || 'Payment failed.', 'error');
+      return;
+    }
+
+    if (paymentIntent && paymentIntent.status === 'succeeded') {
+      showMessage('Payment successful!', 'success');
+      cart = [];
+      renderCart();
+      document.getElementById('payment-section').style.display = 'none';
+      checkoutBtn.textContent = 'Payment Successful';
+      checkoutBtn.disabled = true;
+      checkoutBtn.style.backgroundColor = '#28a745';
+      checkoutBtn.style.cursor = 'default';
+      checkoutPhase = 1;
+      confirmStep = false;
+      sessionStorage.removeItem('sid');
+
+      // Countdown redirect (unchanged)
+      let countdownSeconds = 5;
+      let countdownEl = document.createElement('div');
+      countdownEl.style.marginTop = '0.5rem';
+      countdownEl.style.fontSize = '0.9rem';
+      countdownEl.style.color = '#a76e28';
+      countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
+      checkoutBtn.insertAdjacentElement('afterend', countdownEl);
+      checkoutBtn.disabled = false;
+      checkoutBtn.style.cursor = 'pointer';
+
+      let countdownTimer = setInterval(() => {
+        countdownSeconds--;
+        countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
+        if (countdownSeconds <= 0) {
+          clearInterval(countdownTimer);
+          checkoutBtn.disabled = true;
+          checkoutBtn.style.cursor = 'default';
+          countdownEl.style.transition = 'opacity 0.5s ease';
+          countdownEl.style.opacity = '0';
+          setTimeout(() => countdownEl.remove(), 500);
+          signOut();
+          window.location.href = 'https://picantepequinsalsaco.com/';
+        }
+      }, 1000);
+    } else {
+      showMessage(`Payment status: ${paymentIntent?.status || 'unknown'}`, 'info');
+    }
+  } finally {
+    stopShimmer(checkoutBtn);
+  }
+
+  return;
+}
+
+
+// ... loginForm.addEventListener('submit', ...) code
+// ... checkoutBtn.addEventListener('click', ...) code
 
 // ⭐ Rewards input handler goes here, after currentUser/cart/productsEcom exist
 document.addEventListener('input', (e) => {
