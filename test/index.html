@@ -2429,7 +2429,7 @@ if (checkoutPhase === 2 && confirmStep) {
           }
         }
       }
-    }); // <-- exactly one closing brace, then parenthesis
+    }); 
 
     if (error) {
       document.getElementById('card-errors').textContent = error.message || 'Payment failed. Try another card.';
@@ -2484,7 +2484,7 @@ if (checkoutPhase === 2 && confirmStep) {
 
   return;
 }
-
+}});
 
 // ... loginForm.addEventListener('submit', ...) code
 // ... checkoutBtn.addEventListener('click', ...) code
