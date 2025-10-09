@@ -2453,11 +2453,11 @@ if (checkoutPhase === 2 && confirmStep) {
 // ⭐ Rewards input handler goes here, after currentUser/cart/productsEcom exist
 document.addEventListener('input', (e) => {
   if (e.target.id === 'rewards-input') {
-    let raw = parseInt(e.target.value || "0", 10);
-    let applied = Math.max(0, Math.min(raw, currentUser.rewards));
+    let raw = parseInt(e.target.value || "0");
+    let applied = Math.max(0, Math.min(raw, subtotal));
     e.target.value = applied;
 
-    document.getElementById('rewards-applied').textContent = (applied / 100).toFixed(2);
+    document.getElementById('rewards-applied').textContent = applied.toFixed(2);
 
     const subtotal = cart.reduce((sum, { id, qty }) => {
       const prod = productsEcom.find(p => p.id === id);
