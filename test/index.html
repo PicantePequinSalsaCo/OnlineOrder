@@ -2465,7 +2465,7 @@ document.addEventListener('input', (e) => {
     }, 0);
 
     const newTotal = Math.max(0, subtotal - applied);
-    document.getElementById('cart-total-value').textContent = (newTotal / 100).toFixed(2);
+    document.getElementById('cart-total-value').textContent = newTotal.toFixed(2);
   }
 });
     
