@@ -689,20 +689,22 @@
                 <!-- ⭐ New Rewards Redemption Row -->
       <div id="rewards-row" class="cart-total" style="display:none;">
         <span>Rewards Applied:</span>
-        <div style="display:flex; gap:6px; align-items:center;">
-          <input type="number"
-                 id="rewards-input"
-                 min="0"
-                 step="1"
-                 style="width:5em; text-align:right;"
-                 aria-label="Rewards points to redeem" />
-          <strong>- $<span id="rewards-applied">0.00</span></strong>
-        </div>
-      </div>
+        <strong>- $<span id="rewards-applied">0.00</span></strong>
+      </div>          
         <div class="cart-total">
           <span>Total:</span>
           <strong>$<span id="cart-total-value">0.00</span></strong>
         </div>
+          <!-- ⭐ Rewards Input Box (separate section, hidden by default) -->
+<div id="rewards-box" style="display:none; margin-top:1rem;">
+  <h3 style="margin:0 0 0.5rem; font-size:1rem;">Apply Rewards</h3>
+  <input type="number"
+         id="rewards-input"
+         min="0"
+         step="1"
+         style="width:100%; padding:0.5rem; text-align:right;"
+         aria-label="Rewards points to redeem" />
+</div>
         <section id="payment-section" style="display:none; margin-top:1rem;">
         <div id="card-element"></div>
         <div id="card-errors" role="alert"></div>
@@ -1673,9 +1675,11 @@ function removeFromCart(id) {
 }
 
 let cartLocked = false;
-
+    
 function renderCart() {
   cartItemsEl.innerHTML = '';
+
+  // Render each cart item
   cart.forEach(item => {
     const prod = productsEcom.find(p => p.id === item.id);
     const li = document.createElement('li');
@@ -1688,61 +1692,92 @@ function renderCart() {
         <button class="qty-btn plus">+</button>
       </div>
     `;
-   if (!cartLocked) {   
-    li.querySelector('.qty-btn.minus').onclick = () => {
-      if (item.qty > 1) item.qty--, renderCart();
-      else {
-        li.classList.add('removing');
-        setTimeout(() => removeFromCart(item.id), 300);
-      }
-    };
-    li.querySelector('.qty-btn.plus').onclick = () => {
-      item.qty++; renderCart();
-    };
 
-const qtyInput = li.querySelector('.cart-qty-input');
-qtyInput.addEventListener('input', () => {
-  const raw = qtyInput.value;
+    if (!cartLocked) {
+      li.querySelector('.qty-btn.minus').onclick = () => {
+        if (item.qty > 1) {
+          item.qty--;
+          renderCart();
+        } else {
+          li.classList.add('removing');
+          setTimeout(() => removeFromCart(item.id), 300);
+        }
+      };
+      li.querySelector('.qty-btn.plus').onclick = () => {
+        item.qty++;
+        renderCart();
+      };
 
-  // Allow empty string while typing
-  if (raw === '') {
-    return;
-  }
+      const qtyInput = li.querySelector('.cart-qty-input');
+      qtyInput.addEventListener('input', () => {
+        const raw = qtyInput.value;
+        if (raw === '') return;
 
-  let qty = parseInt(raw, 10);
-  if (isNaN(qty) || qty < 0) qty = 0;
+        let qty = parseInt(raw, 10);
+        if (isNaN(qty) || qty < 0) qty = 0;
 
-  qtyInput.value = qty;
-  item.qty = qty;
+        qtyInput.value = qty;
+        item.qty = qty;
 
-  if (qty === 0) {
-    li.classList.add('removing');
-    setTimeout(() => removeFromCart(item.id), 300);
-  } else {
-    renderCart();
-  }
-});
-
-} else {
-          li.querySelectorAll('.qty-btn').forEach(btn => {
+        if (qty === 0) {
+          li.classList.add('removing');
+          setTimeout(() => removeFromCart(item.id), 300);
+        } else {
+          renderCart();
+        }
+      });
+    } else {
+      li.querySelectorAll('.qty-btn').forEach(btn => {
         btn.disabled = true;
-        btn.classList.add('disabled'); // optional styling hook
+        btn.classList.add('disabled');
       });
     }
 
     cartItemsEl.appendChild(li);
   });
 
-    if (!cartLocked) {
-  const total = cart.reduce((sum, { id, qty }) => {
-    const prod = productsEcom.find(p => p.id === id);
-    return sum + prod.price * qty;
-  }, 0);
-  document.getElementById('cart-total-value').textContent = total.toFixed(2);
-  checkoutBtn.disabled = !isLoggedIn || cart.length === 0;
-  checkoutBtn.textContent = !isLoggedIn ? 'Sign In to Checkout' : 'Proceed to Checkout';
- }
+  if (!cartLocked) {
+    // Subtotal
+    const subtotal = cart.reduce((sum, { id, qty }) => {
+      const prod = productsEcom.find(p => p.id === id);
+      return sum + prod.price * qty;
+    }, 0);
+
+    // Rewards UI
+    const rewardsRow = document.getElementById('rewards-row');
+    const rewardsBox = document.getElementById('rewards-box');
+    const rewardsInput = document.getElementById('rewards-input');
+    const rewardsAppliedEl = document.getElementById('rewards-applied');
+
+    // Show applied line if logged in
+    rewardsRow.style.display = isLoggedIn ? 'flex' : 'none';
+
+    // Show input box only if logged in, cart has items, and checkout is in "Proceed" state
+    if (isLoggedIn && cart.length > 0 && checkoutBtn.textContent.includes('Proceed')) {
+      rewardsBox.style.display = 'block';
+    } else {
+      rewardsBox.style.display = 'none';
+    }
+
+    // Clamp applied points
+    let applied = 0;
+    if (rewardsInput && isLoggedIn) {
+      const raw = parseInt(rewardsInput.value || "0", 10);
+      applied = Math.max(0, Math.min(raw, subtotal));
+      rewardsInput.value = applied;
+      rewardsAppliedEl.textContent = (applied / 100).toFixed(2);
+    }
+
+    // Final total
+    const newTotal = Math.max(0, subtotal - applied);
+    document.getElementById('cart-total-value').textContent = (newTotal / 100).toFixed(2);
+
+    // Checkout button state
+    checkoutBtn.disabled = !isLoggedIn || cart.length === 0;
+    checkoutBtn.textContent = !isLoggedIn ? 'Sign In to Checkout' : 'Proceed to Checkout';
+  }
 }
+
 /* ===========================
    Overlay toggles
    =========================== */
@@ -2172,7 +2207,8 @@ checkoutBtn.addEventListener('click', async () => {
           },
           body: JSON.stringify(payload)
         });
-
+                // Hide rewards input box after sending request
+        document.getElementById('rewards-box').style.display = 'none';
         const data = await safeJson(resp);
 
         if (data?.jobId && data?.statusUrl) {
