@@ -1762,14 +1762,14 @@ function renderCart() {
     // Clamp applied points
     let applied = 0;
     if (rewardsInput && isLoggedIn) {
-      const raw = parseInt(rewardsInput.value || "0", 10);
+      const raw = parseInt(rewardsInput.value || "0");
       applied = Math.max(0, Math.min(raw, subtotal));
-      rewardsInput.value = applied;
-      rewardsAppliedEl.textContent = (applied / 100).toFixed(2);
+      rewardsInput.value = applied.toFixed(2);
+      rewardsAppliedEl.textContent = applied.toFixed(2);
     }
 
     // Final total
-const newTotal = Math.max(0, total - applied);
+const newTotal = Math.max(0, subtotal - applied);
 document.getElementById('cart-total-value').textContent = newTotal.toFixed(2);
 
     // Checkout button state
@@ -2464,7 +2464,7 @@ document.addEventListener('input', (e) => {
       return sum + prod.price * qty;
     }, 0);
 
-    const newTotal = Math.max(0, total - applied);
+    const newTotal = Math.max(0, subtotal - applied);
     document.getElementById('cart-total-value').textContent = newTotal.toFixed(2);
   }
 });
