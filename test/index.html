@@ -1763,7 +1763,7 @@ function renderCart() {
     let applied = 0;
     if (rewardsInput && isLoggedIn) {
       const raw = parseInt(rewardsInput.value || "0", 10);
-      applied = Math.max(0, Math.min(raw, newTotal));
+      applied = Math.max(0, Math.min(raw, subtotal));
       rewardsInput.value = applied;
       rewardsAppliedEl.textContent = (applied / 100).toFixed(2);
     }
