@@ -1769,7 +1769,7 @@ function renderCart() {
     }
 
     // Final total
-const newTotal = Math.max(0, subtotal - applied);
+const newTotal = Math.max(0, total - applied);
 document.getElementById('cart-total-value').textContent = newTotal.toFixed(2);
 
     // Checkout button state
@@ -2464,7 +2464,7 @@ document.addEventListener('input', (e) => {
       return sum + prod.price * qty;
     }, 0);
 
-    const newTotal = Math.max(0, subtotal - applied);
+    const newTotal = Math.max(0, total - applied);
     document.getElementById('cart-total-value').textContent = newTotal.toFixed(2);
   }
 });
