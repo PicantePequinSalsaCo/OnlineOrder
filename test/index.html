@@ -2451,27 +2451,30 @@ if (checkoutPhase === 2 && confirmStep) {
 // ... checkoutBtn.addEventListener('click', ...) code
 
 // ⭐ Rewards input handler goes here, after currentUser/cart/productsEcom exist
+// Live updates while typing
 document.addEventListener('input', (e) => {
   if (e.target.id === 'rewards-input') {
-    // Step 1: Calculate subtotal in dollars
     const subtotal = cart.reduce((sum, { id, qty }) => {
       const prod = productsEcom.find(p => p.id === id);
       return sum + (Number(prod.price) || 0) * (Number(qty) || 0);
     }, 0);
 
-    // Step 2: Parse and clamp rewards input
     const raw = parseFloat(e.target.value || "0");
     const applied = Math.max(0, Math.min(raw, subtotal));
 
-    // Step 3: Update input and applied line
-    e.target.value = applied.toFixed(2);
+    // Don't overwrite the input here — just update totals
     document.getElementById('rewards-applied').textContent = applied.toFixed(2);
-
-    // Step 4: Update visual total
-    const newTotal = Math.max(0, subtotal - applied);
-    document.getElementById('cart-total-value').textContent = newTotal.toFixed(2);
+    document.getElementById('cart-total-value').textContent = (subtotal - applied).toFixed(2);
   }
 });
+
+// Snap to 2 decimals when leaving the field
+document.addEventListener('blur', (e) => {
+  if (e.target.id === 'rewards-input') {
+    const raw = parseFloat(e.target.value || "0");
+    e.target.value = isNaN(raw) ? "" : raw.toFixed(2);
+  }
+}, true);
     
 /* ===========================
    State dropdown enhancement
