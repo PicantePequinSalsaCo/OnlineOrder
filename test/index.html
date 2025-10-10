@@ -1742,6 +1742,8 @@ function renderCart() {
       const prod = productsEcom.find(p => p.id === id);
       return sum + prod.price * qty;
     }, 0);
+  }
+}
 
 // Rewards UI
 const rewardsRow = document.getElementById('rewards-row');
