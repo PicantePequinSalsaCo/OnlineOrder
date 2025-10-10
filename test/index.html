@@ -1946,6 +1946,7 @@ const resp = await fetch(endpoint, {
     loginForm.reset();
     toggleLogin(false);
     showMessage(data?.message || 'Signed in', 'success');
+    renderCart();
   }
 });
 
