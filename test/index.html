@@ -2459,22 +2459,28 @@ document.addEventListener('input', (e) => {
       return sum + (Number(prod.price) || 0) * (Number(qty) || 0);
     }, 0);
 
-    const raw = parseFloat(e.target.value || "0");
-    const applied = Math.max(0, Math.min(raw, subtotal));
+    // Parse raw points (integer)
+    const rawPoints = parseInt(e.target.value || "0", 10);
 
-    // Don't overwrite the input here — just update totals
-    document.getElementById('rewards-applied').textContent = applied.toFixed(2);
-    document.getElementById('cart-total-value').textContent = (subtotal - applied).toFixed(2);
+    // Clamp against available points (currentUser.rewards is your stored integer)
+    const usablePoints = Math.max(0, Math.min(rawPoints, currentUser.rewards));
+
+    // Convert points → dollars
+    let applied = usablePoints / 1000;
+
+    // Clamp against subtotal
+    applied = Math.min(applied, subtotal);
+
+    // Round UP to 2 decimals
+    const appliedRounded = Math.ceil(applied * 100) / 100;
+
+    // Update UI
+    e.target.value = usablePoints; // keep showing points in the input
+    document.getElementById('rewards-applied').textContent = appliedRounded.toFixed(2);
+    document.getElementById('cart-total-value').textContent = (subtotal - appliedRounded).toFixed(2);
   }
 });
 
-// Snap to 2 decimals when leaving the field
-document.addEventListener('blur', (e) => {
-  if (e.target.id === 'rewards-input') {
-    const raw = parseFloat(e.target.value || "0");
-    e.target.value = isNaN(raw) ? "" : raw.toFixed(2);
-  }
-}, true);
     
 /* ===========================
    State dropdown enhancement
