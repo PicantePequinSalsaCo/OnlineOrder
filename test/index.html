@@ -1939,7 +1939,7 @@ const resp = await fetch(endpoint, {
   } else {
     rewardsRow.style.display = 'none';
   }
-    loginBtn.textContent = 'Logout';
+    loginBtn.textContent = 'Sign Out';
     loginBtn.classList.add('logout');
     checkoutBtn.disabled = false;
     checkoutBtn.textContent = 'Proceed to Checkout';
@@ -2538,7 +2538,7 @@ function signOut() {
   usernameDisplay.textContent = 'Guest';
   rewardsDisplay.textContent = '0';
   loginBtn.textContent = 'Sign In';
-  loginBtn.classList.remove('Sign Out');
+  loginBtn.classList.remove('logout');
 
   checkoutBtn.disabled = true;
   checkoutBtn.textContent = 'Sign In to Checkout';
