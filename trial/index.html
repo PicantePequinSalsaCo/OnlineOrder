@@ -1,901 +1,2446 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Picante Pequin Salsa Co – Smoked Chile Pequin Salsa from Texas</title>
-  <meta name="description" content="Picante Pequin Salsa Co crafts fresh, locally sourced chile pequin salsas in Texas. Order online for delivery or pickup.">
-  <meta name="color-scheme" content="dark light" />
+<meta charset="utf-8" />
+<title>Picante Pequin Salsa Co.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="dark light" />
+<link rel="icon" href="/images/favicon.ico" type="image/x-icon" />
+<link rel="preload" as="image" href="https://picantepequinsalsaco.com/images/bg.png" />
 
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Picante Pequin Salsa Co">
-  <meta property="og:title" content="Picante Pequin Salsa Co – Fresh Chile Pequin Salsas from Texas">
-  <meta property="og:description" content="Picante Pequin Salsa Co crafts fresh, locally sourced chile pequin salsas in Texas. Order online for delivery or pickup.">
-  <meta property="og:image" content="https://picantepequinsalsaco.com/images/social-preview.png">
-  <meta property="og:url" content="https://picantepequinsalsaco.com">
-  <meta name="twitter:card" content="summary_large_image">
-
-  <link rel="icon" type="image/x-icon" href="/images/favicon.ico" sizes="48x48">
-  <link rel="icon" type="image/png" href="/images/favicon.png" sizes="192x192">
-  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
-  <link rel="manifest" href="/manifest.webmanifest">
-
-  <link rel="preload" as="image" href="https://picantepequinsalsaco.com/images/bg.png">
-  
 <style>
-  :root {
-    /* Old site palette preserved */
-    --bg-deep: #1e1e1e00;
-    --ink: #ececec;
-    --muted: #b0b0b0;
-    --banner: #00001b63;
+/* ... your existing CSS ... */
+    :root {
+      --bg-deep:        #1e1e1e00;
+      --ink:            #ececec;
+      --muted:          #b0b0b0;
+      --accent-trans:   #000000;
+      --accent-orange:  #f57c00;
+      --accent-green:   #558b2f;
+      --accent-red:     #d84315;
+      --card:           #2e2e2e60;
+      --card-border:    #3a3a3a;
+      --row-alt:        #262626;
+      --button-opq:     #ffffff2f;
+      --cart-opq:       #010f2b74;
+      --radius-sm:      12px;
+      --radius-lg:      20px;
+      --shadow:         0 10px 30px #00000066;
+      --accent-glow:    0 0 0 2px #f57c0033, 0 10px 20px #f57c0022;
+      --maxw:           1100px;
+      --cart-width:     80vw;
+      --login-width:    60vw;
+      --cart-max-width: 400px;
+      --header-h: 50px;
 
-    --accent-orange: #f57c00;
-    --accent-green: #558b2f;
-    --accent-red: #d84315;
-
-    --card: #2e2e2e60;      /* glass card tint from old table bg */
-    --card-border: #3a3a3a; /* old table row divider */
-    --row-alt: #262626;     /* old alternating row */
-
-    --radius: 16px;
-    --radius-sm: 12px;
-    --shadow: 0 10px 30px #00000066;
-    --accent-glow: 0 0 0 2px #f57c0033, 0 10px 20px #f57c0022;
-
-    --maxw: 1100px;
-
-    /* Subtle dark gradient base with soft red/green light to echo header gradient */
-    --grad: linear-gradient(135deg, #1f1f1f70 0%, #1b1b1b70 40%, #15151570 100%);
-
-    --tile-w: 300px;
-    --tile-h: 300px;
-    --rail-pad: 14px;
-  }
-
-  * { box-sizing: border-box; }
-
-  html, body {
-    margin: 0;
-    padding: 0;
-    font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--bg-deep); /* fallback */
-    scroll-behavior: smooth;
-  }
-
-  a { color: inherit; text-decoration: none; }
-  img { display: block; max-width: 100%; }
-
-  /* Background image + atmospheric overlay (image inside .bg so filter applies) */
-  .bg {
-    position: fixed;
-    inset: 0;
-    z-index: -1; /* push behind all content */
-    background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover no-repeat;
-    filter: blur(0px) saturate(1.05) brightness(.9);
-    transform: translateZ(0) scale(1.02);
-  }
-
-  .bg::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: none;
-  }
-
-  /* Sticky header */
-  header {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    backdrop-filter: saturate(140%) blur(10px);
-    background: #161616cc;
-    border-bottom: 1px solid #ffffff14;
-  }
-
-  .nav {
-    max-width: var(--maxw);
-    margin: 0 auto;
-    padding: 12px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-  }
-
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    letter-spacing: .3px;
-  }
-
-  .logo {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    background-image: url('https://picantepequinsalsaco.com/images/bg.png');
-    background-size: cover;
-    background-position: center;
-    box-shadow: var(--accent-glow);
-  }
-
-  .tag { color: var(--muted); font-size: .95rem; }
-
-  nav ul {
-    display: flex;
-    gap: 10px;
-    list-style: none;
-    align-items: center;
-    margin: 0;
-    padding: 0;
-  }
-   /* 1px white outline around orange text */
-.outlined {
-  color: #ffffffdc;                    /* your fill color */
-  
-  /* Chrome, Safari & modern WebKit-based browsers */
-  -webkit-text-stroke: 1px #ffffff10;  
-  text-stroke: 1px #ffffff10;         /* non-prefixed if supported */
-
-  /* fallback for other browsers using multi-layer text-shadow */
-  text-shadow:
-    /* top-left */     -1px -1px 0 #ffffff10,
-    /* top-right */     1px -1px 0 #ffffff10,
-    /* bottom-left */  -1px  1px 0 #ffffff10,
-    /* bottom-right */  1px  1px 0 #ffffff10;
-}
-  
-  .link {
-    padding: 8px 12px;
-    border-radius: 999px;
-    color: var(--muted);
-    border: 1px solid transparent;
-    transition: .2s ease;
-  }
-
-  .link:hover {
-    color: var(--ink);
-    border-color: #ffffff22;
-    background: #ffffff10;
-  }
-   
-  .cta {
-    background: #050f46a9;
-    color: #c06a00b5;
-    backdrop-filter: 6px;
-    font-weight: 700;
-    padding: 9px 14px;
-    border-radius: 999px;
-    box-shadow: var(--accent-glow);
-  }
-
-  .cta:hover { filter: brightness(.95); }
-
-  /* Hero */
-  .hero {
-    max-width: var(--maxw);
-    margin: 36px auto 18px;
-    padding: 0 18px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 24px;
-  }
-
-  .hero-card {
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius);
-    padding: 28px;
-    box-shadow: var(--shadow);
-  }
-
-  .hero .hero-gallery { align-self: start; }
-
-  .kicker {
-    color: var(--accent-green);
-    font-weight: 800;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    font-size: .8rem;
-  }
-
-  h1 {
-    font-size: clamp(1.9rem, 3.2vw, 3rem);
-    line-height: 1.1;
-    margin: .4rem 0 .8rem;
-  }
-
-  .sub { color: var(--muted); font-size: 1.05rem; }
-
-  .badges {
-    margin-top: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .pill {
-    padding: 6px 10px;
-    border-radius: 999px;
-    font-weight: 700;
-    font-size: .8rem;
-    color: #0d0a05;
-    background: #3d8700ad;
-    border: 1px solid #ffffff22;
-  }
-
-  .pill.alt {
-    color: #0a0f08;
-    background: #cf7c00d8;
-  }
-
-  .hero-actions {
-    margin-top: 16px;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .btn {
-    font-family: inherit;
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    text-decoration: none;
-    display: inline-block;
-    cursor: pointer;
-    padding: 11px 14px;
-    border-radius: 12px;
-    border: 1px solid #ffffff1f;
-    background: #ffffff0f;
-    color: #fff;
-    backdrop-filter: blur(6px);
-    transition: transform .15s ease, background .2s ease;
-  }
-
-  .btn:hover {
-    transform: translateY(-1px);
-    background: #ffffff1a;
-  }
-
-  .btn.primary {
-    background: linear-gradient(180deg, var(--accent-orange), #e46f00);
-    color: #fff;
-    border: none;
-    font-weight: 800;
-  }
-
-  /* Menu section */
-  .section {
-    max-width: var(--maxw);
-    margin: 20px auto;
-    padding: 0 18px;
-  }
-
-  .card {
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-sm);
-    padding: 18px;
-    box-shadow: var(--shadow);
-  }
-
-  .section h2 { font-size: 1.4rem; margin: 0 0 10px; }
-
-  .table-wrap {
-    overflow: auto;
-    border-radius: 12px;
-    border: 1px solid var(--card-border);
-    background: #1a1a1acc;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    min-width: 520px;
-  }
-
-  thead {
-    background: linear-gradient(90deg, var(--accent-red), var(--accent-green));
-  }
-
-  thead th {
-    color: #fff;
-    font-weight: 600;
-    padding: .8em 1em;
-    text-align: left;
-  }
-
-  tbody td {
-    padding: .8em 1em;
-    border-top: 1px solid var(--card-border);
-    color: var(--ink);
-  }
-
-  tbody tr:nth-child(even) { background: var(--row-alt); }
-
-  .info-grid {
-    display: grid;
-    grid-template-columns: 1.2fr .8fr;
-    gap: 16px;
-    margin-top: 12px;
-  }
-
-  .list { margin: 0; padding-left: 1.2em; }
-  .list li { margin: .4em 0; }
-
-  .order-cta {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .order-cta a {
-    background-color: var(--accent-orange);
-    color: #fff;
-    padding: .9em 1.4em;
-    border-radius: 10px;
-    font-weight: 800;
-    text-align: center;
-    box-shadow: var(--accent-glow);
-  }
-
-  .small { font-size: .9rem; color: var(--muted); margin-top: 10px; }
-
-  /* Highlights gallery */
-  .gallery-wrap {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--radius);
-    border: 1px solid var(--card-border);
-    background: #1e1e1e60;
-    box-shadow: var(--shadow);
-    width: calc(var(--tile-w) + 2 * var(--rail-pad));
-    height: calc(var(--tile-h) + 2 * var(--rail-pad));
-    max-width: 100%;
-    margin: 0 auto;
-  }
-
-  .rail {
-    display: flex;
-    gap: 12px;
-    padding: var(--rail-pad);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .rail::-webkit-scrollbar { display: none; }
-
-  .tile {
-    flex: 0 0 auto;
-    width: var(--tile-w);
-    height: var(--tile-h);
-    position: relative;
-    border-radius: 12px;
-    overflow: hidden;
-    scroll-snap-align: center;
-    border: 1px solid #ffffff1a;
-    background: #141414;
-  }
-
-  .tile img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: .95;
-    transition: .25s;
-  }
-
-  .tile:hover img { transform: scale(1.03); opacity: 1; }
-
-  .tile .label {
-    position: absolute;
-    left: 10px;
-    bottom: 10px;
-    padding: 6px 10px;
-    border-radius: 999px;
-    background: #161616cc;
-    border: 1px solid #ffffff22;
-    color: #fff;
-    font-size: .8rem;
-  }
-
-  .gallery-controls {
-    position: absolute;
-    inset: auto 10px 10px auto;
-    display: flex;
-    gap: 8px;
-    z-index: 2;
-  }
-
-  .ctrl {
-    width: 36px;
-    height: 36px;
-    display: grid;
-    place-items: center;
-    border-radius: 10px;
-    background: #161616cc;
-    border: 1px solid #ffffff2a;
-    color: #fff;
-    cursor: pointer;
-  }
-
-  .ctrl:hover { background: #161616e0; }
-
-  /* Footer */
-  footer {
-    margin: 40px 0 28px;
-    color: var(--muted);
-    text-align: center;
-    font-size: .9rem;
-  }
-
-  .links {
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 8px;
-  }
-
-  .links a { color: var(--accent-orange); font-weight: 700; }
-
-  /* ========================= */
-  /* Responsive Styles         */
-  /* ========================= */
-
-  @media (max-width: 960px) {
-    .hero { grid-template-columns: 1fr; }
-    .info-grid { grid-template-columns: 1fr; }
-
-    /* Keep gallery fixed size & centered */
-    .gallery-wrap {
-      width: calc(var(--tile-w) + 2 * var(--rail-pad));
-      height: calc(var(--tile-h) + 2 * var(--rail-pad));
-      margin: 0 auto;
     }
-  }
 
-  @media (max-width: 640px) {
+    
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      height: -webkit-fill-available;
+      min-height: -webkit-fill-available;
+      font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-deep);
+      scroll-behavior: smooth;
+      color: var(--ink);
+    }
+    a, button { font: inherit; }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    .bg {
+      position: fixed; inset: 0; z-index: -1;
+      background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover no-repeat;
+      filter: blur(0) saturate(1.05) brightness(.9);
+      transform: translateZ(0) scale(1.02);
+    }
+
+    header {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: saturate(140%) blur(10px);
+      background: #161616cc; border-bottom:1px solid #ffffff14;
+    }
     .nav {
-      flex-direction: column;
-      align-items: stretch;
-      text-align: center;
+      max-width: var(--maxw); margin:0 auto;
+      padding:12px 18px; display:flex;
+      align-items:center; justify-content:space-between;
     }
-    .brand {
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 6px;
-      margin-bottom: 6px;
+    .brand { display:flex; align-items:center; gap:10px; }
+    .logo {
+      width:34px; height:34px; border-radius:10px;
+      background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover;
+      box-shadow: var(--accent-glow);
     }
+    .header-info {
+      display: flex; align-items:center; gap:12px;
+      font-size:0.9rem;
+    }
+    
+    .header-info .greeting {
+      font-weight: 500;
+      margin-right: 0.5rem;
+      display: inline-block;
+    }
+
+    .header-info strong { font-weight:700; }
     nav ul {
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
+      display:flex; gap:10px; list-style:none; margin:0; padding:0;
     }
-    nav ul li {
-      display: flex;
-      justify-content: center;
+    .cta {
+      background:#050f46a9; color:#c06a00b5;
+      font-weight:700; padding:9px 14px; border-radius:999px;
+      box-shadow: var(--accent-glow); cursor:pointer;
+      border:none; transition:filter .2s;
     }
-    nav a {
-      width: 100%;
-      text-align: center;
+    .cta:hover { filter:brightness(.95); }
+    .cta.logout {
+      background: var(--accent-red); color: #fff;
     }
-  }
 
-  /* Contact modal */
-.contact-popup {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-}
-
-.contact-hidden {
-  display: none;
-}
-
-.contact-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(2px);
-}
-
-.contact-card {
-  position: relative;
-  margin: 0 auto;
-  top: 50%;
-  transform: translateY(-50%);
-  max-width: 520px;
-  width: calc(100% - 32px);
+    .vertical-gallery {
+      max-width: var(--maxw);
+      margin: 20px auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }    
+/* Outer card remains your floating “tile” */
+.prod-card {
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
+  padding: 16px;
   box-shadow: var(--shadow);
-  color: var(--ink);
-  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+
+  /* 3D context for flip */
+  perspective: 1000px;
+  overflow: hidden; /* prevent bleed during flip */
 }
 
-.contact-row {
+/* The inner wrapper that flips */
+.card-inner {
+  display: grid;             /* overlay faces without absolute positioning */
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Flipped state rotates the inner wrapper */
+.prod-card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+/* Both faces overlay the same grid cell */
+.card-front,
+.card-back {
+  grid-area: 1 / 1;          /* overlay both faces */
+  backface-visibility: hidden;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  /* Optional: keep padding here or on front/back separately */
+  padding: 0;                 /* front already gets padding from .prod-card */
+}
+
+/* Front: uses parent card’s background/padding */
+.card-front {
+  /* no background needed; .prod-card provides it */
+}
+
+/* Back: opaque info panel that fully covers front */
+.card-back {
+  background: rgba(20,20,20,0.95);
+  color: var(--ink);
+  transform: rotateY(180deg);
+  padding: 16px;             /* own padding for the info side */
+}
+
+/* Info button (on the front, next to +) */
+.info-btn {
+  margin-left: 6px;
+  padding: 4px 6px;
+  font-size: 0.9em;
+  border: none;
+  background: var(--button-opq);
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.info-btn:hover {
+  background: var(--accent-green-dark);
+}
+
+/* Close button (on the back) */
+.close-info {
+  margin-top: auto;
+  align-self: center;
+  padding: 6px 12px;
+  border: none;
+  background: var(--accent-green);
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.close-info:hover {
+  background: var(--accent-green-dark);
+}
+    
+    .prod-card img {
+      border-radius: var(--radius-sm);
+      margin-bottom:12px;
+      object-fit:cover;
+      aspect-ratio: 1 / 1;
+    }
+    .prod-name { margin:0 0 8px; font-size:1.2rem; }
+    .prod-price { margin:0 0 12px; color:var(--muted); }
+    .quantity {
+      display:flex; align-items:center; gap:8px; margin-bottom:12px;
+    }
+    .qty-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width:32px;
+      height:32px;
+      padding: 0;
+      background: var(--button-opq); border: 1px solid var(--accent-orange);
+      border-radius: 6px;
+      font-size:1.2rem;
+      color: #fff;
+      cursor:pointer;
+    }
+    .qty-input {
+      width:50px; text-align:center;
+      border:1px solid var(--card-border);
+      border-radius:var(--radius-sm);
+      background: var(--row-alt);
+      color: var(--ink);
+    }
+    .add-to-cart {
+      margin-top:auto;
+      background: linear-gradient(180deg,var(--accent-green),#4a7c27ef);
+      color:#fff; border: solid; border-color: var(--button-opq); padding: 10px;
+      border-radius: var(--radius-sm);
+      font-weight:700; cursor:pointer;
+    }
+
+    #cart-container {
+      position:fixed; inset:0;
+      background: rgba(0,0,0,0.8);
+      display:none; align-items:center; justify-content:flex-end;
+      height: 100%;
+      z-index:100;
+      padding-top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    #cart-container.open { display:flex; }
+    .cart-panel {
+      width: var(--cart-width); max-width: var(--cart-max-width);
+      height: calc(100% - calc(var(--header-h) + env(safe-area-inset-top, 0px))); background: var(--cart-opq);
+      border: solid 1px var(--accent-orange); border-radius: 20px;
+      transform: translateX(100%); transition: transform .3s ease;
+      display:flex; flex-direction:column;
+      overscroll-behavior: contain;
+    }
+    #cart-container.open .cart-panel {
+      transform: translateX(0);
+    }
+    .cart-header {
+      display:flex; align-items:center;
+      padding:1rem; border-bottom:1px solid var(--card-border);
+    }
+    .cart-header h2 {
+      flex:1; margin:0; font-size:1.2rem; text-align:center;
+    }
+    #close-cart {
+      background:none; border:none;
+      color:var(--ink); font-size:1.5rem; cursor:pointer;
+    }
+    .cart-content {
+      flex: 1 1 auto; overflow:auto; padding:1rem;
+    }
+    .cart-total {
+      display: flex; justify-content: space-between;
+      align-items: center; padding: 0.75rem 1rem;
+      border-top: 1px solid var(--card-border);
+      font-size: 1.1rem;
+    }
+    .cart-qty-input {
+  width: 3.5em;       /* keeps it compact, enough for 2–3 digits */
+  text-align: center; /* centers the number */
+  padding: 2px 4px;   /* trims down the default padding */
+  font-size: 0.9em;   /* match your cart’s font scale */
+  border: 1px solid var(--accent-green); /* optional: styled border */
+  border-radius: 4px; /* optional: soften edges */
+}
+    #cart-items { list-style:none; margin:0; padding:0; }
+    #cart-items li {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:8px; margin-bottom:8px;
+      background:var(--row-alt); border-radius:var(--radius-sm);
+      transition:opacity 0.3s ease; overflow:hidden; white-space:nowrap;
+    }
+    #cart-items li.removing { opacity:0; }
+    #cart-items li img.cart-thumb {
+      flex:0 0 auto; width:32px; height:32px;
+      object-fit:cover; border-radius:4px; margin-right:8px;
+    }
+    #cart-items li .cart-name {
+      flex:1 1 auto; margin-right:8px;
+      overflow:hidden; text-overflow:ellipsis;
+    }
+    #cart-items li .cart-quantity {
+      display:flex; align-items:center; gap:4px;
+    }
+    #cart-items li .qty-btn {
+      background:rgba(255,255,255,0.1); border:none;
+      color:var(--ink); width:28px; height:28px;
+      border-radius:6px; font-size:1.2rem; line-height:1;
+      cursor:pointer;
+    }
+    #cart-items li .qty-display {
+      min-width:24px; text-align:center; color:var(--ink);
+    }
+/* Product card quantity input */
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.qty-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Cart overlay quantity input */
+.cart-qty-input::-webkit-outer-spin-button,
+.cart-qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.cart-qty-input[type=number] {
+  -moz-appearance: textfield;
+}
+    
+    #checkout-btn {
+      margin-top:1rem; width:100%;
+      padding:.75rem; border:none; border-radius:4px;
+      background:var(--accent-orange); color:#fff;
+      font-weight:700; cursor:pointer;
+    }
+    #checkout-btn[disabled] {
+      background:var(--muted); cursor:not-allowed;
+    }
+#checkout-btn.loading {
+  position: relative;
+  overflow: hidden;
+  color: transparent !important; /* hide text, we'll use a pseudo-element for shimmer text */
+  text-shadow: none !important;
+}
+
+#checkout-btn.loading::before {
+  content: attr(data-loading-text); /* dynamic text from JS */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin: 10px 0 8px;
-  flex-wrap: nowrap;
+  justify-content: center;
+  background-color: var(--accent-trans);
+  background: linear-gradient(
+    110deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.4) 40%,
+    rgba(255,255,255,0) 60%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  color: #fff; /* shimmer text color */
+  font-weight: bold;
 }
 
-.contact-email {
-  flex: 1;
-  color: #fff;
-  font-weight: 700;
-  word-break: break-all;
-  border-bottom: 1px dashed #ffffff22;
+/* Prevent double text overlay on checkout button */
+#checkout-btn.api-btn.loading::after {
+  content: none !important;
 }
 
-.contact-copy {
-  margin-left: 12px;
-  flex-shrink: 0;
-  padding: 6px 10px;
-  border-radius: 10px;
-  border: 1px solid #ffffff1f;
-  background: #ffffff10;
-  color: #fff;
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.password-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 2.5rem; /* space for the maracas */
+  box-sizing: border-box;
+}
+
+.reveal-btn {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-75%);
+  background-color: var(--row-alt)!important;
+  border: none;
+  font-size: 1rem;
   cursor: pointer;
-  transition: background .2s ease, transform .15s ease;
-}
-
-.contact-copy:hover { background: #ffffff1a; transform: translateY(-1px); }
-
-.contact-actions {
-  margin-top: 12px;
+  padding: 0;
+  line-height: 1;
+  color: #555;
+  height: 1.5rem;
+  width: 1.5rem;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
 }
+    /* Login container with both forms */
+    #login-container {
+      position:fixed; inset:0;
+      background: rgba(0,0,0,0.8);
+      display:none; align-items:center; justify-content:flex-end;
+      height: 100%;
+      z-index:100;
+      padding-top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    #login-container.open { display:flex; }
+    #login-container .cart-panel {
+      width: var(--login-width); max-width: var(--cart-max-width);
+      height:calc(100% - calc(var(--header-h) + env(safe-area-inset-top, 0px))); background: var(--cart-opq);
+      border: solid 1px var(--accent-green); border-radius: 20px;
+      transform: translateX(100%); transition: transform .3s ease;
+      display:flex; flex-direction:column;
+      overscroll-behavior: contain;
+    }
+    #login-container.open .cart-panel {
+      transform: translateX(0);
+    }
+    .login-form {
+      display:flex; flex-direction:column; padding:1rem;
+    }
+    .login-form input {
+      margin-bottom:12px; padding:8px;
+      border:1px solid var(--card-border);
+      border-radius:var(--radius-sm);
+      background:var(--row-alt); color:var(--ink);
+    }
+    .login-form button {
+      background:var(--accent-green); color:#fff;
+      border:none; padding:12px; border-radius:var(--radius-sm);
+      cursor:pointer; font-weight:700;
+    }
 
-/* Inline toast inside modal */
-.contact-toast {
-  margin-top: 10px;
-  background: #333;
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 10px;
-  opacity: 0;
-  transition: opacity .25s ease;
-  pointer-events: none;
-}
+     #close-login {
+      background:none; border:none;
+      color:var(--ink); font-size:1.5rem; cursor:pointer;
+    }
+    
+    .hidden { display: none; }
+    .auth-switch {
+      text-align:center; margin-top:8px;
+    }
+    .auth-switch button {
+      background:none; border:none; color:var(--accent-orange);
+      cursor:pointer; text-decoration:underline; font-size:0.9rem;
+    }
 
-.contact-toast.show { opacity: 1; }
+    /* State select wrapper styles (added) */
+    .state-select-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .state-select-wrapper select {
+      flex: 1;
+      appearance: auto;
+      -webkit-appearance: auto;
+      -moz-appearance: auto;
+      padding: 8px;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      background: var(--row-alt);
+      color: var(--muted);
+      font: inherit;
+      line-height: 1.0;
+    }
 
-/* Prevent background scroll when modal is open */
-.body-lock {
+    /* Shimmer effect */
+.shimmer {
+  position: relative;
   overflow: hidden;
 }
 
-  @media (max-width: 420px) {
-  .contact-card { padding: 18px; }
-  .contact-email { font-size: .95rem; }
+.shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  animation: shimmer-move 0.8s ease-out forwards;
 }
 
-  @media (prefers-reduced-motion: reduce) {
-    * { animation: none !important; transition: none !important; }
+@keyframes shimmer-move {
+  100% {
+    left: 150%;
   }
-</style>
-  
-  <!-- Samsung QR NUL guard -->
-  <script>
-    (function() {
-      const path = window.location.pathname;
-      if (path.includes('%00') || path.includes('\0')) {
-        window.location.replace("https://picantepequinsalsaco.com/");
-      }
-    })();
-  </script>
+}
 
+    footer {
+      text-align:center; color:var(--muted);
+      font-size:.9rem; margin:20px 0;
+    }
+    .links {
+      display:flex; gap:14px; justify-content:center;
+      flex-wrap:wrap; margin-top:8px;
+    }
+    .links a { color:var(--accent-orange); font-weight:700; }
+
+    @supports (height: 100dvh) {
+  .use-dvh { height: 100dvh; }
+}
+@supports not ((height: 100dvh) and (height: 100svh)) {
+  .use-dvh { height: 100svh; }
+}
+/* fallback */
+.use-dvh { height: 100vh; }
+
+
+    /* 1. Tablets & small desktops: single-column gallery */
+    @media (max-width: 960px) {
+      .vertical-gallery {
+        grid-template-columns: 1fr;
+        max-width: var(--maxw);
+        margin: 0 auto;
+      }
+    }
+    /* 2. Mobile nav stacking & centering */
+    @media (max-width: 640px) {
+      .nav {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+      }
+      .brand {
+        justify-content: center;
+        margin-bottom: 6px;
+      }
+      .header-info {
+        margin-bottom: 12px;
+      }
+      nav ul {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+      }
+      nav ul li {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+      }
+      nav ul li button {
+        width: 100%;
+      }
+    }
+    /* 3. Respect reduced-motion settings */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+/* API button states */
+.api-btn {
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s ease, color 0.3s ease, opacity 0.2s ease;
+}
+
+.api-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: saturate(0.7);
+}
+    
+.api-btn.loading {
+  color: transparent !important;
+  background: linear-gradient(
+    110deg,
+    rgba(255,255,255,0.1) 8%,
+    rgba(255,255,255,0.3) 18%,
+    rgba(255,255,255,0.1) 33%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.api-btn.loading::after {
+  content: attr(data-loading-text);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-weight: bold;
+}
+.api-btn.success {
+  background: var(--accent-green) !important;
+}
+.api-btn.success::after {
+  content: "✔";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.2rem;
+  color: #fff;
+}
+.api-btn.error {
+  background: var(--accent-red) !important;
+}
+.api-btn.error::after {
+  content: "✖";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.2rem;
+  color: #fff;
+}
+</style>
 </head>
+
 <body>
   <div class="bg" aria-hidden="true"></div>
 
   <header>
     <div class="nav">
-      <div class="brand">
+      <a class="brand" href="https://picantepequinsalsaco.com">
         <div class="logo" aria-hidden="true"></div>
         <strong>Picante Pequin Salsa Co</strong>
+      </a>
+      <div class="header-info">
+        <div class="greeting">Hey There,</div>
+        <span id="username-display">Guest</span>
+        <span>|  Rewards: <strong id="rewards-display">0</strong></span>
       </div>
       <nav aria-label="Primary">
         <ul>
-          <li><a class="link" href="https://picantepequinsalsaco.com/ShippingPolicy">Shipping</a></li>
-          <li><a class="link" href="https://picantepequinsalsaco.com/PrivacyPolicy">Privacy</a></li>
-          <li><a class="cta" href="https://picantepequinsalsaco.com/TradingPost">Rewards Trading Post</a></li>
+          <li><button id="cart-icon" class="cta" aria-label="Toggle Cart">🛒</button></li>
+          <li><button id="login-btn" class="cta">Sign In</button></li>
         </ul>
       </nav>
     </div>
   </header>
-  
-   <!-- Scrolling Banner -->
-<div style="
-    overflow: hidden;
-    background: var(--banner);
-    color: var(--ink);
-    padding: 8px 0;
-    font-weight: 600;
-    font-size: 1rem;
-    text-align: center;
-    max-width: var(--maxw);
-    margin: 0 auto;
-    position: relative;
-    white-space: nowrap;
-    ">
-    <div style="
-    display: inline-block;
-    padding-left: 100%;
-    animation: scroll-left 20s linear infinite;
-  ">
-    🌶️ Rewards Points Redemption Coming Soon! 🧄 We are Cooking Up a Spicy Redemption Process for Future Checkouts. 🍅 Checkout the Rewards Trading Post for Details on How Our Point System Works! 🧅
-  </div>
-</div>
-  
-    <style>
-    @keyframes scroll-left {
-      0%   { transform: translateX(0); }
-      100% { transform: translateX(-100%); }
-    }
-  </style>
 
   <main>
-    <!-- Contact modal -->
-<div id="contactPopup" class="contact-popup contact-hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
-  <div class="contact-overlay" data-close="true"></div>
-  <div class="contact-card" role="document">
-    <h2 id="contactTitle">Contact Support</h2>
-
-    <div class="contact-row">
-      <a id="supportEmail" class="contact-email" href="mailto:support@picantepequinsalsaco.com?subject=Order%20Support">
-        support@picantepequinsalsaco.com
-      </a>
-      <button class="contact-copy" id="copyEmailBtn" type="button" aria-label="Copy email address" title="Copy email">
-        📋
-      </button>
-    </div>
-
-    <div id="contactToast" class="contact-toast" role="status" aria-live="polite">
-      Email address copied to clipboard
-    </div>
-
-    <div class="contact-actions">
-      <button class="btn" id="closeContactBtn" type="button">Close</button>
-    </div>
-  </div>
-</div>
-    <!-- HERO with gallery on the right (desktop), stacked (mobile) -->
-    <section class="hero">
-      <div class="hero-card">
-        <h1 class="outlined">Home Made, Smoked Salsa's, Guaranteed Fresh</h1>
-        <p class="sub">Salsas in 16 oz mason jars at $10 per jar + tax.</p>
-        <div class="badges">
-          <span class="pill">Free shipping over $120</span>
-          <span class="pill alt">Free local delivery within 25 mi of League City, TX (77573)</span>
-        </div>
-        <div class="hero-actions">
-          <a class="btn primary" href="https://picantepequinsalsaco.com/OrderNow/">Order Now!</a>
-          <button class="btn" id="supportBtn" type="button">Contact Support</button>
-        </div>
-      </div>
-
-      <!-- Gallery moved next to hero content -->
-      <div class="hero-gallery">
-        <div class="gallery-wrap" aria-labelledby="highlights-title">
-          <h2 id="highlights-title" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">Highlights</h2>
-          <div class="gallery-controls" aria-hidden="true">
-            <button class="ctrl" id="prev" title="Previous">◀</button>
-            <button class="ctrl" id="next" title="Next">▶</button>
-          </div>
-          <div class="rail" id="rail" aria-label="Auto-scrolling highlights"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- FLAVORS + SMOKED SIGNATURE -->
-    <section class="section" id="flavors-smoked">
-      <div class="card">
-        <h2>Our Smoked Salsa Menu</h2>
-        <p class="sub">All Ingredients Smoked to Perfection, Each Batch Tested for Safety, Every Jar Sealed with Care</p>
-
-        <!-- Flavor Table -->
-        <div class="table-wrap" role="region" aria-label="Flavor descriptions" tabindex="0">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Flavor</th>
-                <th scope="col">Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>House Pequin</td>
-                <td>A mild, bright blend of serrano, chile pequin, fresh tomatoes, white onion, garlic, cilantro & lime.</td>
-              </tr>
-              <tr>
-                <td>Spicy Green Chile Pequin</td>
-                <td>Smokey‑citrusy salsa of serrano, chile pequin, tomatillos, yellow onion, garlic, cilantro & lime.</td>
-              </tr>
-              <tr>
-                <td>Red Hot Pepper Pequin</td>
-                <td>Hot & sweet: fresno peppers, chile pequin, fresh tomatoes, yellow onion, garlic, cilantro & lime.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Info + Order -->
-        <div class="info-grid">
-          <div>
-            <p><strong style="color:var(--accent-green)">Shelf life</strong></p>
-            <ul class="list">
-              <li><strong style="color:var(--accent-green)">Unopened & sealed:</strong><span class="small"> up to 18 months in a cool, dark place.</span></li>
-              <li><strong style="color:var(--accent-green)">Opened & refrigerated:</strong><span class="small"> best consumed within 7–14 days.</span></li>
-            </ul>
-            <p class="small">
-              All ingredients are home‑grown or locally sourced first. Some peppers, when unavailable locally, may be sourced through other small business distributors. 
-              Every jar is guaranteed fresh — and always smoked for that signature flavor.
-            </p>
-          </div>
-          <div class="order-cta">
-            <a href="https://picantepequinsalsaco.com/OrderNow/" aria-label="Order smoked salsas now">
-              Taste the Smoke – Order Now!
-            </a>
-          </div>
-        </div>
-      </div>
+    <section id="product-gallery" class="vertical-gallery" role="region" aria-label="Product Catalog">
+      <!-- products injected by JS -->
     </section>
   </main>
 
-  <footer>
-    © <span id="y"></span> Picante Pequin Salsa Co. All rights reserved.
-    <div class="links">
-      <a href="https://picantepequinsalsaco.com/ShippingPolicy">Shipping & Delivery Policy</a>
-      <a href="https://picantepequinsalsaco.com/PrivacyPolicy">Customer Communication & Privacy Policy</a>
+  <aside id="cart-container" role="dialog" aria-modal="true" aria-label="Shopping Cart">
+    <div class="cart-panel">
+      <div class="cart-header">
+        <button id="close-cart" aria-label="Close cart">×</button>
+        <h2>Your Cart</h2>
+      </div>
+      <div class="cart-content">
+        <ul id="cart-items"></ul>
+        <div id="order-info-row" class="cart-total" style="display:none;">
+        <span>Order #:</span>
+          <strong id="order-number"></strong>
+        </div>
+        <div id="shipping-row" class="cart-total" style="display:none;">
+         <span>Shipping:</span>
+          <strong>$<span id="shipping-cost">0.00</span></strong>
+        </div>
+        <div id="tax-row" class="cart-total" style="display:none;">
+        <span>Tax:</span>
+        <strong>$<span id="tax-amount">0.00</span></strong>
+        </div>
+        <div class="cart-total">
+          <span>Total:</span>
+          <strong>$<span id="cart-total-value">0.00</span></strong>
+        </div>
+        <section id="payment-section" style="display:none; margin-top:1rem;">
+        <div id="card-element"></div>
+        <div id="card-errors" role="alert"></div>
+        </section>
+        <button id="checkout-btn" class="api-btn" data-loading-text="Processing Order" disabled>Sign In to Checkout</button>
+      </div>
     </div>
+  </aside>
+<div id="signout-confirm" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+  <div style="background: var(--cart-opq); padding:1.5rem; border: solid 1px var(--accent-orange); border-radius:6px; max-width:400px; width:90%; text-align:center;">
+    <p style="margin-bottom:1rem; font-size:1rem; color: var(--ink);">
+      If you sign out now, your cart and any pending payments will be lost.
+    </p>
+    <div style="display:flex; gap:0.5rem; justify-content:center;">
+      <button id="cancel-signout" style="padding:0.5rem 1rem; background:#ccc; border:none; border-radius:4px; cursor:pointer;">Cancel</button>
+      <button id="confirm-signout" style="padding:0.5rem 1rem; background:#d9534f; color:#fff; border:none; border-radius:4px; cursor:pointer;">Sign Out</button>
+    </div>
+  </div>
+</div>
+  <aside id="login-container" role="dialog" aria-modal="true" aria-label="Customer Authentication">
+    <div class="cart-panel">
+      <div class="cart-header">
+        <button id="close-login" aria-label="Close login">×</button>
+        <h2 id="auth-title">Sign In</h2>
+      </div>
+      <div class="cart-content">
+        <!-- Sign In Form -->
+        <form id="login-form" class="login-form" autocomplete="on">
+          <input type="email" id="login-username" name="email"
+                 placeholder="Email address" required autocomplete="username" />
+          <input type="password" id="login-password" name="password"
+                 placeholder="Password" required autocomplete="current-password" />
+          <button type="submit" class="api-btn" data-loading-text="Signing In">Sign In</button>
+          <div class="auth-switch">
+            <span>Don't have an account?</span>
+            <button id="show-signup" type="button">Create Account</button>
+          </div>
+          <div class="auth-switch">
+            <span>Forgot Your Password?</span>
+            <button id="show-reset" type="button">Click Here to Reset</button>
+        </div>
+        </form>
+
+<!-- Create Account Form -->
+<form
+  id="signup-form"
+  class="login-form hidden"
+  autocomplete="on"
+  novalidate
+>
+  <input type="text" id="signup-firstname" name="firstName" placeholder="First Name" required autocomplete="given-name" />
+  <input type="text" id="signup-lastname" name="lastName" placeholder="Last Name" required autocomplete="family-name" />
+  <input type="text" id="signup-address" name="address" placeholder="Street Address" required autocomplete="street-address" />
+  <input type="text" id="signup-city" name="city" placeholder="City" required autocomplete="address-level2" />
+
+<div class="state-select-wrapper">
+  <select id="signup-state" name="state" required autocomplete="address-level1">
+    <option value="">Select State</option>
+    <option value="AL">AL</option>
+    <option value="AK">AK</option>
+    <option value="AZ">AZ</option>
+    <option value="AR">AR</option>
+    <option value="CA">CA</option>
+    <option value="CO">CO</option>
+    <option value="CT">CT</option>
+    <option value="DE">DE</option>
+    <option value="FL">FL</option>
+    <option value="GA">GA</option>
+    <option value="HI">HI</option>
+    <option value="ID">ID</option>
+    <option value="IL">IL</option>
+    <option value="IN">IN</option>
+    <option value="IA">IA</option>
+    <option value="KS">KS</option>
+    <option value="KY">KY</option>
+    <option value="LA">LA</option>
+    <option value="ME">ME</option>
+    <option value="MD">MD</option>
+    <option value="MA">MA</option>
+    <option value="MI">MI</option>
+    <option value="MN">MN</option>
+    <option value="MS">MS</option>
+    <option value="MO">MO</option>
+    <option value="MT">MT</option>
+    <option value="NE">NE</option>
+    <option value="NV">NV</option>
+    <option value="NH">NH</option>
+    <option value="NJ">NJ</option>
+    <option value="NM">NM</option>
+    <option value="NY">NY</option>
+    <option value="NC">NC</option>
+    <option value="ND">ND</option>
+    <option value="OH">OH</option>
+    <option value="OK">OK</option>
+    <option value="OR">OR</option>
+    <option value="PA">PA</option>
+    <option value="RI">RI</option>
+    <option value="SC">SC</option>
+    <option value="SD">SD</option>
+    <option value="TN">TN</option>
+    <option value="TX">TX</option>
+    <option value="UT">UT</option>
+    <option value="VT">VT</option>
+    <option value="VA">VA</option>
+    <option value="WA">WA</option>
+    <option value="WV">WV</option>
+    <option value="WI">WI</option>
+    <option value="WY">WY</option>
+  </select>
+</div>
+
+  <input type="text" id="signup-zip" name="zip" placeholder="ZIP Code (5 digits)" required pattern="^\d{5}$" maxlength="5" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '')" />
+  <input type="text" id="signup-phone" name="phone" placeholder="Phone (10 digits)" required pattern="^\d{10}$" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '')" />
+  <input type="email" id="signup-email" name="email" placeholder="Email address" required autocomplete="username" />
+  <small id="email-error-msg" style="color: var(--accent-red); font-weight: bold; display: none;">Please enter a valid email address</small>
+<button type="button" id="signup-request-code" class="api-btn" style="background-color: orange;" disabled>
+  Request verification code
+</button>
+
+<input
+  type="text"
+  id="signup-verification-code"
+  name="verificationCode"
+  placeholder="Enter 6-digit code"
+  maxlength="6"
+  pattern="^\d{6}$"
+  inputmode="text"
+  disabled
+  style="margin-top: 8px;"
+/>
+  <div class="password-wrapper">
+  <input type="password" id="signup-password" name="password" placeholder="Password" required autocomplete="new-password" />
+  <button type="button" class="reveal-btn" data-target="signup-password" aria-label="Toggle password visibility">🪅</button>
+</div>
+
+
+  <div id="password-strength-wrapper" style="margin-bottom: 8px;">
+    <div id="password-strength-bar" style="height: 4px; width: 0%; background: red; border-radius: 4px; transition: width 0.3s, background 0.3s;"></div>
+    <small id="password-strength-text" style="display:block; margin-top:4px; font-size:0.8rem; color: var(--muted);">Strength: —</small>
+  </div>
+
+  <input type="password" id="signup-password-confirm" name="passwordConfirm" placeholder="Confirm Password" required autocomplete="new-password" />
+  <small id="password-match-msg" style="color: var(--accent-red); display: none;">Passwords do not match</small>
+
+  <button type="submit" class="api-btn" data-loading-text="Creating Account" disabled>Create Account</button>
+
+  <div class="auth-switch">
+    <span>Already have an account?</span>
+    <button id="show-login" type="button">Sign In</button>
+  </div>
+</form>
+<!-- Reset Password Form -->
+<form
+  id="reset-form"
+  class="login-form hidden"
+  autocomplete="on"
+  novalidate
+>
+  <input type="email" id="reset-email" name="email"
+         placeholder="Email address" required autocomplete="username" />
+
+  <!-- Phone masked like a password, 10 digits max -->
+  <input type="password" id="reset-phone" name="phone"
+         placeholder="Phone (10 digits)" required
+         pattern="^\d{10}$" maxlength="10" inputmode="numeric"
+         oninput="this.value = this.value.replace(/\D/g, '')" />
+<button type="button" id="reset-request-code" class="api-btn" style="background-color: orange;" disabled>
+  Request verification code
+</button>
+
+<input
+  type="text"
+  id="reset-verification-code"
+  name="verificationCode"
+  placeholder="Enter 6-digit code"
+  maxlength="6"
+  pattern="^\d{6}$"
+  inputmode="text"
+  disabled
+  style="margin-top: 8px;"
+/>
+  <div class="password-wrapper">
+  <input type="password" id="reset-password" name="password" placeholder="New Password" required autocomplete="new-password" />
+  <button type="button" class="reveal-btn" data-target="reset-password" aria-label="Toggle password visibility">🪅</button>
+</div>
+
+  <div id="reset-password-strength-wrapper" style="margin-bottom: 8px;">
+    <div id="reset-password-strength-bar"
+         style="height: 4px; width: 0%; background: red; border-radius: 4px; transition: width 0.3s, background 0.3s;"></div>
+    <small id="reset-password-strength-text"
+           style="display:block; margin-top:4px; font-size:0.8rem; color: var(--muted);">
+      Strength: —
+    </small>
+  </div>
+
+  <input type="password" id="reset-password-confirm" name="passwordConfirm"
+         placeholder="Confirm New Password" required autocomplete="new-password" />
+  <small id="reset-password-match-msg" style="color: var(--accent-red); display: none;">
+    Passwords do not match
+  </small>
+
+  <button type="submit" id="reset-submit" class="api-btn" data-loading-text="Resetting Password" disabled>
+    Reset Password
+  </button>
+
+  <div class="auth-switch">
+    <span>Remembered your password?</span>
+    <button id="show-login-from-reset" type="button">Sign In</button>
+  </div>
+</form>
+      </div>
+    </div>
+  </aside>
+
+  <footer>
+    © <span id="y"></span> Picante Pequin Salsa Co.
   </footer>
-
+<!-- Load Stripe.js from Stripe's CDN -->
+<script src="https://js.stripe.com/v3/"></script>
 <script>
-  // Year
-  document.getElementById('y').textContent = new Date().getFullYear();
+/* ===========================
+   Config
+   =========================== */
 
-  // Highlights data: defaults, then optional assets/gallery.json override
-  const defaults = [
-    {src:'https://picantepequinsalsaco.com/images/image1.jpg', label:'House Pequin'},
-    {src:'https://picantepequinsalsaco.com/images/image2.jpg', label:'Spicy Green Chile Pequin'},
-    {src:'https://picantepequinsalsaco.com/images/image3.jpg', label:'Red Hot Pepper Pequin'},
-    {src:'https://picantepequinsalsaco.com/images/image4.jpg', label:'The Crew'}
-  ];
+// Update year
+document.getElementById('y').textContent = new Date().getFullYear();
 
-  async function loadGallery() {
-    try {
-      const r = await fetch('images/gallery.json', {cache:'no-store'});
-      if (!r.ok) throw new Error('no json');
-      const items = await r.json();
-      if (!Array.isArray(items) || !items.length) throw new Error('empty');
-      return items;
-    } catch { return defaults; }
+// Your automation endpoints (unchanged)
+const API = {
+   issueOmniTok: 'https://default6eda43f3fbf04e2b9978b543d9dd31.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/e3755ec03d8241c09ddb4d73a1c2bb86/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9t0-qJP8VJW4G9_COUvGJxmFKL6IWjUBeEq4GYZj3kQ'
+};
+
+// Polling window (≥ 2 minutes)
+const JOB = {
+  intervalMs: 2000,
+  timeoutMs: 120000
+};
+
+/* ===========================
+   Utilities
+   =========================== */
+function refreshSid() {
+  sessionStorage.removeItem('sid'); // clear any existing
+  const newSid = crypto.randomUUID(); // generate new
+  sessionStorage.setItem('sid', newSid);
+  console.log('New sid set:', newSid); // optional for debugging
+  return newSid;
+}
+    
+function createJobId() {
+  if (crypto?.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = (Math.random() * 16) | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+async function safeJson(resp) { try { return await resp.json(); } catch { return null; } }
+
+function normalizeStatus(payload) {
+  const v =
+    payload?.status ??
+    payload?.result ??
+    payload?.code ??
+    (payload === true ? 'OK' : (payload === false ? 'ERROR' : undefined));
+  return typeof v === 'string' ? v.toUpperCase() : v;
+}
+
+    // OmniTok pre-flight fetcher //
+async function getOmniTok(act) {
+  // Ensure sid exists
+  let sid = sessionStorage.getItem('sid');
+  if (!sid) {
+    sid = crypto.randomUUID();
+    sessionStorage.setItem('sid', sid); // persist for the session
   }
 
-  const rail = document.getElementById('rail');
-
-  function render(items){
-    rail.innerHTML = '';
-    const loop = [...items, ...items.slice(0, 4)];
-    loop.forEach((it)=>{
-      const tile = document.createElement('div');
-      tile.className = 'tile';
-      tile.innerHTML = `
-        <img src="${it.src}" alt="${it.alt || it.label || 'Highlight'}" loading="lazy">
-        <span class="label">${it.label || ''}</span>
-      `;
-      rail.appendChild(tile);
-    });
+  // Build the request body
+  let body;
+  if (typeof act === 'string') {
+    // Normal flows: login, signup, reset, checkout
+    body = { act, sid };
+  } else if (act && typeof act === 'object') {
+    // Verification code flows: pass act + email, sid injected here
+    body = { sid, ...act };
+  } else {
+    throw new Error('Invalid getOmniTok argument');
   }
 
-  let idx = 0, timer, allowMotion = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  function step(dir = 1) {
-    const tiles = rail.children;
-    if (!tiles.length) return;
-
-    idx = (idx + dir + tiles.length) % tiles.length;
-    const el = tiles[idx];
-
-    // Scroll only the gallery rail, not the whole page
-    rail.scrollTo({
-      left: el.offsetLeft - rail.offsetLeft,
-      behavior: 'smooth'
-    });
-  }
-  function play(){ if (allowMotion){ timer = setInterval(()=>step(1), 3600); } }
-  function pause(){ clearInterval(timer); }
-
-  loadGallery().then(items=>{
-    render(items);
-    play();
+  const res = await fetch(API.issueOmniTok, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
   });
 
-  rail.addEventListener('mouseenter', pause);
-  rail.addEventListener('mouseleave', play);
-  document.getElementById('prev').addEventListener('click', ()=>{ pause(); step(-1); });
-  document.getElementById('next').addEventListener('click', ()=>{ pause(); step(1); });
+  if (!res.ok) throw new Error(`Failed to get OmniTok config for ${body.act}`);
 
+  // Heavy flows get endpoint/authToken/OmniTok; _code flows may just return { status: 'OK' }
+  const data = await res.json();
+  return { ...data, sid };
+}
+    
+/* ===========================
+   API Button state + job handling
+   =========================== */
 
-  // -------------------------------
-  // Contact Modal + Copy-to-Clipboard
-  // -------------------------------
-  (function(){
-    const supportBtn = document.getElementById('supportBtn');
-    const popup = document.getElementById('contactPopup');
-    if (!supportBtn || !popup) return; // safety check if markup not present
+function setButtonState(btn, state) {
+  btn.classList.remove('loading', 'success', 'error');
+  if (state) btn.classList.add(state);
+}
 
-    const closeBtn = document.getElementById('closeContactBtn');
-    const overlay = popup.querySelector('.contact-overlay');
-    const emailLink = document.getElementById('supportEmail');
-    const copyBtn = document.getElementById('copyEmailBtn');
-    const toast = document.getElementById('contactToast');
+// Dev/test config
+const DEV = {
+  stubJobs: true,         // true = bypass real polling
+  stubDelayMs: 3500,      // auto-success after this delay
+  manualEvent: true       // allow manual confirmation via window.dispatchEvent(...)
+};
 
-    const EMAIL = 'support@picantepequinsalsaco.com';
-
-    function openPopup() {
-      popup.classList.remove('contact-hidden');
-      popup.setAttribute('aria-hidden', 'false');
-      document.body.classList.add('body-lock');
-      emailLink.focus();
-      document.addEventListener('keydown', keyHandler);
-    }
-
-    function closePopup() {
-      popup.classList.add('contact-hidden');
-      popup.setAttribute('aria-hidden', 'true');
-      document.body.classList.remove('body-lock');
-      document.removeEventListener('keydown', keyHandler);
-      supportBtn.focus();
-    }
-
-    function keyHandler(e) {
-      if (e.key === 'Escape') { closePopup(); }
-    }
-
-    function showToast() {
-      toast.classList.add('show');
-      setTimeout(() => { toast.classList.remove('show'); }, 1800);
-    }
-
-    async function copyEmail() {
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          await navigator.clipboard.writeText(EMAIL);
-          showToast();
-        } else {
-          const tmp = document.createElement('input');
-          tmp.value = EMAIL;
-          document.body.appendChild(tmp);
-          tmp.select();
-          document.execCommand('copy');
-          document.body.removeChild(tmp);
-          showToast();
+/**
+ * Stubbed poller for dev/testing.
+ * Resolves after delay or when a matching 'job:done' event is dispatched.
+ */
+async function stubStatusUntilDone({ jobId, delayMs = 3000, manualEvent = true }) {
+  function waitForEvent(ev, matchFn, timeoutMs) {
+    return new Promise((resolve, reject) => {
+      const on = (e) => {
+        const d = e.detail || {};
+        if (matchFn(d)) {
+          window.removeEventListener(ev, on);
+          resolve(d);
         }
-      } catch {
-        // fail silently
+      };
+      window.addEventListener(ev, on);
+      if (timeoutMs) {
+        setTimeout(() => {
+          window.removeEventListener(ev, on);
+          reject(new Error('Manual event timed out'));
+        }, timeoutMs);
       }
+    });
+  }
+
+  if (manualEvent) {
+    const eventPromise = waitForEvent('job:done', (d) => d.jobId === jobId, delayMs + 100);
+    const delayPromise = new Promise((resolve) =>
+      setTimeout(() => resolve({ status: 'OK', jobId, message: 'Stub auto-resolve' }), delayMs)
+    );
+    const detail = await Promise.race([eventPromise, delayPromise]);
+    const status = normalizeStatus(detail);
+    return { final: true, ok: status === 'OK' || status === 'SUCCESS', payload: detail };
+  }
+
+  await sleep(delayMs);
+  return { final: true, ok: true, payload: { status: 'OK', jobId, message: 'Stub auto-resolve' } };
+}
+
+/**
+ * Polls statusUrl until final or timeout.
+ * Expects { status: "PENDING"|"SUCCESS"|"OK"|"ERROR", ... }
+ */
+async function pollStatusUntilDone({ statusUrl, jobId, intervalMs = JOB.intervalMs, timeoutMs = JOB.timeoutMs }) {
+  if (DEV.stubJobs || !statusUrl) {
+    console.debug('[JOB:STUB] Using stub for job', { jobId, statusUrl });
+    return stubStatusUntilDone({ jobId, delayMs: DEV.stubDelayMs, manualEvent: DEV.manualEvent });
+  }
+
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const res = await fetch(statusUrl, {
+        headers: { 'Content-Type': 'application/json', 'x-job-id': jobId }
+      });
+      const data = await safeJson(res);
+      const status = normalizeStatus(data);
+
+      if (status === 'SUCCESS' || status === 'OK') return { final: true, ok: true, payload: data };
+      if (status === 'ERROR') return { final: true, ok: false, payload: data };
+    } catch (err) {
+      console.warn('Status poll error:', err);
+    }
+    await sleep(intervalMs);
+  }
+  return { final: true, ok: false, payload: { status: 'ERROR', message: 'Timed out waiting for job status.' } };
+}
+
+/**
+ * Handles API-triggering buttons with loading/success/error states.
+ * Supports immediate and deferred (job) flows.
+ */
+async function handleApiButton(btn, apiCall) {
+  setButtonState(btn, 'loading');
+
+  try {
+    // Kick the job
+    const first = await apiCall();
+
+    // 1) Deferred mode: shape { jobId, statusUrl }
+    if (first && first.jobId && first.statusUrl) {
+      console.debug('[JOB] Waiting for completion', { jobId: first.jobId, statusUrl: first.statusUrl });
+
+      const result = await pollStatusUntilDone({
+        statusUrl: first.statusUrl,
+        jobId: first.jobId,
+        intervalMs: JOB.intervalMs,
+        timeoutMs: JOB.timeoutMs
+      });
+
+      setButtonState(btn, result.ok ? 'success' : 'error');
+      setTimeout(() => setButtonState(btn, ''), 1200);
+      return { ok: result.ok, payload: result.payload };
     }
 
-    supportBtn.addEventListener('click', openPopup);
-    closeBtn.addEventListener('click', closePopup);
-    overlay.addEventListener('click', (e) => {
-      if (e.target.dataset.close) closePopup();
+    // 2) Immediate mode: treat undefined status as success (closures pre-screen errors)
+    const status = normalizeStatus(first);
+    const ok = status === undefined ? true : (status === 'OK' || status === 'SUCCESS');
+
+    setButtonState(btn, ok ? 'success' : 'error');
+    setTimeout(() => setButtonState(btn, ''), 1200);
+    return { ok, payload: first };
+
+  } catch (err) {
+    console.error(err);
+    setButtonState(btn, 'error');
+    setTimeout(() => setButtonState(btn, ''), 1200);
+    return { ok: false, payload: { status: 'ERROR', message: 'Unhandled error' } };
+  }
+}
+
+/* ===========================
+   Catalog
+   =========================== */
+const productsEcom = [
+  { id: 'house-pequin', sku: 'PPSC-001', name: 'House Pequin Salsa',       price: 10, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image1.jpg', tiktok_sync: true, desc: 'A mild, bright blend of serrano, chile pequin, fresh tomatoes, white onion, garlic & cilantro.'},
+  { id: 'spicy-green', sku: 'PPSC-002', name: 'Spicy Green Chile Pequin',  price: 10, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image2.jpg', tiktok_sync: true, desc: 'Smokey-citrusy salsa of serrano, chile pequin, fresh tomatillos, yellow onion, garlic, cilantro & lime.' },
+  { id: 'red-hot', sku: 'PPSC-003', name: 'Red Hot Pepper Pequin',         price: 10, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image3.jpg', tiktok_sync: true, desc: 'Hot & sweet: fresno peppers, chile pequin, fresh tomatoes, yellow onion & garlic.' }, 
+  { id: 'the-crew', sku: 'PPSC-004', name: 'The Crew',                     price: 30, currency: 'USD', image: 'https://picantepequinsalsaco.com/images/image4.jpg', tiktok_sync: true, desc: 'All three of our full‑size pequin salsas in one pack — perfect for sharing, gifting, or keeping your pantry stocked with every flavor we make.' }
+];
+
+/* ===========================
+   App state
+   =========================== */
+let cart = [];
+let isLoggedIn = false;
+let currentUser = { email: '', name: '', rewards: 0 };
+
+/* ===========================
+   DOM refs
+   =========================== */
+const galleryEl       = document.getElementById('product-gallery');
+const cartOverlay     = document.getElementById('cart-container');
+const cartItemsEl     = document.getElementById('cart-items');
+const checkoutBtn     = document.getElementById('checkout-btn');
+const closeCart       = document.getElementById('close-cart');
+const cartIcon        = document.getElementById('cart-icon');
+
+const loginBtn        = document.getElementById('login-btn');
+const loginOverlay    = document.getElementById('login-container');
+const closeLogin      = document.getElementById('close-login');
+const loginForm       = document.getElementById('login-form');
+const signupForm      = document.getElementById('signup-form');
+const showSignupBtn   = document.getElementById('show-signup');
+const showLoginBtn    = document.getElementById('show-login');
+const authTitle       = document.getElementById('auth-title');
+
+const usernameDisplay = document.getElementById('username-display');
+const rewardsDisplay  = document.getElementById('rewards-display');
+
+const resetForm     = document.getElementById('reset-form');
+const showResetBtn  = document.getElementById('show-reset');
+const showLoginFromResetBtn = document.getElementById('show-login-from-reset');
+// New: verification code controls
+const signupRequestCodeBtn = document.getElementById('signup-request-code');
+const signupCodeInput      = document.getElementById('signup-verification-code');
+const resetRequestCodeBtn  = document.getElementById('reset-request-code');
+const resetCodeInput       = document.getElementById('reset-verification-code');
+
+
+// Stripe Elements setup
+let stripe, elements, card, cardMounted = false;
+
+function mountStripeElements() {
+  if (!stripe) {
+    stripe = Stripe('pk_live_51RqP1xGVhbxOz1NuTFAsWTaV6X0PJt4TxC4BFeAjLE4olqFlNGLh5ZOjifotx2qCQZRxBsISzexWaV9oO8BZrGU800LSSMudS9'); // TODO: replace with your publishable key
+  }
+  if (!elements) {
+    elements = stripe.elements();
+  }
+  if (!cardMounted) {
+    card = elements.create('card', {
+      hidePostalCode: true,
+      style: {
+        base: {
+          color: '#fff',
+          fontFamily: 'system-ui, sans-serif',
+          fontSize: '16px',
+          '::placeholder': { color: '#9BA3AF' }
+        },
+        invalid: { color: '#ff6b6b' }
+      }
     });
-    copyBtn.addEventListener('click', copyEmail);
-  })();
+    card.mount('#card-element');
+    cardMounted = true;
+  }
+}
+
+document.querySelectorAll('.reveal-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const input = document.getElementById(btn.dataset.target);
+    if (!input) return;
+
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+
+    // Optional: swap emoji for feedback
+    btn.textContent = isHidden ? '🪇' : '🪅';
+  });
+});
+
+/* ===========================
+   Live validators
+   =========================== */
+
+// Shared handler for both Request verification code buttons
+function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
+  
+  const btn = document.getElementById(btnId);
+  const codeInput = document.getElementById(codeInputId);
+  const emailInput = emailInputId ? document.getElementById(emailInputId) : null;
+  if (!btn || !codeInput) return;
+
+  btn.dataset.codeSent = 'false';
+
+  btn.addEventListener('click', async () => {
+    if (btn.dataset.codeSent === 'true') return;
+
+    const sid = refreshSid();
+    const email = emailInput ? emailInput.value.trim() : undefined;
+
+    const result = await handleApiButton(btn, async () => {
+      // Build a flat payload; getOmniTok will inject sid
+      const payload = email ? { act, email } : { act };
+      await getOmniTok(payload); // backend returns minimal OK/FAIL for _code flows
+      return { status: 'OK', message: 'Verification code sent' };
+    });
+
+    if (result.ok) {
+      codeInput.disabled = false;
+      btn.disabled = true;
+      btn.style.backgroundColor = 'var(--accent-green)';
+      btn.textContent = 'Enter Code';
+      btn.dataset.codeSent = 'true';
+      showMessage('Verification code sent. Please check your email/phone.', 'success');
+    } else {
+      showMessage('Failed to send verification code. Try again.', 'error');
+    }
+  });
+}
+
+// Init for both forms
+setupRequestCodeHandler(
+  'signup-request-code',
+  'signup-verification-code',
+  'signup_code',
+  'signup-email'
+);
+
+setupRequestCodeHandler(
+  'reset-request-code',
+  'reset-verification-code',
+  'reset_code',
+  'reset-email'
+);
+
+    // Single source of truth for enabling the signup button
+function checkSignupValidity() {
+  const signupBtn = signupForm.querySelector('button[type="submit"]');
+  const signupRequestCodeBtn = document.getElementById('signup-request-code');
+  const signupCodeInput = document.getElementById('signup-verification-code');
+
+  // IDs for all the original required fields (excluding the code field)
+  const ids = [
+    'signup-firstname',
+    'signup-lastname',
+    'signup-address',
+    'signup-city',
+    'signup-state',
+    'signup-zip',
+    'signup-phone',
+    'signup-email',
+    'signup-password',
+    'signup-password-confirm'
+  ];
+
+  const inputs = ids.map(id => document.getElementById(id));
+
+  // Filled check (keep simple + fast)
+  const allFilled = inputs.every(el => el && el.value.trim() !== '');
+
+  // Password matching
+  const pw1 = document.getElementById('signup-password').value;
+  const pw2 = document.getElementById('signup-password-confirm').value;
+  const passwordsMatch = pw1 && pw1 === pw2;
+
+  // Password strength gate (Strong or Excellent)
+  const strengthText = document.getElementById('password-strength-text');
+  const strength = (strengthText?.textContent || '');
+  const strongEnough = strength.includes('Strong') || strength.includes('Excellent');
+
+  // Email domain validity (matches your domain validator)
+  const emailInput = document.getElementById('signup-email');
+  const emailVal = emailInput.value.trim();
+  const atIndex = emailVal.lastIndexOf('@');
+  const domain = atIndex !== -1 ? emailVal.slice(atIndex + 1) : '';
+  const domainPattern = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const domainValid = atIndex !== -1 && domainPattern.test(domain);
+
+  // ✅ Enable/disable the Request verification code button
+  if (signupRequestCodeBtn) {
+    const codeAlreadyEnabled = signupCodeInput && !signupCodeInput.disabled;
+    const codeSent = signupRequestCodeBtn.dataset.codeSent === 'true';
+    signupRequestCodeBtn.disabled = !(domainValid) || codeAlreadyEnabled;
+  }
+
+  // ✅ Require valid 6-digit code for main button (only after code input is enabled)
+  const codeOk = signupCodeInput && !signupCodeInput.disabled
+    ? /^[A-Za-z0-9]{6}$/.test(signupCodeInput.value.trim())
+    : false;
+
+  // Final gate for main submit button
+  signupBtn.disabled = !(allFilled && passwordsMatch && strongEnough && domainValid && codeOk);
+}
+    
+(function emailDomainValidation() {
+  const emailInput = document.getElementById('signup-email');
+  const errorMsg = document.getElementById('email-error-msg');
+  const domainPattern = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  emailInput.addEventListener('input', () => {
+    const value = emailInput.value.trim();
+    const atIndex = value.lastIndexOf('@');
+
+    if (atIndex === -1) {
+      errorMsg.style.display = 'none';
+      emailInput.style.borderColor = '';
+      checkSignupValidity();
+      return;
+    }
+
+    const domain = value.slice(atIndex + 1);
+
+    if (domainPattern.test(domain)) {
+      errorMsg.style.display = 'none';
+      emailInput.style.borderColor = 'var(--accent-green)';
+    } else {
+      errorMsg.style.display = 'block';
+      emailInput.style.borderColor = 'var(--accent-red)';
+    }
+    checkSignupValidity();
+  });
+})();
+
+(function passwordStrengthMeter() {
+  const pwInput = document.getElementById('signup-password');
+  const bar = document.getElementById('password-strength-bar');
+  const text = document.getElementById('password-strength-text');
+
+  pwInput.addEventListener('input', () => {
+    const val = pwInput.value;
+    let score = 0;
+
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    if (val.length >= 12) score++;
+
+    const widths = ['0%', '20%', '40%', '60%', '80%', '100%'];
+    const colors = ['red', 'orangered', 'orange', 'gold', 'yellowgreen', 'green'];
+    const labels = ['Too short', 'Weak', 'Fair', 'Good', 'Strong', 'Excellent'];
+
+    bar.style.width = widths[score];
+    bar.style.background = colors[score];
+    text.textContent = `Strength: ${labels[score]}`;
+
+    checkSignupValidity();
+  });
+})();
+
+(function livePasswordMatch() {
+  const pw1 = document.getElementById('signup-password');
+  const pw2 = document.getElementById('signup-password-confirm');
+  const msg = document.getElementById('password-match-msg');
+
+  function checkMatch() {
+    if (!pw1.value && !pw2.value) {
+      msg.style.display = 'none';
+      pw1.style.borderColor = '';
+      pw2.style.borderColor = '';
+      checkSignupValidity();
+      return;
+    }
+    if (pw1.value === pw2.value) {
+      msg.style.display = 'none';
+      pw1.style.borderColor = 'var(--accent-green)';
+      pw2.style.borderColor = 'var(--accent-green)';
+    } else {
+      msg.style.display = 'block';
+      pw1.style.borderColor = 'var(--accent-red)';
+      pw2.style.borderColor = 'var(--accent-red)';
+    }
+    checkSignupValidity();
+  }
+
+  pw1.addEventListener('input', checkMatch);
+  pw2.addEventListener('input', checkMatch);
+})();
+
+(function enableSignupButtonWhenValid() {
+  const fields = [
+    'signup-firstname',
+    'signup-lastname',
+    'signup-address',
+    'signup-city',
+    'signup-state',
+    'signup-zip',
+    'signup-phone',
+    'signup-email',
+    'signup-password',
+    'signup-password-confirm'
+  ].map(id => document.getElementById(id));
+
+  // Input listeners for the original fields
+  fields.forEach(el => el && el.addEventListener('input', checkSignupValidity));
+
+  // Ensure select emits on change in all browsers
+  const stateSelect = document.getElementById('signup-state');
+  if (stateSelect) stateSelect.addEventListener('change', checkSignupValidity);
+
+  // NEW: watch the verification code field too
+  const signupCodeInput = document.getElementById('signup-verification-code');
+  if (signupCodeInput) {
+    signupCodeInput.addEventListener('input', checkSignupValidity);
+  }
+
+  // Initial check
+  checkSignupValidity();
+})();
+
+// ===========================
+// Reset validators + strength
+// ===========================
+function checkResetValidity() {
+  const btn = document.getElementById('reset-submit');
+  const resetRequestCodeBtn = document.getElementById('reset-request-code');
+  const resetCodeInput = document.getElementById('reset-verification-code');
+
+  const em  = document.getElementById('reset-email').value.trim();
+  const ph  = document.getElementById('reset-phone').value.trim();
+  const pw1 = document.getElementById('reset-password').value;
+  const pw2 = document.getElementById('reset-password-confirm').value;
+
+  const passwordsMatch = pw1 && pw1 === pw2;
+
+  const strengthText = document.getElementById('reset-password-strength-text');
+  const strength = (strengthText?.textContent || '');
+  const strongEnough = strength.includes('Strong') || strength.includes('Excellent');
+
+  const phoneValid = /^\d{10}$/.test(ph);
+  const emailPresent = em.length > 3 && em.includes('@');
+
+  // ✅ Enable/disable the Request verification code button
+  if (resetRequestCodeBtn) {
+    const codeAlreadyEnabled = resetCodeInput && !resetCodeInput.disabled;
+    const codeSent = resetRequestCodeBtn.dataset.codeSent === 'true';
+    resetRequestCodeBtn.disabled = !(emailPresent && phoneValid) || codeAlreadyEnabled;
+  }
+
+  // ✅ Require valid 6-digit code for main button (only after code input is enabled)
+  const codeOk = resetCodeInput && !resetCodeInput.disabled
+    ? /^[A-Za-z0-9]{6}$/.test(resetCodeInput.value.trim())
+    : false;
+
+  // Final gate for main submit button
+  btn.disabled = !(emailPresent && phoneValid && passwordsMatch && strongEnough && codeOk);
+}
+
+(function resetPasswordStrengthMeter() {
+  const pwInput = document.getElementById('reset-password');
+  const bar = document.getElementById('reset-password-strength-bar');
+  const text = document.getElementById('reset-password-strength-text');
+
+  pwInput.addEventListener('input', () => {
+    const val = pwInput.value;
+    let score = 0;
+
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    if (val.length >= 12) score++;
+
+    const widths = ['0%', '20%', '40%', '60%', '80%', '100%'];
+    const colors = ['red', 'orangered', 'orange', 'gold', 'yellowgreen', 'green'];
+    const labels = ['Too short', 'Weak', 'Fair', 'Good', 'Strong', 'Excellent'];
+
+    bar.style.width = widths[score];
+    bar.style.background = colors[score];
+    text.textContent = `Strength: ${labels[score]}`;
+
+    checkResetValidity();
+  });
+})();
+
+(function resetLivePasswordMatch() {
+  const pw1 = document.getElementById('reset-password');
+  const pw2 = document.getElementById('reset-password-confirm');
+  const msg = document.getElementById('reset-password-match-msg');
+
+  function checkMatch() {
+    if (!pw1.value && !pw2.value) {
+      msg.style.display = 'none';
+      pw1.style.borderColor = '';
+      pw2.style.borderColor = '';
+      checkResetValidity();
+      return;
+    }
+    if (pw1.value === pw2.value) {
+      msg.style.display = 'none';
+      pw1.style.borderColor = 'var(--accent-green)';
+      pw2.style.borderColor = 'var(--accent-green)';
+    } else {
+      msg.style.display = 'block';
+      pw1.style.borderColor = 'var(--accent-red)';
+      pw2.style.borderColor = 'var(--accent-red)';
+    }
+    checkResetValidity();
+  }
+
+  pw1.addEventListener('input', checkMatch);
+  pw2.addEventListener('input', checkMatch);
+})();
+
+// Ensure all reset inputs re-check validity
+(function enableResetButtonWhenValid() {
+  ['reset-email', 'reset-phone', 'reset-password', 'reset-password-confirm']
+    .map(id => document.getElementById(id))
+    .forEach(el => el && el.addEventListener('input', checkResetValidity));
+
+  // NEW: watch the verification code field too
+  const resetCodeInput = document.getElementById('reset-verification-code');
+  if (resetCodeInput) {
+    resetCodeInput.addEventListener('input', checkResetValidity);
+  }
+
+  checkResetValidity();
+})();
+
+    // Clear strength meters when forms are reset
+resetForm.addEventListener('reset', () => {
+  const bar = document.getElementById('reset-password-strength-bar');
+  const text = document.getElementById('reset-password-strength-text');
+  if (bar && text) {
+    bar.style.width = '0%';
+    bar.style.background = 'red';
+    text.textContent = 'Strength: —';
+  }
+});
+
+signupForm.addEventListener('reset', () => {
+  const bar = document.getElementById('password-strength-bar');
+  const text = document.getElementById('password-strength-text');
+  if (bar && text) {
+    bar.style.width = '0%';
+    bar.style.background = 'red';
+    text.textContent = 'Strength: —';
+  }
+});
+
+/* ===========================
+   Message helper
+   =========================== */
+function showMessage(msg, type = 'info') {
+  const box = document.createElement('div');
+  box.className = `message-box ${type}`;
+  box.textContent = msg;
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 4000);
+}
+
+/* ===========================
+   Render products
+   =========================== */
+function renderProducts() {
+  galleryEl.innerHTML = '';
+  productsEcom.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'prod-card';
+    card.innerHTML = `
+      <div class="card-inner">
+        <div class="card-front">
+          <img src="${p.image}" alt="${p.name}">
+          <h3 class="prod-name">${p.name}</h3>
+          <p class="prod-price">$${p.price.toFixed(2)}</p>
+          <div class="quantity">
+            <button class="qty-btn minus">−</button>
+            <input type="number" class="qty-input" value="0" min="0">
+            <button class="qty-btn plus">+</button>
+            <button class="info-btn" title="More Info">ⓘ</button>
+          </div>
+          <button class="add-to-cart">Add to Cart</button>
+        </div>
+        <div class="card-back">
+          <h4>Quick Facts</h4>
+          <ul>
+            <li>SKU: ${p.sku || '—'}</li>
+            <li>Price: $${p.price.toFixed(2)}</li>
+            <li>${p.desc}</li>
+          </ul>
+          <button class="close-info">Close</button>
+        </div>
+      </div>
+    `;
+
+    // Quantity input guard
+    const qtyInput = card.querySelector('.qty-input');
+    qtyInput.addEventListener('input', () => {
+      if (qtyInput.value === '' || parseInt(qtyInput.value, 10) < 0) {
+        qtyInput.value = 0;
+      }
+    });
+
+    // Plus/minus buttons
+    card.querySelector('.qty-btn.minus').onclick = () =>
+      qtyInput.value = Math.max(0, +qtyInput.value - 1);
+    card.querySelector('.qty-btn.plus').onclick = () =>
+      qtyInput.value = +qtyInput.value + 1;
+
+    // Add to cart
+    card.querySelector('.add-to-cart').onclick = () => {
+      const qty = +qtyInput.value;
+      if (!qty) return;
+      addToCart({ ...p, qty });
+      qtyInput.value = 0;
+      toggleCart(true);
+    };
+
+    // Flip handlers
+    card.querySelector('.info-btn').onclick = () => card.classList.add('flipped');
+    card.querySelector('.close-info').onclick = () => card.classList.remove('flipped');
+
+    galleryEl.appendChild(card);
+  });
+}
+
+/* ===========================
+   Cart management
+   =========================== */
+function addToCart(item) {
+  const idx = cart.findIndex(x => x.id === item.id);
+  if (idx > -1) cart[idx].qty += item.qty;
+  else cart.push(item);
+  renderCart();
+}
+function removeFromCart(id) {
+  cart = cart.filter(i => i.id !== id);
+  renderCart();
+}
+
+let cartLocked = false;
+
+function renderCart() {
+  cartItemsEl.innerHTML = '';
+  cart.forEach(item => {
+    const prod = productsEcom.find(p => p.id === item.id);
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <img src="${prod.image}" class="cart-thumb" alt="${prod.name}">
+      <span class="cart-name">${prod.name}</span>
+      <div class="cart-quantity">
+        <button class="qty-btn minus">−</button>
+        <input type="number" class="cart-qty-input" value="${item.qty}" min="0">
+        <button class="qty-btn plus">+</button>
+      </div>
+    `;
+   if (!cartLocked) {   
+    li.querySelector('.qty-btn.minus').onclick = () => {
+      if (item.qty > 1) item.qty--, renderCart();
+      else {
+        li.classList.add('removing');
+        setTimeout(() => removeFromCart(item.id), 300);
+      }
+    };
+    li.querySelector('.qty-btn.plus').onclick = () => {
+      item.qty++; renderCart();
+    };
+
+const qtyInput = li.querySelector('.cart-qty-input');
+qtyInput.addEventListener('input', () => {
+  const raw = qtyInput.value;
+
+  // Allow empty string while typing
+  if (raw === '') {
+    return;
+  }
+
+  let qty = parseInt(raw, 10);
+  if (isNaN(qty) || qty < 0) qty = 0;
+
+  qtyInput.value = qty;
+  item.qty = qty;
+
+  if (qty === 0) {
+    li.classList.add('removing');
+    setTimeout(() => removeFromCart(item.id), 300);
+  } else {
+    renderCart();
+  }
+});
+
+} else {
+          li.querySelectorAll('.qty-btn').forEach(btn => {
+        btn.disabled = true;
+        btn.classList.add('disabled'); // optional styling hook
+      });
+    }
+
+    cartItemsEl.appendChild(li);
+  });
+
+    if (!cartLocked) {
+  const total = cart.reduce((sum, { id, qty }) => {
+    const prod = productsEcom.find(p => p.id === id);
+    return sum + prod.price * qty;
+  }, 0);
+  document.getElementById('cart-total-value').textContent = total.toFixed(2);
+  checkoutBtn.disabled = !isLoggedIn || cart.length === 0;
+  checkoutBtn.textContent = !isLoggedIn ? 'Sign In to Checkout' : 'Proceed to Checkout';
+ }
+}
+
+/* ===========================
+   Overlay toggles
+   =========================== */
+function toggleCart(open = false) {
+  cartOverlay.classList.toggle('open', open || !cartOverlay.classList.contains('open'));
+}
+function toggleLogin(open = false) {
+  loginOverlay.classList.toggle('open', open || !loginOverlay.classList.contains('open'));
+}
+
+
+/* ===========================
+   Event bindings
+   =========================== */
+cartIcon.addEventListener('click', () => toggleCart());
+closeCart.addEventListener('click', () => toggleCart());
+cartOverlay.addEventListener('click', e => { if (e.target === cartOverlay) toggleCart(); });
+
+loginBtn.addEventListener('click', () => {
+  if (isLoggedIn) {
+    // Show the custom sign-out confirmation modal
+    document.getElementById('signout-confirm').style.display = 'flex';
+  } else {
+    toggleLogin(true);
+    document.getElementById('login-username').focus();
+  }
+});
+
+// Confirmation modal buttons
+document.getElementById('cancel-signout').addEventListener('click', () => {
+  document.getElementById('signout-confirm').style.display = 'none';
+});
+
+document.getElementById('confirm-signout').addEventListener('click', () => {
+  document.getElementById('signout-confirm').style.display = 'none';
+  signOut();
+});
+closeLogin.addEventListener('click', () => toggleLogin());
+loginOverlay.addEventListener('click', e => { if (e.target === loginOverlay) toggleLogin(); });
+
+showSignupBtn.addEventListener('click', () => {
+  loginForm.classList.add('hidden');
+  signupForm.classList.remove('hidden');
+  authTitle.textContent = 'Create Account';
+});
+showLoginBtn.addEventListener('click', () => {
+  signupForm.classList.add('hidden');
+  loginForm.classList.remove('hidden');
+  authTitle.textContent = 'Sign In';
+});
+
+showResetBtn.addEventListener('click', () => {
+  loginForm.classList.add('hidden');
+  signupForm.classList.add('hidden');
+  resetForm.classList.remove('hidden');
+  authTitle.textContent = 'Reset Password';
+  document.getElementById('reset-email').focus();
+});
+
+showLoginFromResetBtn.addEventListener('click', () => {
+  resetForm.classList.add('hidden');
+  signupForm.classList.add('hidden');
+  loginForm.classList.remove('hidden');
+  authTitle.textContent = 'Sign In';
+  document.getElementById('login-username').focus();
+});
+
+/* ===========================
+   Form + button handlers with job correlation
+   =========================== */
+
+// Sign In
+loginForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = loginForm.querySelector('button[type="submit"]');
+
+  const result = await handleApiButton(btn, async () => {
+    try {
+      const email = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      if (!email || !password) {
+        showMessage('Please enter both email and password.', 'error');
+        return { status: 'ERROR', message: 'Missing credentials' };
+      }
+
+      const { endpoint, authToken, OmniTok, sid } = await getOmniTok('login');
+      if (!endpoint || !authToken || !OmniTok || !sid) {
+        throw new Error('Token fetch failed. Please try again.');
+      }
+
+      const jobId = createJobId();
+
+      const resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': authToken,
+          'X-OmniTok': OmniTok,
+          'X-SID': sid,
+          'x-job-id': jobId
+        },
+        body: JSON.stringify({ email, password, jobId })
+      });
+
+      const data = await safeJson(resp);
+
+      if (data?.jobId && data?.statusUrl) {
+        return { jobId: data.jobId, statusUrl: data.statusUrl };
+      }
+
+      const explicit = normalizeStatus(data);
+      const okByPayload = typeof explicit === 'string'
+        ? explicit === 'OK' || explicit === 'SUCCESS'
+        : resp.ok;
+
+      if (!okByPayload || !data?.firstName) {
+        const msg = data?.message || 'Invalid credentials or server error';
+        throw new Error(msg);
+      }
+
+      return { ok: true, payload: data };
+    } catch (err) {
+      console.error('[Login] Error:', err);
+      showMessage(err.message, 'error');
+      return { ok: false, payload: { status: 'ERROR', message: err.message } };
+    }
+  });
+
+  // Final side-effects after button resolves
+  if (result.ok && result?.payload) {
+    const data = result.payload;
+    isLoggedIn = true;
+    currentUser = {
+      email: data.email || document.getElementById('login-username').value.trim(),
+      name: `${data.firstName ?? ''} ${data.lastName ?? ''}`.trim(),
+      rewards: data.rewards ?? 0
+    };
+    if (data.token) sessionStorage.setItem('authToken', data.token);
+
+    usernameDisplay.textContent = currentUser.name;
+    rewardsDisplay.textContent = currentUser.rewards;
+    loginBtn.textContent = 'Logout';
+    loginBtn.classList.add('logout');
+    checkoutBtn.disabled = false;
+    checkoutBtn.textContent = 'Proceed to Checkout';
+    loginForm.reset();
+    toggleLogin(false);
+    showMessage(data?.message || 'Signed in', 'success');
+  }
+});
+
+// Reset Password
+resetForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = resetForm.querySelector('button[type="submit"]');
+
+  const result = await handleApiButton(btn, async () => {
+    try {
+      const email = document.getElementById('reset-email').value.trim();
+      const phone = document.getElementById('reset-phone').value.trim();
+      const password = document.getElementById('reset-password').value;
+      const verificationCode = document.getElementById('reset-verification-code').value.trim();
+
+      if (!email || !/^\d{10}$/.test(phone) || !password) {
+        throw new Error('Please complete all fields correctly.');
+      }
+
+      const { endpoint, authToken, OmniTok, sid } = await getOmniTok('reset');
+      if (!endpoint || !authToken || !OmniTok || !sid) {
+        throw new Error('Token fetch failed. Please try again.');
+      }
+
+      const jobId = createJobId();
+
+      const resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': authToken,
+          'X-OmniTok': OmniTok,
+          'X-SID': sid,
+          'x-job-id': jobId
+        },
+        body: JSON.stringify({
+          email,
+          phone,
+          newPassword: password,
+          verificationCode,
+          jobId
+        })
+      });
+
+      const data = await safeJson(resp);
+
+      if (data?.jobId && data?.statusUrl) {
+        return { jobId: data.jobId, statusUrl: data.statusUrl };
+      }
+
+      const explicit = normalizeStatus(data);
+      const okByPayload = typeof explicit === 'string'
+        ? explicit === 'OK' || explicit === 'SUCCESS'
+        : resp.ok;
+
+      if (!okByPayload) {
+        const msg = data?.message || 'Password reset failed';
+        throw new Error(msg);
+      }
+
+      return { ok: true, payload: data };
+    } catch (err) {
+      console.error('[Reset Password] Error:', err);
+      showMessage(err.message, 'error');
+      return { ok: false, payload: { status: 'ERROR', message: err.message } };
+    }
+  });
+
+  if (result.ok) {
+    const data = result.payload || {};
+    const email =
+      (data.body && data.body.email) ??
+      data.email ??
+      document.getElementById('reset-email').value.trim();
+
+    showMessage(data?.message || 'Password reset successful. Please sign in.', 'success');
+
+    document.getElementById('login-username').value = email;
+
+    resetForm.reset();
+    checkResetValidity();
+    document.getElementById('reset-verification-code').disabled = true;
+    resetRequestCodeBtn.dataset.codeSent = 'true';
+
+    const resetBar = document.getElementById('reset-password-strength-bar');
+    const resetText = document.getElementById('reset-password-strength-text');
+    if (resetBar && resetText) {
+      resetBar.style.width = '0%';
+      resetBar.style.background = 'red';
+      resetText.textContent = 'Strength: —';
+    }
+
+    showLoginFromResetBtn.click();
+
+    setTimeout(() => {
+      const signInBtn = loginForm.querySelector('button[type="submit"]');
+      if (signInBtn) {
+        signInBtn.classList.remove('shimmer');
+        void signInBtn.offsetWidth;
+        signInBtn.classList.add('shimmer');
+        setTimeout(() => signInBtn.classList.remove('shimmer'), 800);
+      }
+    }, 50);
+  }
+});
+
+// Create Account
+signupForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = signupForm.querySelector('button[type="submit"]');
+
+  const result = await handleApiButton(btn, async () => {
+    try {
+      const fn   = document.getElementById('signup-firstname').value.trim();
+      const ln   = document.getElementById('signup-lastname').value.trim();
+      const addr = document.getElementById('signup-address').value.trim();
+      const city = document.getElementById('signup-city').value.trim();
+      const st   = document.getElementById('signup-state').value.trim();
+      const zip  = document.getElementById('signup-zip').value.trim();
+      const ph   = document.getElementById('signup-phone').value.trim();
+      const em   = document.getElementById('signup-email').value.trim();
+      const pw1  = document.getElementById('signup-password').value;
+      const pw2  = document.getElementById('signup-password-confirm').value;
+      const verificationCode = document.getElementById('signup-verification-code').value.trim();
+
+      if (pw1 !== pw2) throw new Error('Passwords do not match.');
+      if (!/^\d{5}$/.test(zip)) throw new Error('ZIP Code must be 5 digits.');
+      if (!/^\d{10}$/.test(ph)) throw new Error('Phone must be 10 digits.');
+
+      const { endpoint, authToken, OmniTok, sid } = await getOmniTok('signup');
+      if (!endpoint || !authToken || !OmniTok || !sid) {
+        throw new Error('Token fetch failed. Please try again.');
+      }
+
+      const jobId = createJobId();
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': authToken,
+          'X-OmniTok': OmniTok,
+          'X-SID': sid,
+          'x-job-id': jobId
+        },
+        body: JSON.stringify({
+          firstName: fn,
+          lastName: ln,
+          address: addr,
+          city,
+          state: st,
+          zip,
+          phone: ph,
+          email: em,
+          password: pw1,
+          verificationCode,
+          jobId
+        })
+      });
+
+      const data = await safeJson(res);
+
+      if (data?.jobId && data?.statusUrl) {
+        return { jobId: data.jobId, statusUrl: data.statusUrl };
+      }
+
+      const explicit = normalizeStatus(data);
+      const okByPayload = typeof explicit === 'string'
+        ? explicit === 'OK' || explicit === 'SUCCESS'
+        : res.ok;
+
+      if (!okByPayload) {
+        const msg = data?.message || 'Signup failed';
+        throw new Error(msg);
+      }
+
+      return { ok: true, payload: data };
+    } catch (err) {
+      console.error('[Signup] Error:', err);
+      showMessage(err.message, 'error');
+      return { ok: false, payload: { status: 'ERROR', message: err.message } };
+    }
+  });
+
+  if (result.ok) {
+    const data = result.payload || {};
+    showMessage(data?.message || 'Account created! Please sign in.', 'success');
+
+    const email = data.body?.email ?? data.email ?? document.getElementById('signup-email').value.trim();
+    document.getElementById('login-username').value = email;
+
+    signupForm.reset();
+    checkSignupValidity();
+    document.getElementById('signup-verification-code').disabled = true;
+    signupRequestCodeBtn.dataset.codeSent = 'true';
+
+    const signupBar = document.getElementById('password-strength-bar');
+    const signupText = document.getElementById('password-strength-text');
+    if (signupBar && signupText) {
+      signupBar.style.width = '0%';
+      signupBar.style.background = 'red';
+      signupText.textContent = 'Strength: —';
+    }
+
+    showLoginBtn.click();
+
+    setTimeout(() => {
+      const signInBtn = loginForm.querySelector('button[type="submit"]');
+      if (signInBtn) {
+        signInBtn.classList.remove('shimmer');
+        void signInBtn.offsetWidth;
+        signInBtn.classList.add('shimmer');
+        setTimeout(() => signInBtn.classList.remove('shimmer'), 800);
+      }
+    }, 50);
+  }
+});
+
+// Checkout
+let checkoutPhase = 1;
+let confirmStep = false;
+
+function startShimmer(btn, text) {
+  btn.classList.add('loading');
+  btn.dataset.loadingText = text || 'Processing...';
+}
+
+function stopShimmer(btn) {
+  btn.classList.remove('loading');
+  delete btn.dataset.loadingText;
+}
+
+checkoutBtn.addEventListener('click', async () => {
+  // Phase 1: Proceed to Checkout
+  if (checkoutPhase === 1) {
+    startShimmer(checkoutBtn, 'Processing Order...');
+    let result;
+    try {
+      result = await handleApiButton(checkoutBtn, async () => {
+        if (!cart.length) {
+          showMessage('Your cart is empty.', 'error');
+          return { status: 'ERROR', message: 'Empty cart' };
+        }
+        if (!isLoggedIn) {
+          showMessage('Please sign in first.', 'error');
+          return { status: 'ERROR', message: 'Not signed in' };
+        }
+
+        const { endpoint, authToken, OmniTok, sid } = await getOmniTok('checkout');
+        const jobId = createJobId();
+        const total = cart.reduce((sum, { id, qty }) => {
+          const prod = productsEcom.find(p => p.id === id);
+          return sum + prod.price * qty;
+        }, 0);
+
+        const payload = {
+          user: {
+            email: currentUser.email,
+            name: currentUser.name,
+            rewards: currentUser.rewards
+          },
+          items: cart.map(i => ({
+            id: i.id,
+            sku: i.sku,
+            name: i.name,
+            price: i.price,
+            currency: i.currency,
+            qty: i.qty
+          })),
+          total,
+          jobId
+        };
+
+        const resp = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-auth-token': authToken,
+            'X-OmniTok': OmniTok,
+            'X-SID': sid,
+            'x-job-id': jobId
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await safeJson(resp);
+
+        if (data?.jobId && data?.statusUrl) {
+          return { jobId: data.jobId, statusUrl: data.statusUrl };
+        }
+
+        const explicit = normalizeStatus(data);
+        const okByPayload = typeof explicit === 'string'
+          ? explicit === 'OK' || explicit === 'SUCCESS'
+          : resp.ok;
+
+        if (!okByPayload) {
+          const msg = data?.message || 'Order submission failed';
+          showMessage(msg, 'error');
+          return { status: 'ERROR', message: msg };
+        }
+
+        return data;
+      });
+    } finally {
+      stopShimmer(checkoutBtn);
+    }
+
+    if (result?.ok && result?.payload) {
+      const raw = result.payload || {};
+
+      // Normalize payload for Phase 2
+      const data = {
+        orderNumber: raw.orderNumber || '',
+        shippingCost: Number(raw.shippingCost) || 0,
+        taxAmount: Number(raw.taxAmount) || 0,
+        totalAmount: Number(raw.totalAmount) || 0,
+        currency: raw.currency || 'usd',
+        clientSecret: raw.clientSecret || raw.client_secret || '',
+        paymentIntentId: raw.paymentIntentId || raw.payment_intent_id || '',
+      };
+        // 2. Hydrate currentUser with billing details
+        currentUser.name = raw.billingName || currentUser.name;
+        currentUser.email = raw.billingEmail || currentUser.email;
+        currentUser.addressLine1 = raw.billingLine1 || '';
+        currentUser.city = raw.billingCity || '';
+        currentUser.state = raw.billingState || '';
+        currentUser.zip = raw.billingPostal || '';
+        currentUser.country = raw.billingCountry || 'US';
+
+
+      // Update DOM
+      const orderNumberEl = document.getElementById('order-number');
+      const shippingCostEl = document.getElementById('shipping-cost');
+      const taxAmountEl = document.getElementById('tax-amount');
+      const totalAmountEl = document.getElementById('total-amount');
+
+      if (orderNumberEl) {
+        orderNumberEl.textContent = data.orderNumber;
+        document.getElementById('order-info-row').style.display = 'flex';
+      }
+      if (shippingCostEl) {
+        shippingCostEl.textContent = (data.shippingCost / 100).toFixed(2);
+        document.getElementById('shipping-row').style.display = 'flex';
+      }
+      if (taxAmountEl) {
+        taxAmountEl.textContent = (data.taxAmount / 100).toFixed(2);
+        document.getElementById('tax-row').style.display = 'flex';
+      }
+      if (totalAmountEl) {
+        totalAmountEl.textContent = (data.totalAmount / 100).toFixed(2);
+      }
+
+      // Store for Phase 2
+      checkoutBtn.dataset.orderData = JSON.stringify(data);
+
+      // Update cart total display
+      document.getElementById('cart-total-value').textContent = (data.totalAmount / 100).toFixed(2);
+
+      // Lock cart and re-render
+      cartLocked = true;
+      renderCart();
+
+      // Switch to Phase 2
+      checkoutBtn.textContent = 'Pay for Order';
+      checkoutPhase = 2;
+      confirmStep = false;
+      return;
+    }
+  }
+
+  // Phase 2: Pay for Order
+  if (checkoutPhase === 2 && !confirmStep) {
+    document.getElementById('payment-section').style.display = 'block';
+    mountStripeElements();
+    checkoutBtn.disabled = false;
+    checkoutBtn.textContent = 'Confirm & Pay';
+    confirmStep = true;
+    return;
+  }
+
+  // Phase 2: Confirm & Pay
+  if (checkoutPhase === 2 && confirmStep) {
+    const data = JSON.parse(checkoutBtn.dataset.orderData || '{}');
+    const clientSecret = data.clientSecret;
+    const paymentIntentId = data.paymentIntentId;
+
+    if (!clientSecret) {
+      showMessage('Missing client secret for payment.', 'error');
+      return;
+    }
+
+    startShimmer(checkoutBtn, 'Confirming...');
+
+    try {
+      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card,
+          billing_details: {
+            name: currentUser?.name || '',
+            email: currentUser?.email || '',
+            address: {
+                line1: currentUser.addressLine1,
+                city: currentUser.city,
+                state: currentUser.state,
+                postal_code: currentUser.zip,
+                country: currentUser.country
+          }
+        }
+      }});
+
+      if (error) {
+        document.getElementById('card-errors').textContent = error.message || 'Payment failed. Try another card.';
+        showMessage(error.message || 'Payment failed.', 'error');
+        return;
+      }
+
+      if (paymentIntent && paymentIntent.status === 'succeeded') {
+        showMessage('Payment successful!', 'success');
+        cart = [];
+        renderCart();
+        document.getElementById('payment-section').style.display = 'none';
+        checkoutBtn.textContent = 'Payment Successful';
+        checkoutBtn.disabled = true;
+        checkoutBtn.style.backgroundColor = '#28a745';
+        checkoutBtn.style.cursor = 'default';
+        checkoutPhase = 1;
+        confirmStep = false;
+        sessionStorage.removeItem('sid');
+            // Create countdown element under the button
+     let countdownSeconds = 5;
+     let countdownEl = document.createElement('div');
+        countdownEl.style.marginTop = '0.5rem';
+        countdownEl.style.fontSize = '0.9rem';
+        countdownEl.style.color = '#a76e28';
+        countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
+        checkoutBtn.insertAdjacentElement('afterend', countdownEl);
+        checkoutBtn.disabled = false;
+        checkoutBtn.style.cursor = 'pointer';
+
+          // Update countdown every second
+     let countdownTimer = setInterval(() => {
+        countdownSeconds--;
+        countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
+     if (countdownSeconds <= 0) {
+      clearInterval(countdownTimer);
+      checkoutBtn.disabled = true;
+      checkoutBtn.style.cursor = 'default';
+      countdownEl.style.transition = 'opacity 0.5s ease';
+      countdownEl.style.opacity = '0';
+      setTimeout(() => countdownEl.remove(), 500);
+      signOut();
+      window.location.href = 'https://picantepequinsalsaco.com/';
+    }
+  }, 1000);
+      } else {
+        showMessage(`Payment status: ${paymentIntent?.status || 'unknown'}`, 'info');
+      }
+    } finally {
+      stopShimmer(checkoutBtn);
+    }
+
+    return;
+  }
+});
+
+/* ===========================
+   State dropdown enhancement
+   =========================== */
+(function enhanceStateSelect() {
+  const select = document.getElementById('signup-state');
+  const btn = document.querySelector('.state-dropdown-btn');
+  if (!select || !btn) return;
+
+  function openNativeDropdown() {
+    if (typeof select.showPicker === 'function') {
+      select.showPicker();
+    } else {
+      select.focus();
+      const ev = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
+      select.dispatchEvent(ev);
+    }
+  }
+
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    openNativeDropdown();
+  });
+})();
+
+function signOut() {
+  // Core state resets
+  cart = [];
+  isLoggedIn = false;
+  currentUser = { email: '', name: '', rewards: 0 };
+  checkoutPhase = 1;
+  confirmStep = false;
+  cartLocked = false;
+
+  // Clear session storage
+  sessionStorage.removeItem('authToken');
+  sessionStorage.removeItem('sid'); // force a new session identity next time
+
+  // Reset UI elements
+  usernameDisplay.textContent = 'Guest';
+  rewardsDisplay.textContent = '0';
+  loginBtn.textContent = 'Login';
+  loginBtn.classList.remove('logout');
+
+  checkoutBtn.disabled = true;
+  checkoutBtn.textContent = 'Sign In to Checkout';
+  checkoutBtn.style.backgroundColor = ''; // remove success green if set
+  checkoutBtn.style.cursor = 'pointer';
+
+  // Hide payment section if visible
+  document.getElementById('payment-section').style.display = 'none';
+
+  // Hide order info rows
+  document.getElementById('order-info-row').style.display = 'none';
+  document.getElementById('shipping-row').style.display = 'none';
+  document.getElementById('tax-row').style.display = 'none';
+
+  // Reset cart total display
+  document.getElementById('cart-total-value').textContent = '0.00';
+
+  // Clear any stored order data
+  checkoutBtn.dataset.orderData = '';
+
+  // Re-render cart UI to show empty state
+  renderCart();
+}
+/* ===========================
+   Confirm-on-exit (always prompt)
+   =========================== */
+// Show native prompt; if user proceeds, pagehide will trigger and we sign out.
+window.addEventListener('beforeunload', (e) => {
+  e.preventDefault();
+  e.returnValue = ''; // Required for native prompt; text is ignored in modern browsers
+});
+
+// Fires only when actually leaving (refresh/back/close). Safe for cleanup.
+window.addEventListener('pagehide', () => {
+  if (isLoggedIn) {
+    signOut();
+  }
+});
+
+/* ===========================
+   Persist cart and init
+   =========================== */
+window.addEventListener('beforeunload', () => {
+  sessionStorage.setItem('cart', JSON.stringify(cart));
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = sessionStorage.getItem('cart');
+  if (saved) { 
+    cart = JSON.parse(saved); 
+    renderCart(); 
+  }
+  renderProducts();
+});
 </script>
 </body>
 </html>
