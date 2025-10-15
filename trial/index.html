@@ -1005,7 +1005,7 @@ function setButtonState(btn, state) {
 const DEV = {
   stubJobs: false,         // true = bypass real polling
   stubDelayMs: 3500,      // auto-success after this delay
-  manualEvent: false       // allow manual confirmation via window.dispatchEvent(...)
+  manualEvent: false     // allow manual confirmation via window.dispatchEvent(...)
 };
 
 /**
@@ -1212,6 +1212,7 @@ document.querySelectorAll('.reveal-btn').forEach(btn => {
    Live validators
    =========================== */
 
+// Shared handler for both Request verification code buttons
 // Shared handler for both Request verification code buttons
 function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
   
@@ -1807,56 +1808,49 @@ loginForm.addEventListener('submit', async e => {
   const btn = loginForm.querySelector('button[type="submit"]');
 
   const result = await handleApiButton(btn, async () => {
-    try {
-      const email = document.getElementById('login-username').value.trim();
-      const password = document.getElementById('login-password').value;
+    const email = document.getElementById('login-username').value.trim();
+    const password = document.getElementById('login-password').value;
 
-      if (!email || !password) {
-        showMessage('Please enter both email and password.', 'error');
-        return { status: 'ERROR', message: 'Missing credentials' };
-      }
-
-      const { endpoint, authToken, OmniTok, sid } = await getOmniTok('login');
-      if (!endpoint || !authToken || !OmniTok || !sid) {
-        throw new Error('Token fetch failed. Please try again.');
-      }
-
-      const jobId = createJobId();
-
-      const resp = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': authToken,
-          'X-OmniTok': OmniTok,
-          'X-SID': sid,
-          'x-job-id': jobId
-        },
-        body: JSON.stringify({ email, password, jobId })
-      });
-
-      const data = await safeJson(resp);
-
-      if (data?.jobId && data?.statusUrl) {
-        return { jobId: data.jobId, statusUrl: data.statusUrl };
-      }
-
-      const explicit = normalizeStatus(data);
-      const okByPayload = typeof explicit === 'string'
-        ? explicit === 'OK' || explicit === 'SUCCESS'
-        : resp.ok;
-
-      if (!okByPayload || !data?.firstName) {
-        const msg = data?.message || 'Invalid credentials or server error';
-        throw new Error(msg);
-      }
-
-      return { ok: true, payload: data };
-    } catch (err) {
-      console.error('[Login] Error:', err);
-      showMessage(err.message, 'error');
-      return { ok: false, payload: { status: 'ERROR', message: err.message } };
+    if (!email || !password) {
+      showMessage('Please enter both email and password.', 'error');
+      return { status: 'ERROR', message: 'Missing credentials' };
     }
+      
+const { endpoint, authToken, OmniTok, sid } = await getOmniTok('login');
+const jobId = createJobId();
+
+const resp = await fetch(endpoint, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-auth-token': authToken,
+    'X-OmniTok': OmniTok,
+    'X-SID': sid,
+    'x-job-id': jobId
+  },
+      body: JSON.stringify({ email, password, jobId })
+    });
+
+    const data = await safeJson(resp);
+
+    // If flow defers completion, return jobId + statusUrl to trigger polling
+    if (data?.jobId && data?.statusUrl) {
+      return { jobId: data.jobId, statusUrl: data.statusUrl };
+    }
+
+    // Immediate mode fallback
+    const explicit = normalizeStatus(data);
+    const okByPayload = typeof explicit === 'string'
+      ? explicit === 'OK' || explicit === 'SUCCESS'
+      : resp.ok;
+
+    if (!okByPayload || !data?.firstName) {
+      const msg = data?.message || 'Invalid credentials or server error';
+      showMessage(msg, 'error');
+      return { status: 'ERROR', message: msg };
+    }
+
+    return data;
   });
 
   // Final side-effects after button resolves
@@ -1888,102 +1882,93 @@ resetForm.addEventListener('submit', async e => {
   const btn = resetForm.querySelector('button[type="submit"]');
 
   const result = await handleApiButton(btn, async () => {
-    try {
-      const email = document.getElementById('reset-email').value.trim();
-      const phone = document.getElementById('reset-phone').value.trim();
-      const password = document.getElementById('reset-password').value;
-      const verificationCode = document.getElementById('reset-verification-code').value.trim();
+    const email    = document.getElementById('reset-email').value.trim();
+    const phone    = document.getElementById('reset-phone').value.trim();
+    const password = document.getElementById('reset-password').value;
+    const verificationCode = document.getElementById('reset-verification-code').value.trim();
 
-      if (!email || !/^\d{10}$/.test(phone) || !password) {
-        throw new Error('Please complete all fields correctly.');
-      }
-
-      const { endpoint, authToken, OmniTok, sid } = await getOmniTok('reset');
-      if (!endpoint || !authToken || !OmniTok || !sid) {
-        throw new Error('Token fetch failed. Please try again.');
-      }
-
-      const jobId = createJobId();
-
-      const resp = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': authToken,
-          'X-OmniTok': OmniTok,
-          'X-SID': sid,
-          'x-job-id': jobId
-        },
-        body: JSON.stringify({
-          email,
-          phone,
-          newPassword: password,
-          verificationCode,
-          jobId
-        })
-      });
-
-      const data = await safeJson(resp);
-
-      if (data?.jobId && data?.statusUrl) {
-        return { jobId: data.jobId, statusUrl: data.statusUrl };
-      }
-
-      const explicit = normalizeStatus(data);
-      const okByPayload = typeof explicit === 'string'
-        ? explicit === 'OK' || explicit === 'SUCCESS'
-        : resp.ok;
-
-      if (!okByPayload) {
-        const msg = data?.message || 'Password reset failed';
-        throw new Error(msg);
-      }
-
-      return { ok: true, payload: data };
-    } catch (err) {
-      console.error('[Reset Password] Error:', err);
-      showMessage(err.message, 'error');
-      return { ok: false, payload: { status: 'ERROR', message: err.message } };
+    if (!email || !/^\d{10}$/.test(phone) || !password) {
+      showMessage('Please complete all fields correctly.', 'error');
+      return { status: 'ERROR', message: 'Invalid input' };
     }
+
+const { endpoint, authToken, OmniTok, sid } = await getOmniTok('reset');
+const jobId = createJobId();
+
+const resp = await fetch(endpoint, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-auth-token': authToken,
+    'X-OmniTok': OmniTok,
+    'X-SID': sid,
+    'x-job-id': jobId
+  },
+      body: JSON.stringify({ email, phone, newPassword: password, verificationCode, jobId })
+    });
+
+    const data = await safeJson(resp);
+
+    // Deferred job support
+    if (data?.jobId && data?.statusUrl) {
+      return { jobId: data.jobId, statusUrl: data.statusUrl };
+    }
+
+    const explicit = normalizeStatus(data);
+    const okByPayload = typeof explicit === 'string'
+      ? explicit === 'OK' || explicit === 'SUCCESS'
+      : resp.ok;
+
+    if (!okByPayload) {
+      const msg = data?.message || 'Password reset failed';
+      showMessage(msg, 'error');
+      return { status: 'ERROR', message: msg };
+    }
+
+    return data;
   });
 
-  if (result.ok) {
-    const data = result.payload || {};
-    const email =
-      (data.body && data.body.email) ??
-      data.email ??
-      document.getElementById('reset-email').value.trim();
+if (result.ok) {
+  const data = result.payload || {};
+  const email =
+    (data.body && data.body.email) ??
+    data.email ??
+    document.getElementById('reset-email').value.trim();
 
-    showMessage(data?.message || 'Password reset successful. Please sign in.', 'success');
+  showMessage(data?.message || 'Password reset successful. Please sign in.', 'success');
 
-    document.getElementById('login-username').value = email;
+  // Prefill login email like signup does
+  document.getElementById('login-username').value = email;
 
-    resetForm.reset();
-    checkResetValidity();
-    document.getElementById('reset-verification-code').disabled = true;
-    resetRequestCodeBtn.dataset.codeSent = 'true';
+  // Clear the reset form for next time
+  resetForm.reset();
+  checkResetValidity();
+  document.getElementById('reset-verification-code').disabled = true;
+  resetRequestCodeBtn.dataset.codeSent = 'true';
 
-    const resetBar = document.getElementById('reset-password-strength-bar');
-    const resetText = document.getElementById('reset-password-strength-text');
-    if (resetBar && resetText) {
-      resetBar.style.width = '0%';
-      resetBar.style.background = 'red';
-      resetText.textContent = 'Strength: —';
-    }
-
-    showLoginFromResetBtn.click();
-
-    setTimeout(() => {
-      const signInBtn = loginForm.querySelector('button[type="submit"]');
-      if (signInBtn) {
-        signInBtn.classList.remove('shimmer');
-        void signInBtn.offsetWidth;
-        signInBtn.classList.add('shimmer');
-        setTimeout(() => signInBtn.classList.remove('shimmer'), 800);
-      }
-    }, 50);
+ // Clear reset password strength meter UI
+  const resetBar = document.getElementById('reset-password-strength-bar');
+  const resetText = document.getElementById('reset-password-strength-text');
+  if (resetBar && resetText) {
+    resetBar.style.width = '0%';
+    resetBar.style.background = 'red';
+    resetText.textContent = 'Strength: —';
   }
-});
+
+  // Flip back to login using the same path as signup
+  showLoginFromResetBtn.click();
+
+  // Shimmer flash on Sign In button (same feel as signup)
+  setTimeout(() => {
+    const signInBtn = loginForm.querySelector('button[type="submit"]');
+    if (signInBtn) {
+      signInBtn.classList.remove('shimmer');
+      void signInBtn.offsetWidth; // restart animation
+      signInBtn.classList.add('shimmer');
+      setTimeout(() => signInBtn.classList.remove('shimmer'), 800);
+    }
+  }, 50);
+}})
 
 // Create Account
 signupForm.addEventListener('submit', async e => {
@@ -1991,86 +1976,86 @@ signupForm.addEventListener('submit', async e => {
   const btn = signupForm.querySelector('button[type="submit"]');
 
   const result = await handleApiButton(btn, async () => {
-    try {
-      const fn   = document.getElementById('signup-firstname').value.trim();
-      const ln   = document.getElementById('signup-lastname').value.trim();
-      const addr = document.getElementById('signup-address').value.trim();
-      const city = document.getElementById('signup-city').value.trim();
-      const st   = document.getElementById('signup-state').value.trim();
-      const zip  = document.getElementById('signup-zip').value.trim();
-      const ph   = document.getElementById('signup-phone').value.trim();
-      const em   = document.getElementById('signup-email').value.trim();
-      const pw1  = document.getElementById('signup-password').value;
-      const pw2  = document.getElementById('signup-password-confirm').value;
-      const verificationCode = document.getElementById('signup-verification-code').value.trim();
+    const fn   = document.getElementById('signup-firstname').value.trim();
+    const ln   = document.getElementById('signup-lastname').value.trim();
+    const addr = document.getElementById('signup-address').value.trim();
+    const city = document.getElementById('signup-city').value.trim();
+    const st   = document.getElementById('signup-state').value.trim();
+    const zip  = document.getElementById('signup-zip').value.trim();
+    const ph   = document.getElementById('signup-phone').value.trim();
+    const em   = document.getElementById('signup-email').value.trim();
+    const pw1  = document.getElementById('signup-password').value;
+    const pw2  = document.getElementById('signup-password-confirm').value;
+    const verificationCode = document.getElementById('signup-verification-code').value.trim();
 
-      if (pw1 !== pw2) throw new Error('Passwords do not match.');
-      if (!/^\d{5}$/.test(zip)) throw new Error('ZIP Code must be 5 digits.');
-      if (!/^\d{10}$/.test(ph)) throw new Error('Phone must be 10 digits.');
-
-      const { endpoint, authToken, OmniTok, sid } = await getOmniTok('signup');
-      if (!endpoint || !authToken || !OmniTok || !sid) {
-        throw new Error('Token fetch failed. Please try again.');
-      }
-
-      const jobId = createJobId();
-
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': authToken,
-          'X-OmniTok': OmniTok,
-          'X-SID': sid,
-          'x-job-id': jobId
-        },
-        body: JSON.stringify({
-          firstName: fn,
-          lastName: ln,
-          address: addr,
-          city,
-          state: st,
-          zip,
-          phone: ph,
-          email: em,
-          password: pw1,
-          verificationCode,
-          jobId
-        })
-      });
-
-      const data = await safeJson(res);
-
-      const explicit = normalizeStatus(data);
-      const okByPayload = typeof explicit === 'string'
-        ? explicit === 'OK' || explicit === 'SUCCESS'
-        : res.ok;
-
-      if (!okByPayload) {
-        const msg = data?.message || 'Signup failed';
-        throw new Error(msg);
-      }
-
-      return { ok: true, payload: data };
-    } catch (err) {
-      console.error('[Signup] Error:', err);
-      showMessage(err.message, 'error');
-      return { ok: false, payload: { status: 'ERROR', message: err.message } };
+    if (pw1 !== pw2) {
+      showMessage('Passwords do not match.', 'error');
+      return { status: 'ERROR', message: 'Passwords mismatch' };
     }
+    if (!/^\d{5}$/.test(zip)) {
+      showMessage('ZIP Code must be 5 digits.', 'error');
+      return { status: 'ERROR', message: 'Invalid ZIP' };
+    }
+    if (!/^\d{10}$/.test(ph)) {
+      showMessage('Phone must be 10 digits.', 'error');
+      return { status: 'ERROR', message: 'Invalid phone' };
+    }
+
+const { endpoint, authToken, OmniTok, sid } = await getOmniTok('signup');
+const jobId = createJobId();
+
+const res = await fetch(endpoint, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-auth-token': authToken,
+    'X-OmniTok': OmniTok,
+    'X-SID': sid,
+    'x-job-id': jobId
+  },
+      body: JSON.stringify({
+        firstName: fn,
+        lastName: ln,
+        address: addr,
+        city,
+        state: st,
+        zip,
+        phone: ph,
+        email: em,
+        password: pw1,
+        verificationCode,
+        jobId
+      })
+    });
+
+    const data = await safeJson(res);
+
+    const explicit = normalizeStatus(data);
+    const okByPayload = typeof explicit === 'string'
+      ? explicit === 'OK' || explicit === 'SUCCESS'
+      : res.ok;
+
+    if (!okByPayload) {
+      const msg = data?.message || 'Signup failed';
+      showMessage(msg, 'error');
+      return { status: 'ERROR', message: msg };
+    }
+
+    return data;
   });
 
   if (result.ok) {
     const data = result.payload || {};
     showMessage(data?.message || 'Account created! Please sign in.', 'success');
-
     const email = data.body?.email ?? data.email ?? document.getElementById('signup-email').value.trim();
-    document.getElementById('login-username').value = email;
-
+    const password = data.body?.password ?? data.password ?? document.getElementById('signup-password').value;
+    document.getElementById('login-username').value = email;      
     signupForm.reset();
     checkSignupValidity();
     document.getElementById('signup-verification-code').disabled = true;
     signupRequestCodeBtn.dataset.codeSent = 'true';
-
+      
+     // Clear signup password strength meter UI
     const signupBar = document.getElementById('password-strength-bar');
     const signupText = document.getElementById('password-strength-text');
     if (signupBar && signupText) {
@@ -2078,20 +2063,19 @@ signupForm.addEventListener('submit', async e => {
       signupBar.style.background = 'red';
       signupText.textContent = 'Strength: —';
     }
-
     showLoginBtn.click();
-
-    setTimeout(() => {
-      const signInBtn = loginForm.querySelector('button[type="submit"]');
-      if (signInBtn) {
-        signInBtn.classList.remove('shimmer');
-        void signInBtn.offsetWidth;
-        signInBtn.classList.add('shimmer');
-        setTimeout(() => signInBtn.classList.remove('shimmer'), 800);
-      }
-    }, 50);
+        // Shimmer flash on Sign In button
+// Wait until login form is visible, then shimmer
+setTimeout(() => {
+  const signInBtn = loginForm.querySelector('button[type="submit"]');
+  if (signInBtn) {
+    signInBtn.classList.remove('shimmer'); // reset if still applied
+    void signInBtn.offsetWidth; // force reflow so animation restarts
+    signInBtn.classList.add('shimmer');
+    setTimeout(() => signInBtn.classList.remove('shimmer'), 800);
   }
-});
+ }, 50);
+}})
 
 // Checkout
 let checkoutPhase = 1;
