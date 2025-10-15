@@ -1003,9 +1003,9 @@ function setButtonState(btn, state) {
 
 // Dev/test config
 const DEV = {
-  stubJobs: true,         // true = bypass real polling
+  stubJobs: false,         // true = bypass real polling
   stubDelayMs: 3500,      // auto-success after this delay
-  manualEvent: true       // allow manual confirmation via window.dispatchEvent(...)
+  manualEvent: false       // allow manual confirmation via window.dispatchEvent(...)
 };
 
 /**
