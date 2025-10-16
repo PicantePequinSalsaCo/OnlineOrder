@@ -510,6 +510,47 @@
   }
 }
 
+    /* Toast-style message box */
+.message-box {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  min-width: 240px;
+  max-width: 320px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow);
+  z-index: 2000;
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: slideIn 0.3s forwards;
+}
+
+/* Variants */
+.message-box.success { border-left: 4px solid var(--accent-green); }
+.message-box.error   { border-left: 4px solid var(--accent-red); }
+.message-box.info    { border-left: 4px solid var(--accent-orange); }
+
+/* Entry animation */
+@keyframes slideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Exit animation (optional, if you want fade-out before removal) */
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
     footer {
       text-align:center; color:var(--muted);
       font-size:.9rem; margin:20px 0;
@@ -1018,9 +1059,9 @@ function setButtonState(btn, state) {
 
 // Dev/test config
 const DEV = {
-  stubJobs: true,         // true = bypass real polling
+  stubJobs: false,         // true = bypass real polling
   stubDelayMs: 3500,      // auto-success after this delay
-  manualEvent: true       // allow manual confirmation via window.dispatchEvent(...)
+  manualEvent: false       // allow manual confirmation via window.dispatchEvent(...)
 };
 
 /**
@@ -2103,10 +2144,6 @@ const res = await fetch(endpoint, {
     });
 
     const data = await safeJson(res);
-
-    if (data?.jobId && data?.statusUrl) {
-      return { jobId: data.jobId, statusUrl: data.statusUrl };
-    }
 
     const explicit = normalizeStatus(data);
     const okByPayload = typeof explicit === 'string'
