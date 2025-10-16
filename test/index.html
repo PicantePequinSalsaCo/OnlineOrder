@@ -513,8 +513,8 @@
     /* Toast-style message box */
 .message-box {
   position: fixed;
-  top: 50%;
-  left: 50%;
+  top: 20px;
+  right: 20px;
   min-width: 240px;
   max-width: 320px;
   padding: 12px 16px;
@@ -527,6 +527,7 @@
   box-shadow: var(--shadow);
   z-index: 2000;
   opacity: 0;
+  transform: translateY(-10px);
   animation: slideIn 0.3s forwards;
 }
 
@@ -1934,11 +1935,6 @@ const resp = await fetch(endpoint, {
 
     const data = await safeJson(resp);
 
-    // If flow defers completion, return jobId + statusUrl to trigger polling
-    if (data?.jobId && data?.statusUrl) {
-      return { jobId: data.jobId, statusUrl: data.statusUrl };
-    }
-
     // Immediate mode fallback
     const explicit = normalizeStatus(data);
     const okByPayload = typeof explicit === 'string'
@@ -2022,11 +2018,6 @@ const resp = await fetch(endpoint, {
     });
 
     const data = await safeJson(resp);
-
-    // Deferred job support
-    if (data?.jobId && data?.statusUrl) {
-      return { jobId: data.jobId, statusUrl: data.statusUrl };
-    }
 
     const explicit = normalizeStatus(data);
     const okByPayload = typeof explicit === 'string'
@@ -2243,7 +2234,7 @@ checkoutBtn.addEventListener('click', async () => {
             qty: i.qty
           })),
           total,
-          pointsRedeemed,
+          pointsRedeemed: currentUser.pointsRedeemed,
           jobId
         };
 
@@ -2261,10 +2252,6 @@ checkoutBtn.addEventListener('click', async () => {
                 // Hide rewards input box after sending request
         document.getElementById('rewards-box').style.display = 'none';
         const data = await safeJson(resp);
-
-        if (data?.jobId && data?.statusUrl) {
-          return { jobId: data.jobId, statusUrl: data.statusUrl };
-        }
 
         const explicit = normalizeStatus(data);
         const okByPayload = typeof explicit === 'string'
