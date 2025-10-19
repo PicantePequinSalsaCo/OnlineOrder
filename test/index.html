@@ -1806,7 +1806,7 @@ let applied = 0;
 if (rewardsInput && isLoggedIn) {
   const rawPoints = parseInt(rewardsInput.value || "0", 10);
   const pointsRedeemed = parseInt(rewardsInput?.value || "0", 10);
-    currentUser.pointsReddemed = pointsRedeemed;
+    currentUser.pointsRedeemed = pointsRedeemed;
 
   // Clamp against available rewards
   const usablePoints = Math.max(0, Math.min(rawPoints, currentUser.rewards));
