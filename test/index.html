@@ -2222,6 +2222,7 @@ checkoutBtn.addEventListener('click', async () => {
           const prod = productsEcom.find(p => p.id === id);
           return sum + prod.price * qty;
         }, 0);
+        const rewardsInput = document.getElementById('rewards-input');
         const pointsRedeemed = parseInt(rewardsInput?.value || "0", 10);
           currentUser.pointsRedeemed = pointsRedeemed;
 
