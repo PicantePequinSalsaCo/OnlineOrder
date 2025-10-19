@@ -1966,7 +1966,8 @@ const resp = await fetch(endpoint, {
         // ⭐ NEW: configure rewards row
   const rewardsRow = document.getElementById('rewards-row');
   const rewardsInput = document.getElementById('rewards-input');
-  const pointsRedeemed = parseInt(rewardsInput?.value || "0", 10); 
+  const pointsRedeemed = parseInt(rewardsInput?.value || "0", 10);
+      currentUser.pointsRedeemed = pointsRedeemed;
   if (currentUser.rewards > 0) {
     rewardsRow.style.display = 'flex';
     rewardsInput.max = currentUser.rewards;
