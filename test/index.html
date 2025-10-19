@@ -1805,6 +1805,8 @@ if (isLoggedIn && cart.length > 0) {
 let applied = 0;
 if (rewardsInput && isLoggedIn) {
   const rawPoints = parseInt(rewardsInput.value || "0", 10);
+  const pointsRedeemed = parseInt(rewardsInput?.value || "0", 10);
+    currentUser.pointsReddemed = pointsRedeemed;
 
   // Clamp against available rewards
   const usablePoints = Math.max(0, Math.min(rawPoints, currentUser.rewards));
@@ -2202,6 +2204,7 @@ checkoutBtn.addEventListener('click', async () => {
   if (checkoutPhase === 1) {
     startShimmer(checkoutBtn, 'Processing Order...');
     let result;
+
     try {
       result = await handleApiButton(checkoutBtn, async () => {
         if (!cart.length) {
