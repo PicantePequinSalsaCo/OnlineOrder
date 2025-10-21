@@ -1742,6 +1742,7 @@ function renderCart() {
         if (item.qty > 1) {
           item.qty--;
           renderCart();
+          updateRewardsUI();
         } else {
           li.classList.add('removing');
           setTimeout(() => removeFromCart(item.id), 300);
@@ -1750,6 +1751,7 @@ function renderCart() {
       li.querySelector('.qty-btn.plus').onclick = () => {
         item.qty++;
         renderCart();
+        updateRewardsUI();
       };
 
       const qtyInput = li.querySelector('.cart-qty-input');
@@ -1768,6 +1770,7 @@ function renderCart() {
           setTimeout(() => removeFromCart(item.id), 300);
         } else {
           renderCart();
+          updateRewardsUI();
         }
       });
     } else {
@@ -1989,6 +1992,7 @@ const resp = await fetch(endpoint, {
     toggleLogin(false);
     showMessage(data?.message || 'Signed in', 'success');
     renderCart();
+    updateRewardsUI();
   }
 });
 
