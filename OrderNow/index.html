@@ -17,7 +17,7 @@
       --accent-trans:   #000000;
       --accent-orange:  #f57c00;
       --accent-green:   #558b2f;
-      --accent-red:     #d84315;
+      --accent-red:     #d84315; 
       --card:           #2e2e2e60;
       --card-border:    #3a3a3a;
       --row-alt:        #262626;
@@ -510,6 +510,47 @@
   }
 }
 
+    /* Toast-style message box */
+.message-box {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  min-width: 240px;
+  max-width: 320px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow);
+  z-index: 2000;
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: slideIn 0.3s forwards;
+}
+
+/* Variants */
+.message-box.success { border-left: 4px solid var(--accent-green); }
+.message-box.error   { border-left: 4px solid var(--accent-red); }
+.message-box.info    { border-left: 4px solid var(--accent-orange); }
+
+/* Entry animation */
+@keyframes slideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Exit animation (optional, if you want fade-out before removal) */
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
     footer {
       text-align:center; color:var(--muted);
       font-size:.9rem; margin:20px 0;
@@ -678,18 +719,36 @@
         <span>Order #:</span>
           <strong id="order-number"></strong>
         </div>
+        <div id="subtotal-row" class="cart-total" style="display:none;">
+          <span>Subtotal:</span>
+          <strong>$<span id="subtotal-value">0.00</span></strong>
+        </div>
         <div id="shipping-row" class="cart-total" style="display:none;">
-         <span>Shipping:</span>
+          <span>Shipping: (incl. in sub)</span>
           <strong>$<span id="shipping-cost">0.00</span></strong>
         </div>
-        <div id="tax-row" class="cart-total" style="display:none;">
-        <span>Tax:</span>
-        <strong>$<span id="tax-amount">0.00</span></strong>
+         <div id="rewards-row" class="cart-total" style="display:none;">
+          <span>Rewards Applied:</span>
+          <strong>- $<span id="rewards-applied">0.00</span></strong>
         </div>
+        <div id="tax-row" class="cart-total" style="display:none;">
+         <span>Tax:</span>
+         <strong>$<span id="tax-amount">0.00</span></strong>
+        </div>         
         <div class="cart-total">
           <span>Total:</span>
           <strong>$<span id="cart-total-value">0.00</span></strong>
         </div>
+          <!-- ⭐ Rewards Input Box (separate section, hidden by default) -->
+<div id="rewards-box" style="display:none; margin-top:1rem;">
+  <h3 style="margin:0 0 0.5rem; font-size:1rem;">Apply Rewards</h3>
+  <input type="number"
+         id="rewards-input"
+         min="0"
+         step="1"
+         style="width:100%; padding:0.5rem; text-align:right;"
+         aria-label="Rewards points to redeem" />
+</div>
         <section id="payment-section" style="display:none; margin-top:1rem;">
         <div id="card-element"></div>
         <div id="card-errors" role="alert"></div>
@@ -1005,7 +1064,7 @@ function setButtonState(btn, state) {
 const DEV = {
   stubJobs: false,         // true = bypass real polling
   stubDelayMs: 3500,      // auto-success after this delay
-  manualEvent: false     // allow manual confirmation via window.dispatchEvent(...)
+  manualEvent: false       // allow manual confirmation via window.dispatchEvent(...)
 };
 
 /**
@@ -1657,12 +1716,15 @@ function addToCart(item) {
 function removeFromCart(id) {
   cart = cart.filter(i => i.id !== id);
   renderCart();
+  updateRewardsUI();
 }
 
 let cartLocked = false;
-
+    
 function renderCart() {
   cartItemsEl.innerHTML = '';
+
+  // Render each cart item
   cart.forEach(item => {
     const prod = productsEcom.find(p => p.id === item.id);
     const li = document.createElement('li');
@@ -1675,60 +1737,109 @@ function renderCart() {
         <button class="qty-btn plus">+</button>
       </div>
     `;
-   if (!cartLocked) {   
-    li.querySelector('.qty-btn.minus').onclick = () => {
-      if (item.qty > 1) item.qty--, renderCart();
-      else {
-        li.classList.add('removing');
-        setTimeout(() => removeFromCart(item.id), 300);
-      }
-    };
-    li.querySelector('.qty-btn.plus').onclick = () => {
-      item.qty++; renderCart();
-    };
 
-const qtyInput = li.querySelector('.cart-qty-input');
-qtyInput.addEventListener('input', () => {
-  const raw = qtyInput.value;
+    if (!cartLocked) {
+      li.querySelector('.qty-btn.minus').onclick = () => {
+        if (item.qty > 1) {
+          item.qty--;
+          renderCart();
+          updateRewardsUI();
+        } else {
+          li.classList.add('removing');
+          setTimeout(() => removeFromCart(item.id), 300);
+        }
+      };
+      li.querySelector('.qty-btn.plus').onclick = () => {
+        item.qty++;
+        renderCart();
+        updateRewardsUI();
+      };
 
-  // Allow empty string while typing
-  if (raw === '') {
-    return;
-  }
+      const qtyInput = li.querySelector('.cart-qty-input');
+      qtyInput.addEventListener('input', () => {
+        const raw = qtyInput.value;
+        if (raw === '') return;
 
-  let qty = parseInt(raw, 10);
-  if (isNaN(qty) || qty < 0) qty = 0;
+        let qty = parseInt(raw, 10);
+        if (isNaN(qty) || qty < 0) qty = 0;
 
-  qtyInput.value = qty;
-  item.qty = qty;
+        qtyInput.value = qty;
+        item.qty = qty;
 
-  if (qty === 0) {
-    li.classList.add('removing');
-    setTimeout(() => removeFromCart(item.id), 300);
-  } else {
-    renderCart();
-  }
-});
-
-} else {
-          li.querySelectorAll('.qty-btn').forEach(btn => {
+        if (qty === 0) {
+          li.classList.add('removing');
+          setTimeout(() => removeFromCart(item.id), 300);
+        } else {
+          renderCart();
+          updateRewardsUI();
+        }
+      });
+    } else {
+      li.querySelectorAll('.qty-btn').forEach(btn => {
         btn.disabled = true;
-        btn.classList.add('disabled'); // optional styling hook
+        btn.classList.add('disabled');
       });
     }
 
     cartItemsEl.appendChild(li);
   });
 
-    if (!cartLocked) {
-  const total = cart.reduce((sum, { id, qty }) => {
-    const prod = productsEcom.find(p => p.id === id);
-    return sum + prod.price * qty;
-  }, 0);
-  document.getElementById('cart-total-value').textContent = total.toFixed(2);
-  checkoutBtn.disabled = !isLoggedIn || cart.length === 0;
-  checkoutBtn.textContent = !isLoggedIn ? 'Sign In to Checkout' : 'Proceed to Checkout';
- }
+  if (!cartLocked) {
+    // Subtotal
+    const subtotal = cart.reduce((sum, { id, qty }) => {
+      const prod = productsEcom.find(p => p.id === id);
+      return sum + prod.price * qty;
+    }, 0);
+
+// Rewards UI
+const rewardsRow = document.getElementById('rewards-row');
+const rewardsBox = document.getElementById('rewards-box');
+const rewardsInput = document.getElementById('rewards-input');
+const rewardsAppliedEl = document.getElementById('rewards-applied');
+
+// Always show applied line if logged in
+rewardsRow.style.display = isLoggedIn ? 'flex' : 'none';
+
+// Show input box if logged in AND cart has items
+// (don’t depend on button text — order of login vs cart add won’t matter)
+if (isLoggedIn && cart.length > 0) {
+  rewardsBox.style.display = 'block';
+} else {
+  rewardsBox.style.display = 'none';
+}
+
+// Clamp applied points
+let applied = 0;
+if (rewardsInput && isLoggedIn) {
+  const rawPoints = parseInt(rewardsInput.value || "0", 10);
+  const pointsRedeemed = parseInt(rewardsInput?.value || "0", 10);
+    currentUser.pointsRedeemed = pointsRedeemed;
+
+  // Clamp against available rewards
+  const usablePoints = Math.max(0, Math.min(rawPoints, currentUser.rewards));
+
+  // Convert points → dollars
+  let appliedDollars = usablePoints / 1000;
+
+  // Clamp against subtotal
+  appliedDollars = Math.min(appliedDollars, subtotal);
+
+  // Round up to 2 decimals
+  applied = Math.ceil(appliedDollars * 100) / 100;
+
+  rewardsAppliedEl.textContent = applied.toFixed(2);
+}
+
+// Final total
+const newTotal = Math.max(0, subtotal - applied);
+document.getElementById('cart-total-value').textContent = newTotal.toFixed(2);
+
+// Checkout button state
+checkoutBtn.disabled = !isLoggedIn || cart.length === 0;
+checkoutBtn.textContent = !isLoggedIn
+  ? 'Sign In to Checkout'
+  : 'Proceed to Checkout';
+  }
 }
 
 /* ===========================
@@ -1833,11 +1944,6 @@ const resp = await fetch(endpoint, {
 
     const data = await safeJson(resp);
 
-    // If flow defers completion, return jobId + statusUrl to trigger polling
-    if (data?.jobId && data?.statusUrl) {
-      return { jobId: data.jobId, statusUrl: data.statusUrl };
-    }
-
     // Immediate mode fallback
     const explicit = normalizeStatus(data);
     const okByPayload = typeof explicit === 'string'
@@ -1866,13 +1972,28 @@ const resp = await fetch(endpoint, {
 
     usernameDisplay.textContent = currentUser.name;
     rewardsDisplay.textContent = currentUser.rewards;
-    loginBtn.textContent = 'Logout';
+        // ⭐ NEW: configure rewards row
+  const rewardsRow = document.getElementById('rewards-row');
+  const rewardsInput = document.getElementById('rewards-input');
+  const pointsRedeemed = parseInt(rewardsInput?.value || "0", 10);
+      currentUser.pointsRedeemed = pointsRedeemed;
+  if (currentUser.rewards > 0) {
+    rewardsRow.style.display = 'flex';
+    rewardsInput.max = currentUser.rewards;
+    rewardsInput.value = 0;
+    document.getElementById('rewards-applied').textContent = '0.00';
+  } else {
+    rewardsRow.style.display = 'none';
+  }
+    loginBtn.textContent = 'Sign Out';
     loginBtn.classList.add('logout');
     checkoutBtn.disabled = false;
     checkoutBtn.textContent = 'Proceed to Checkout';
     loginForm.reset();
     toggleLogin(false);
     showMessage(data?.message || 'Signed in', 'success');
+    renderCart();
+    updateRewardsUI();
   }
 });
 
@@ -1908,11 +2029,6 @@ const resp = await fetch(endpoint, {
     });
 
     const data = await safeJson(resp);
-
-    // Deferred job support
-    if (data?.jobId && data?.statusUrl) {
-      return { jobId: data.jobId, statusUrl: data.statusUrl };
-    }
 
     const explicit = normalizeStatus(data);
     const okByPayload = typeof explicit === 'string'
@@ -2096,6 +2212,7 @@ checkoutBtn.addEventListener('click', async () => {
   if (checkoutPhase === 1) {
     startShimmer(checkoutBtn, 'Processing Order...');
     let result;
+
     try {
       result = await handleApiButton(checkoutBtn, async () => {
         if (!cart.length) {
@@ -2113,6 +2230,9 @@ checkoutBtn.addEventListener('click', async () => {
           const prod = productsEcom.find(p => p.id === id);
           return sum + prod.price * qty;
         }, 0);
+        const rewardsInput = document.getElementById('rewards-input');
+        const pointsRedeemed = parseInt(rewardsInput?.value || "0", 10);
+          currentUser.pointsRedeemed = pointsRedeemed;
 
         const payload = {
           user: {
@@ -2129,6 +2249,7 @@ checkoutBtn.addEventListener('click', async () => {
             qty: i.qty
           })),
           total,
+          pointsRedeemed: currentUser.pointsRedeemed,
           jobId
         };
 
@@ -2143,12 +2264,9 @@ checkoutBtn.addEventListener('click', async () => {
           },
           body: JSON.stringify(payload)
         });
-
+                // Hide rewards input box after sending request
+        document.getElementById('rewards-box').style.display = 'none';
         const data = await safeJson(resp);
-
-        if (data?.jobId && data?.statusUrl) {
-          return { jobId: data.jobId, statusUrl: data.statusUrl };
-        }
 
         const explicit = normalizeStatus(data);
         const okByPayload = typeof explicit === 'string'
@@ -2176,9 +2294,12 @@ checkoutBtn.addEventListener('click', async () => {
         shippingCost: Number(raw.shippingCost) || 0,
         taxAmount: Number(raw.taxAmount) || 0,
         totalAmount: Number(raw.totalAmount) || 0,
+        subtotal: Number(raw.subtotal) || 0,
         currency: raw.currency || 'usd',
         clientSecret: raw.clientSecret || raw.client_secret || '',
         paymentIntentId: raw.paymentIntentId || raw.payment_intent_id || '',
+        pointsRedeemed: Number(raw.pointsRedeemed) || 0   // ⭐ NEW
+
       };
         // 2. Hydrate currentUser with billing details
         currentUser.name = raw.billingName || currentUser.name;
@@ -2195,10 +2316,15 @@ checkoutBtn.addEventListener('click', async () => {
       const shippingCostEl = document.getElementById('shipping-cost');
       const taxAmountEl = document.getElementById('tax-amount');
       const totalAmountEl = document.getElementById('total-amount');
+      const subtotalEl = document.getElementById('subtotal-value');
 
       if (orderNumberEl) {
         orderNumberEl.textContent = data.orderNumber;
         document.getElementById('order-info-row').style.display = 'flex';
+      }
+        if (subtotalEl) {
+        subtotalEl.textContent = (data.subtotal / 100).toFixed(2);
+        document.getElementById('subtotal-row').style.display = 'flex';
       }
       if (shippingCostEl) {
         shippingCostEl.textContent = (data.shippingCost / 100).toFixed(2);
@@ -2211,7 +2337,59 @@ checkoutBtn.addEventListener('click', async () => {
       if (totalAmountEl) {
         totalAmountEl.textContent = (data.totalAmount / 100).toFixed(2);
       }
+    
+    document.getElementById('rewards-row').style.display = 'none';
 
+// If total is zero, skip Stripe entirely
+if (data.totalAmount === 0) {
+  showMessage('Order completed using rewards points!', 'success');
+
+  // Clear cart and re-render
+  cart = [];
+  renderCart();
+
+  // Hide payment section if it was visible
+  document.getElementById('payment-section').style.display = 'none';
+  document.getElementById('rewards-row').style.display = 'none';
+
+  // Style checkout button as success
+  checkoutBtn.textContent = 'Payment Successful';
+  checkoutBtn.disabled = true;
+  checkoutBtn.style.backgroundColor = '#28a745';
+  checkoutBtn.style.cursor = 'default';
+
+  // Reset phases
+  checkoutPhase = 1;
+  confirmStep = false;
+  sessionStorage.removeItem('sid');
+
+  // Reuse the same redirect countdown you use for Stripe success
+  let countdownSeconds = 5;
+  let countdownEl = document.createElement('div');
+  countdownEl.style.marginTop = '0.5rem';
+  countdownEl.style.fontSize = '0.9rem';
+  countdownEl.style.color = '#a76e28';
+  countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
+  checkoutBtn.insertAdjacentElement('afterend', countdownEl);
+
+  let countdownTimer = setInterval(() => {
+    countdownSeconds--;
+    countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
+    if (countdownSeconds <= 0) {
+      clearInterval(countdownTimer);
+      checkoutBtn.disabled = true;
+      checkoutBtn.style.cursor = 'default';
+      countdownEl.style.transition = 'opacity 0.5s ease';
+      countdownEl.style.opacity = '0';
+      setTimeout(() => countdownEl.remove(), 500);
+      signOut();
+      window.location.href = 'https://picantepequinsalsaco.com/';
+    }
+  }, 1000);
+
+  return; // ⭐ bail out before Phase 2
+}        
+        
       // Store for Phase 2
       checkoutBtn.dataset.orderData = JSON.stringify(data);
 
@@ -2240,91 +2418,157 @@ checkoutBtn.addEventListener('click', async () => {
     return;
   }
 
-  // Phase 2: Confirm & Pay
-  if (checkoutPhase === 2 && confirmStep) {
-    const data = JSON.parse(checkoutBtn.dataset.orderData || '{}');
-    const clientSecret = data.clientSecret;
-    const paymentIntentId = data.paymentIntentId;
+// Phase 2: Confirm & Pay
+if (checkoutPhase === 2 && confirmStep) {
+  const data = JSON.parse(checkoutBtn.dataset.orderData || '{}');
+  const clientSecret = data.clientSecret;
+  const paymentIntentId = data.paymentIntentId;
 
-    if (!clientSecret) {
-      showMessage('Missing client secret for payment.', 'error');
+  if (!clientSecret) {
+    showMessage('Missing client secret for payment.', 'error');
+    return;
+  }
+
+  startShimmer(checkoutBtn, 'Confirming...');
+
+  try {
+    const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card,
+        billing_details: {
+          name: currentUser?.name || '',
+          email: currentUser?.email || '',
+          address: {
+            line1: currentUser.addressLine1,
+            city: currentUser.city,
+            state: currentUser.state,
+            postal_code: currentUser.zip,
+            country: currentUser.country
+          }
+        }
+      }
+    }); 
+
+    if (error) {
+      document.getElementById('card-errors').textContent = error.message || 'Payment failed. Try another card.';
+      showMessage(error.message || 'Payment failed.', 'error');
       return;
     }
 
-    startShimmer(checkoutBtn, 'Confirming...');
+    if (paymentIntent && paymentIntent.status === 'succeeded') {
+      showMessage('Payment successful!', 'success');
+      cart = [];
+      renderCart();
+      document.getElementById('payment-section').style.display = 'none';
+      checkoutBtn.textContent = 'Payment Successful';
+      checkoutBtn.disabled = true;
+      checkoutBtn.style.backgroundColor = '#28a745';
+      checkoutBtn.style.cursor = 'default';
+      checkoutPhase = 1;
+      confirmStep = false;
+      sessionStorage.removeItem('sid');
 
-    try {
-      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card,
-          billing_details: {
-            name: currentUser?.name || '',
-            email: currentUser?.email || '',
-            address: {
-                line1: currentUser.addressLine1,
-                city: currentUser.city,
-                state: currentUser.state,
-                postal_code: currentUser.zip,
-                country: currentUser.country
-          }
-        }
-      }});
+      // Countdown redirect (unchanged)
+      let countdownSeconds = 5;
+      let countdownEl = document.createElement('div');
+      countdownEl.style.marginTop = '0.5rem';
+      countdownEl.style.fontSize = '0.9rem';
+      countdownEl.style.color = '#a76e28';
+      countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
+      checkoutBtn.insertAdjacentElement('afterend', countdownEl);
+      checkoutBtn.disabled = false;
+      checkoutBtn.style.cursor = 'pointer';
 
-      if (error) {
-        document.getElementById('card-errors').textContent = error.message || 'Payment failed. Try another card.';
-        showMessage(error.message || 'Payment failed.', 'error');
-        return;
-      }
-
-      if (paymentIntent && paymentIntent.status === 'succeeded') {
-        showMessage('Payment successful!', 'success');
-        cart = [];
-        renderCart();
-        document.getElementById('payment-section').style.display = 'none';
-        checkoutBtn.textContent = 'Payment Successful';
-        checkoutBtn.disabled = true;
-        checkoutBtn.style.backgroundColor = '#28a745';
-        checkoutBtn.style.cursor = 'default';
-        checkoutPhase = 1;
-        confirmStep = false;
-        sessionStorage.removeItem('sid');
-            // Create countdown element under the button
-     let countdownSeconds = 5;
-     let countdownEl = document.createElement('div');
-        countdownEl.style.marginTop = '0.5rem';
-        countdownEl.style.fontSize = '0.9rem';
-        countdownEl.style.color = '#a76e28';
-        countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
-        checkoutBtn.insertAdjacentElement('afterend', countdownEl);
-        checkoutBtn.disabled = false;
-        checkoutBtn.style.cursor = 'pointer';
-
-          // Update countdown every second
-     let countdownTimer = setInterval(() => {
+      let countdownTimer = setInterval(() => {
         countdownSeconds--;
         countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
-     if (countdownSeconds <= 0) {
-      clearInterval(countdownTimer);
-      checkoutBtn.disabled = true;
-      checkoutBtn.style.cursor = 'default';
-      countdownEl.style.transition = 'opacity 0.5s ease';
-      countdownEl.style.opacity = '0';
-      setTimeout(() => countdownEl.remove(), 500);
-      signOut();
-      window.location.href = 'https://picantepequinsalsaco.com/';
+        if (countdownSeconds <= 0) {
+          clearInterval(countdownTimer);
+          checkoutBtn.disabled = true;
+          checkoutBtn.style.cursor = 'default';
+          countdownEl.style.transition = 'opacity 0.5s ease';
+          countdownEl.style.opacity = '0';
+          setTimeout(() => countdownEl.remove(), 500);
+          signOut();
+          window.location.href = 'https://picantepequinsalsaco.com/';
+        }
+      }, 1000);
+    } else {
+      showMessage(`Payment status: ${paymentIntent?.status || 'unknown'}`, 'info');
     }
-  }, 1000);
-      } else {
-        showMessage(`Payment status: ${paymentIntent?.status || 'unknown'}`, 'info');
-      }
-    } finally {
-      stopShimmer(checkoutBtn);
-    }
+  } finally {
+    stopShimmer(checkoutBtn);
+  }
 
-    return;
+  return;
   }
 });
 
+// ... loginForm.addEventListener('submit', ...) code
+// ... checkoutBtn.addEventListener('click', ...) code
+
+// ⭐ Rewards input handler goes here, after currentUser/cart/productsEcom exist
+// Live updates while typing
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'rewards-input') {
+    updateRewardsUI(); 
+    const subtotal = cart.reduce((sum, { id, qty }) => {
+    const prod = productsEcom.find(p => p.id === id);
+    return sum + (Number(prod.price) || 0) * (Number(qty) || 0);
+    }, 0);
+
+    // Parse raw points (integer)
+    const rawPoints = parseInt(e.target.value || "0", 10);
+
+    // Max points allowed based on subtotal (subtotal dollars * 1000 points per $1)
+    const maxPointsBySubtotal = Math.floor(subtotal * 1000);
+
+
+    // Clamp against both available balance and subtotal
+    const usablePoints = Math.max(
+      0,
+      Math.min(rawPoints, currentUser.rewards, maxPointsBySubtotal)
+    );
+      
+    // Convert points → dollars
+    let applied = usablePoints / 1000;
+
+
+    // Round UP to 2 decimals
+    const appliedRounded = Math.ceil(applied * 100) / 100;
+
+    // Update UI
+    e.target.value = usablePoints; // keep showing points in the input
+    document.getElementById('rewards-applied').textContent = appliedRounded.toFixed(2);
+    document.getElementById('cart-total-value').textContent = (subtotal - appliedRounded).toFixed(2);
+  }
+});
+
+    function updateRewardsUI() {
+  const rewardsInput = document.getElementById('rewards-input');
+  if (!rewardsInput) return;
+
+  const subtotal = cart.reduce((sum, { id, qty }) => {
+    const prod = productsEcom.find(p => p.id === id);
+    return sum + (Number(prod.price) || 0) * (Number(qty) || 0);
+  }, 0);
+
+  const rawPoints = parseInt(rewardsInput.value || "0", 10);
+  const maxPointsBySubtotal = Math.floor(subtotal * 1000);
+
+  const usablePoints = Math.max(
+    0,
+    Math.min(rawPoints, currentUser.rewards, maxPointsBySubtotal)
+  );
+
+  let applied = usablePoints / 1000;
+  const appliedRounded = Math.ceil(applied * 100) / 100;
+
+  rewardsInput.value = usablePoints;
+  document.getElementById('rewards-applied').textContent = appliedRounded.toFixed(2);
+  document.getElementById('cart-total-value').textContent = (subtotal - appliedRounded).toFixed(2);
+}
+    
 /* ===========================
    State dropdown enhancement
    =========================== */
@@ -2365,7 +2609,7 @@ function signOut() {
   // Reset UI elements
   usernameDisplay.textContent = 'Guest';
   rewardsDisplay.textContent = '0';
-  loginBtn.textContent = 'Login';
+  loginBtn.textContent = 'Sign In';
   loginBtn.classList.remove('logout');
 
   checkoutBtn.disabled = true;
