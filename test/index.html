@@ -719,13 +719,17 @@
         <span>Order #:</span>
           <strong id="order-number"></strong>
         </div>
+        <div id="subtotal-row" class="cart-total" style="display:none;">
+          <span>Subtotal:</span>
+          <strong>$<span id="subtotal-value">0.00</span></strong>
+        </div>
         <div id="shipping-row" class="cart-total" style="display:none;">
-         <span>Shipping:</span>
+          <span>Shipping:</span>
           <strong>$<span id="shipping-cost">0.00</span></strong>
         </div>
         <div id="tax-row" class="cart-total" style="display:none;">
-        <span>Tax:</span>
-        <strong>$<span id="tax-amount">0.00</span></strong>
+         <span>Tax:</span>
+         <strong>$<span id="tax-amount">0.00</span></strong>
         </div>
                 <!-- ⭐ New Rewards Redemption Row -->
       <div id="rewards-row" class="cart-total" style="display:none;">
@@ -2286,6 +2290,7 @@ checkoutBtn.addEventListener('click', async () => {
         shippingCost: Number(raw.shippingCost) || 0,
         taxAmount: Number(raw.taxAmount) || 0,
         totalAmount: Number(raw.totalAmount) || 0,
+        subtotal: Number(raw.subtotal) || 0,
         currency: raw.currency || 'usd',
         clientSecret: raw.clientSecret || raw.client_secret || '',
         paymentIntentId: raw.paymentIntentId || raw.payment_intent_id || '',
@@ -2307,10 +2312,15 @@ checkoutBtn.addEventListener('click', async () => {
       const shippingCostEl = document.getElementById('shipping-cost');
       const taxAmountEl = document.getElementById('tax-amount');
       const totalAmountEl = document.getElementById('total-amount');
+      const subtotalEl = document.getElementById('subtotal-value');
 
       if (orderNumberEl) {
         orderNumberEl.textContent = data.orderNumber;
         document.getElementById('order-info-row').style.display = 'flex';
+      }
+        if (subtotalEl) {
+        subtotalEl.textContent = (data.subtotal / 100).toFixed(2);
+        document.getElementById('subtotal-row').style.display = 'flex';
       }
       if (shippingCostEl) {
         shippingCostEl.textContent = (data.shippingCost / 100).toFixed(2);
@@ -2507,14 +2517,19 @@ document.addEventListener('input', (e) => {
     // Parse raw points (integer)
     const rawPoints = parseInt(e.target.value || "0", 10);
 
-    // Clamp against available points (currentUser.rewards is your stored integer)
-    const usablePoints = Math.max(0, Math.min(rawPoints, currentUser.rewards));
+    // Max points allowed based on subtotal (subtotal dollars * 1000 points per $1)
+    const maxPointsBySubtotal = Math.floor(subtotal * 1000);
 
+
+    // Clamp against both available balance and subtotal
+    const usablePoints = Math.max(
+      0,
+      Math.min(rawPoints, currentUser.rewards, maxPointsBySubtotal)
+    );
+      
     // Convert points → dollars
     let applied = usablePoints / 1000;
 
-    // Clamp against subtotal
-    applied = Math.min(applied, subtotal);
 
     // Round UP to 2 decimals
     const appliedRounded = Math.ceil(applied * 100) / 100;
