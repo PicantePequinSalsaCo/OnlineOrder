@@ -727,6 +727,10 @@
           <span>Shipping:</span>
           <strong>$<span id="shipping-cost">0.00</span></strong>
         </div>
+         <div id="rewards-row" class="cart-total" style="display:none;">
+          <span>Rewards Applied:</span>
+          <strong>- $<span id="rewards-applied">0.00</span></strong>
+        </div>
         <div id="tax-row" class="cart-total" style="display:none;">
          <span>Tax:</span>
          <strong>$<span id="tax-amount">0.00</span></strong>
@@ -2328,6 +2332,8 @@ checkoutBtn.addEventListener('click', async () => {
       if (totalAmountEl) {
         totalAmountEl.textContent = (data.totalAmount / 100).toFixed(2);
       }
+    
+    document.getElementById('rewards-row').style.display = 'none';
 
 // If total is zero, skip Stripe entirely
 if (data.totalAmount === 0) {
