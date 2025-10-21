@@ -2505,9 +2505,10 @@ if (checkoutPhase === 2 && confirmStep) {
 // Live updates while typing
 document.addEventListener('input', (e) => {
   if (e.target.id === 'rewards-input') {
+    updateRewardsUI(); 
     const subtotal = cart.reduce((sum, { id, qty }) => {
-      const prod = productsEcom.find(p => p.id === id);
-      return sum + (Number(prod.price) || 0) * (Number(qty) || 0);
+    const prod = productsEcom.find(p => p.id === id);
+    return sum + (Number(prod.price) || 0) * (Number(qty) || 0);
     }, 0);
 
     // Parse raw points (integer)
@@ -2537,6 +2538,30 @@ document.addEventListener('input', (e) => {
   }
 });
 
+    function updateRewardsUI() {
+  const rewardsInput = document.getElementById('rewards-input');
+  if (!rewardsInput) return;
+
+  const subtotal = cart.reduce((sum, { id, qty }) => {
+    const prod = productsEcom.find(p => p.id === id);
+    return sum + (Number(prod.price) || 0) * (Number(qty) || 0);
+  }, 0);
+
+  const rawPoints = parseInt(rewardsInput.value || "0", 10);
+  const maxPointsBySubtotal = Math.floor(subtotal * 1000);
+
+  const usablePoints = Math.max(
+    0,
+    Math.min(rawPoints, currentUser.rewards, maxPointsBySubtotal)
+  );
+
+  let applied = usablePoints / 1000;
+  const appliedRounded = Math.ceil(applied * 100) / 100;
+
+  rewardsInput.value = usablePoints;
+  document.getElementById('rewards-applied').textContent = appliedRounded.toFixed(2);
+  document.getElementById('cart-total-value').textContent = (subtotal - appliedRounded).toFixed(2);
+}
     
 /* ===========================
    State dropdown enhancement
