@@ -1071,7 +1071,6 @@ meter::-moz-meter-bar {
   function isValidZip(v){ return reZip.test(safeText(v)); }
   function isValidState(v){ return String(v || '') !== ''; }
   function isValidStreetAddress(v){ return reStreet.test(safeText(v)); }
-  function isValidPhoneFormatted(v){ return /^\+1 \(\d{3}\) \d{3}-\d{4}$/.test(safeText(v)); }
 
   /* ---------- Field-level validation UI helper ---------- */
   function setupFieldValidation(fieldId, validatorFn, messageText) {
@@ -1096,11 +1095,11 @@ meter::-moz-meter-bar {
 
   /* ---------- Phone formatter (single authoritative implementation) ----------
      - stores digits-only in input.dataset.raw
-     - formats visible value as: +1 (XXX) XXX-XXXX when 10 digits
+     - formats visible value as:(XXX) XXX-XXXX when 10 digits
      - guarded to avoid recursive input events
   */
   function formatPhoneValueFromRaw(raw) {
-    if (raw.length === 10) return `+1 (${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
+    if (raw.length === 10) return `(${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
     if (raw.length >= 6) return `(${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
     if (raw.length >= 3) return `(${raw.slice(0,3)}) ${raw.slice(3)}`;
     return raw;
@@ -1112,15 +1111,7 @@ meter::-moz-meter-bar {
     input.value = formatPhoneValueFromRaw(digits);
   }
 
-  // Expose a single global formatPhone for any inline onblur usages
-  window.formatPhone = function (input) {
-    const el = input && input.tagName ? input : qs(input);
-    if (!el) return;
-    // lightweight reentry guard per element
-    if (el._formatLock) return;
-    el._formatLock = true;
-    try { formatPhoneInternal(el); } finally { el._formatLock = false; }
-  };
+
 
   /* ---------- UI helpers ---------- */
   function showContactForm() {
@@ -1166,22 +1157,6 @@ meter::-moz-meter-bar {
   document.addEventListener('DOMContentLoaded', () => {
     // set footer year
     const yearEl = qs('y'); if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-    // Wire phone formatting once with reentry guard
-    const phone = qs('custPhone');
-    if (phone) {
-      let formatting = false;
-      phone.addEventListener('input', (e) => {
-        if (formatting) return;
-        formatting = true;
-        try {
-          formatPhoneInternal(e.target);
-        } finally { formatting = false; }
-        // validators already listen to input; no extra dispatch needed
-      });
-      phone.addEventListener('blur', (e) => {
-        // final formatting on blur (no extra dispatch)
-        formatPhoneInternal(e.target);
       });
     }
 
