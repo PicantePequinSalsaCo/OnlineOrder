@@ -1207,6 +1207,9 @@ loginForm.addEventListener('submit', async (e) => {
     password: loginPassInput.value.trim()
   };
 
+let response;  // hoisted so it's visible in finally
+let result;    // hoisted so it's not undefined outside try
+
   try {
     // ✅ Add shimmer class and optional text change
     btn.classList.add('btn-loading');
@@ -1229,13 +1232,25 @@ loginForm.addEventListener('submit', async (e) => {
       body: JSON.stringify(loginData)
     });
 
+  if (!response.ok) throw new Error("Login failed");
 
-if (result.ok && result?.payload) {
-  const data = result.payload; // { jobId, email, ... }
+  result = await response.json();
+  
 
-  // ✅ Your success behavior
-  console.log("Login started:", data); // if synchronous, you can say "Login complete"
-  alert(`✅ Login started for ${loginData.username}`);
+ // ✅ Success criterion: jobId + email present (statusUrl removed)
+  const hasExpected =
+    result &&
+    typeof result.jobId === 'string' &&
+    typeof result.email === 'string';
+
+if (!hasExpected) {
+    throw new Error("Unexpected response shape (missing jobId/email)");
+  }
+
+
+  // Treat as success (you said token not needed here)
+  console.log("Login complete:", result);
+  alert(`✅ Login successful! Employee: ${loginData.username}`);
   showContactForm();
 
   // Success UI
@@ -1244,11 +1259,7 @@ if (result.ok && result?.payload) {
   btn.classList.add('is-success');
   btn.disabled = true;
 
-} else {
-  // ❌ Error path: prefer server-provided message if available
-  const msg = result?.error?.message || 'Login failed';
-  throw new Error(msg);
-}
+
 
 } catch (err) {
   console.error("Login error:", err);
@@ -1260,10 +1271,15 @@ if (result.ok && result?.payload) {
   btn.classList.add('is-error');
   btn.disabled = false;
 
+
+
 } finally {
   btn.classList.remove('btn-loading');
   stopLoading();
+  // ⚠️ Don't read `result` or `response` here unless you guard:
+  // if (response && response.ok) { ... }  // optional
 }
+
 });
     }
     // ===========================
