@@ -1037,31 +1037,22 @@ meter::-moz-meter-bar {
   </footer>
 
 <script>
-  //============================//
-  // Set current year in footer //
-  //============================//
-  const yearEl = document.getElementById('y');
-  if (yearEl) yearEl.textContent = new Date().getFullYear();
+/* Consolidated and cleaned script for auth + contact form */
+(function() {
+  // Helpers
+  const htmlEl = document.documentElement;
+  const loaderEl = document.getElementById('page-loader'); // optional element
 
-  // =======================//
-  // Simple auth helpers    //
-  // =====================//
-  function showContactForm() {
-    const login = document.getElementById('loginContainer');
-    const contact = document.getElementById('contactForm');
-    if (login) {
-      login.classList.add('hidden');
-      login.style.zIndex = 1;
-    }
-    if (contact) {
-      contact.classList.remove('hidden');
-      contact.style.zIndex = 2;
-    }
+  function startLoading({ resetZoom = true } = {}) {
+    if (resetZoom) resetViewportScale();
+    htmlEl.classList.add('is-loading');
+    if (loaderEl) loaderEl.setAttribute('aria-hidden', 'false');
+  }
+  function stopLoading() {
+    htmlEl.classList.remove('is-loading');
+    if (loaderEl) loaderEl.setAttribute('aria-hidden', 'true');
   }
 
-  // ===========================
-  // Global shimmer loader + viewport reset
-  // ===========================
   function resetViewportScale(options = { allowPinchAfter: true }) {
     let meta = document.querySelector('meta[name="viewport"]');
     if (!meta) {
@@ -1082,55 +1073,36 @@ meter::-moz-meter-bar {
     setTimeout(() => { window.scrollTo(0, Math.max(0, window.pageYOffset || 0)); }, 0);
   }
 
-  const htmlEl = document.documentElement;
-  const loaderEl = document.getElementById('page-loader');
+  // Validation helpers
+  function isValidEmail(val) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(val || '').trim()); }
+  function isNotEmpty(val) { return String(val || '').trim().length > 0; }
+  function isValidZip(val) { return /^\d{5}$/.test(String(val || '')); }
+  function isValidState(val) { return String(val || '') !== ''; }
+  function isValidStreetAddress(val) { return /^\d+\s+[\w\s]+/.test(String(val || '').trim()); }
+  function isValidPhone(val) { return /^\+1 \(\d{3}\) \d{3}-\d{4}$/.test(String(val || '')); }
 
-  function startLoading({ resetZoom = true } = {}) {
-    if (resetZoom) resetViewportScale();
-    htmlEl.classList.add('is-loading');
-    if (loaderEl) loaderEl.setAttribute('aria-hidden', 'false');
-  }
-
-  function stopLoading() {
-    htmlEl.classList.remove('is-loading');
-    if (loaderEl) loaderEl.setAttribute('aria-hidden', 'true');
-  }
-
-  window.pageLoader = { start: startLoading, stop: stopLoading, resetViewportScale };
-
-  // ===========================
-  // Validators
-  // ===========================
-  function isValidEmail(val) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val); }
-  function isNotEmpty(val)   { return val.trim().length > 0; }
-  function isValidZip(val)   { return /^\d{5}$/.test(val); }
-  function isValidState(val) { return val !== ""; }
-  function isValidStreetAddress(val) { return /^\d+\s+[\w\s]+/.test(val.trim()); }
-  function isValidPhone(val) { return /^\+1 \(\d{3}\) \d{3}-\d{4}$/.test(val); }
-
-  // ===========================
-  // Field Validation Messages
-  // ===========================
+  // Field-level validation UI helper
   function setupFieldValidation(fieldId, validatorFn, messageText) {
     const field = document.getElementById(fieldId);
     if (!field) return;
+    // ensure we don't add multiple message elements
+    if (field.nextElementSibling && field.nextElementSibling.classList?.contains('field-message')) return;
     const messageEl = document.createElement('div');
     messageEl.className = 'field-message';
-    messageEl.style.cssText = `
-      font-size: .9rem;
-      margin-top: 4px;
-      color: var(--muted);
-      transition: color .3s ease;
-    `;
+    messageEl.style.cssText = 'font-size:.9rem;margin-top:4px;color:var(--muted);transition:color .3s ease;';
     field.insertAdjacentElement('afterend', messageEl);
 
     function updateMessage() {
-      if (validatorFn(field.value)) {
-        messageEl.textContent = '✔ Looks good';
-        messageEl.style.color = 'var(--accent-green)';
-      } else {
-        messageEl.textContent = messageText;
-        messageEl.style.color = 'var(--muted)';
+      try {
+        if (validatorFn(field.value)) {
+          messageEl.textContent = '✔ Looks good';
+          messageEl.style.color = 'var(--accent-green)';
+        } else {
+          messageEl.textContent = messageText;
+          messageEl.style.color = 'var(--muted)';
+        }
+      } catch (e) {
+        // ignore
       }
     }
 
@@ -1140,99 +1112,75 @@ meter::-moz-meter-bar {
         messageEl.style.color = 'var(--muted)';
       }
     });
-
     field.addEventListener('input', updateMessage);
     field.addEventListener('blur', updateMessage);
   }
 
-      // Reset form + validators so you can run again immediately
-function resetContactForm() {
-  const form = document.querySelector('#contactForm form');
-  if (form) form.reset();
-
-  // Reset password strength meter and message
-  const meter = document.getElementById('passwordStrength');
-  if (meter) meter.value = 0;
-
-  const msg = document.getElementById('passwordMessage');
-  if (msg) {
-    msg.textContent = '';
-    msg.removeAttribute('style');
-  }
-
-  // Clear stored RAW phone
-  if (phoneEl) phoneEl.dataset.raw = '';
-
-  // Disable submit button again
-  if (typeof validateContactForm === 'function') validateContactForm();
-
-  // Restore default validation messages
-  const defaultMessages = {
-    custFirstname: 'Please enter your first name',
-    custLastname: 'Please enter your last name',
-    custAddress: 'Please enter your street address',
-    custCity: 'Please enter your city',
-    custState: 'Please select your state',
-    custZip: 'Enter a 5-digit ZIP code',
-    custEmail: 'Enter a valid email like name@example.com',
-    custPhone: 'Enter a valid 10-digit phone number',
-    loginUsername: 'Enter a valid email like name@example.com',
-    loginPassword: 'Password must be at least 8 characters'
-  };
-
-  Object.entries(defaultMessages).forEach(([id, message]) => {
-    const el = document.getElementById(id);
-    const msgEl = el?.closest('.field')?.querySelector('.validation-message');
-    if (msgEl) {
-      msgEl.textContent = message;
-      msgEl.removeAttribute('style'); // Reset color
+  // Phone formatter (single authoritative impl). keeps raw digits in dataset.raw.
+  function formatPhoneInput(input) {
+    if (!input) return;
+    const raw = (input.value || '').replace(/\D/g, '').substring(0, 10);
+    input.dataset.raw = raw;
+    if (raw.length === 10) {
+      input.value = `(${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
+    } else if (raw.length >= 6) {
+      input.value = `(${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
+    } else if (raw.length >= 3) {
+      input.value = `(${raw.slice(0,3)}) ${raw.slice(3)}`;
+    } else {
+      input.value = raw;
     }
-  });
-}
-  // ===========================
-  // Omnitok integration
-  // ===========================
-  const API = {
-    issueOmniTok: 'https://default6eda43f3fbf04e2b9978b543d9dd31.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/e3755ec03d8241c09ddb4d73a1c2bb86/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9t0-qJP8VJW4G9_COUvGJxmFKL6IWjUBeEq4GYZj3kQ' // ENDPOINT 
-  };
+  }
 
-  async function getOmniTok(act) {
-    let sid = sessionStorage.getItem('sid');
-    if (!sid) {
-      sid = crypto.randomUUID();
-      sessionStorage.setItem('sid', sid);
-    }
-    const body = { act, sid };
-    const res = await fetch(API.issueOmniTok, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    if (!res.ok) throw new Error(`Failed to get OmniTok config for ${act}`);
-    const data = await res.json();
-    return { ...data, sid };
+  // Reset contact form helper (used after success)
+  function resetContactForm() {
+    const form = document.querySelector('#contactForm form');
+    if (form) form.reset();
+    const meter = document.getElementById('passwordStrength');
+    if (meter) meter.value = 0;
+    const msg = document.getElementById('passwordMessage');
+    if (msg) msg.textContent = '';
+    const phone = document.getElementById('custPhone');
+    if (phone) { phone.dataset.raw = ''; phone.value = ''; }
+    if (typeof validateContactForm === 'function') validateContactForm();
   }
-  
-window.formatPhone = function(input) {
-  const raw = input.value.replace(/\D/g, '').substring(0, 10);
-  if (raw.length === 10) {
-    input.value = `(${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
-  } else {
-    input.value = raw;
-  }
-};
-  // ===========================
-  // LOGIN FORM: Validation + Flow
-  // ===========================
+  window.resetContactForm = resetContactForm; // expose if desired
+
+  // Single DOMContentLoaded initialization
   document.addEventListener('DOMContentLoaded', () => {
+    // set year
+    const yearEl = document.getElementById('y');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    // shared phone element wiring
+    const phone = document.getElementById('custPhone');
+    if (phone) {
+      phone.addEventListener('input', (e) => {
+        formatPhoneInput(e.target);
+        e.target.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      phone.addEventListener('blur', (e) => formatPhoneInput(e.target));
+    }
+
+    // Setup field validations (safe guards inside)
+    setupFieldValidation('custFirstname', isNotEmpty, 'Please enter your first name');
+    setupFieldValidation('custLastname', isNotEmpty, 'Please enter your last name');
+    setupFieldValidation('custAddress', isValidStreetAddress, 'Please enter your street address');
+    setupFieldValidation('custCity', isNotEmpty, 'Please enter your city');
+    setupFieldValidation('custState', isValidState, 'Please select your state');
+    setupFieldValidation('custZip', isValidZip, 'Enter a 5-digit ZIP code');
+    setupFieldValidation('custEmail', isValidEmail, 'Enter a valid email like name@example.com');
+    setupFieldValidation('custPhone', (v) => isValidPhone(document.getElementById('custPhone')?.value || ''), 'Enter a valid 10-digit phone number');
+    setupFieldValidation('loginUsername', isValidEmail, 'Enter a valid email like name@example.com');
+    setupFieldValidation('loginPassword', (v) => String(v || '').trim().length >= 8, 'Password must be at least 8 characters');
+
+    // LOGIN FORM: validation + submit flow
     const loginForm = document.getElementById('loginForm');
     const loginBtn = document.getElementById('loginBtn');
     const loginUserInput = document.getElementById('loginUsername');
     const loginPassInput = document.getElementById('loginPassword');
 
-    if (loginForm && loginBtn && loginUserInput && loginPassInput) {
-      loginBtn.disabled = true;
-
+    if (loginUserInput && loginPassInput && loginBtn && loginForm) {
       function validateLoginForm() {
         const u = (loginUserInput.value || '').trim();
         const p = (loginPassInput.value || '').trim();
@@ -1241,329 +1189,254 @@ window.formatPhone = function(input) {
         loginBtn.classList.toggle('enabled', ok);
         loginBtn.setAttribute('aria-disabled', String(!ok));
       }
-
       validateLoginForm();
       loginUserInput.addEventListener('input', validateLoginForm);
       loginPassInput.addEventListener('input', validateLoginForm);
 
-loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const btn = loginBtn;
-  const act = btn.dataset.act;
-  btn.disabled = true;
+      loginForm.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        if (loginBtn.disabled) return;
 
-  const jobId = `PPSLOGIN-${crypto.randomUUID()}`;
-  const loginData = {
-    jobId,
-    username: loginUserInput.value.trim(),
-    password: loginPassInput.value.trim()
-  };
+        loginBtn.disabled = true;
+        loginBtn.classList.add('btn-loading');
+        const originalText = loginBtn.textContent;
+        loginBtn.textContent = 'Logging in...';
+        startLoading({ resetZoom: true });
 
-let response;  // hoisted so it's visible in finally
-let result;    // hoisted so it's not undefined outside try
+        try {
+          // call Omnitok preflight (api endpoint defined below)
+          const omni = await getOmniTok(loginBtn.dataset.act || 'seclog');
+          if (!omni?.endpoint) throw new Error('Omnitok preflight did not return an endpoint');
 
-  try {
-    // ✅ Add shimmer class and optional text change
-    btn.classList.add('btn-loading');
-    btn.textContent = 'Logging in...';
+          const payload = {
+            jobId: `PPSLOGIN-${crypto.randomUUID()}`,
+            username: loginUserInput.value.trim(),
+            password: loginPassInput.value.trim()
+          };
 
-    startLoading({ resetZoom: true });
+          const res = await fetch(omni.endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-auth-token': omni.authToken,
+              'x-omnitok': omni.OmniTok,
+              'x-sid': omni.sid,
+              'x-act': omni.act
+            },
+            body: JSON.stringify(payload)
+          });
 
-    const omni = await getOmniTok(act);
-    if (!omni.endpoint) throw new Error("Omnitok preflight did not return an endpoint");
+          if (!res.ok) throw new Error('Login failed');
 
-    const response = await fetch(omni.endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-auth-token': omni.authToken,
-        'x-omnitok': omni.OmniTok,
-        'x-sid': omni.sid,
-        'x-act': omni.act
-      },
-      body: JSON.stringify(loginData)
-    });
+          const result = await res.json();
+          // sample success criteria: jobId + email
+          if (!result || typeof result.jobId !== 'string' || typeof result.email !== 'string') {
+            throw new Error('Unexpected response shape (missing jobId/email)');
+          }
 
-  if (!response.ok) throw new Error("Login failed");
+          alert(`✅ Login successful! Employee: ${payload.username}`);
+          sessionStorage.setItem('loggedIn', 'true');
+          showContactForm();
 
-  result = await response.json();
-  
+          loginBtn.textContent = '✓ Logged In';
+          loginBtn.classList.add('is-success');
+          loginBtn.classList.remove('is-error');
 
- // ✅ Success criterion: jobId + email present (statusUrl removed)
-  const hasExpected =
-    result &&
-    typeof result.jobId === 'string' &&
-    typeof result.email === 'string';
-
-if (!hasExpected) {
-    throw new Error("Unexpected response shape (missing jobId/email)");
-  }
-
-
-  // Treat as success (you said token not needed here)
-  console.log("Login complete:", result);
-  alert(`✅ Login successful! Employee: ${loginData.username}`);
-  showContactForm();
-  sessionStorage.setItem('loggedIn', 'true');
-
-  // Success UI
-  btn.textContent = '✓ Logged In';
-  btn.classList.remove('is-error');
-  btn.classList.add('is-success');
-  btn.disabled = true;
-
-
-
-} catch (err) {
-  console.error("Login error:", err);
-  alert("❌ Login failed. Please try again.");
-
-  // Failure UI
-  btn.textContent = 'Retry Login';
-  btn.classList.remove('is-success');
-  btn.classList.add('is-error');
-  btn.disabled = false;
-
-
-
-} finally {
-  btn.classList.remove('btn-loading');
-  stopLoading();
-  // ⚠️ Don't read `result` or `response` here unless you guard:
-  // if (response && response.ok) { ... }  // optional
-}
-
-});
+        } catch (err) {
+          console.error('Login error:', err);
+          alert('❌ Login failed. Please try again.');
+          loginBtn.textContent = 'Retry Login';
+          loginBtn.classList.remove('is-success');
+          loginBtn.classList.add('is-error');
+          loginBtn.disabled = false;
+        } finally {
+          loginBtn.classList.remove('btn-loading');
+          stopLoading();
+        }
+      });
     }
-    // ===========================
-    // CONTACT FORM VALIDATION
-    // ===========================
+
+    // CONTACT FORM: validation + submit
     const submitBtn = document.getElementById('submitBtn');
     const requiredFields = [
       'custFirstname', 'custLastname', 'custAddress', 'custCity',
       'custState', 'custZip', 'custEmail', 'custPhone', 'custPassword', 'custConfirmpassword'
     ];
 
-    function validateContactForm() {
-      let allValid = requiredFields.every(id => document.getElementById(id).value.trim() !== '');
-      const password = document.getElementById('custPassword').value;
-      const confirmPassword = document.getElementById('custConfirmpassword').value;
-      if (password !== confirmPassword || password.length < 8) {
-        allValid = false;
+    // safe validateContactForm placed to global scope so resetContactForm can call it
+    window.validateContactForm = function validateContactForm() {
+      try {
+        let allValid = requiredFields.every(id => {
+          const el = document.getElementById(id);
+          return el && String(el.value || '').trim() !== '';
+        });
+        const password = document.getElementById('custPassword')?.value || '';
+        const confirmPassword = document.getElementById('custConfirmpassword')?.value || '';
+        if (password !== confirmPassword || password.length < 8) allValid = false;
+        if (submitBtn) {
+          submitBtn.disabled = !allValid;
+          submitBtn.classList.toggle('enabled', allValid);
+        }
+      } catch (e) {
+        // ignore
       }
-      if (submitBtn) {
-        submitBtn.disabled = !allValid;
-        submitBtn.classList.toggle('enabled', allValid);
-      }
-    }
+    };
 
     requiredFields.forEach(id => {
       const el = document.getElementById(id);
       if (el) el.addEventListener('input', validateContactForm);
     });
 
-    // ===========================
-    // Password Match + Strength
-    // ===========================
+    // password strength + match
     const passwordInput = document.getElementById('custPassword');
     const confirmInput = document.getElementById('custConfirmpassword');
-    const message = document.getElementById('passwordMessage');
-    const meter = document.getElementById('passwordStrength');
+    const passwordMessage = document.getElementById('passwordMessage');
+    const passwordMeter = document.getElementById('passwordStrength');
 
-    if (confirmInput && passwordInput && message) {
+    if (confirmInput && passwordInput && passwordMessage) {
       confirmInput.addEventListener('input', () => {
         if (confirmInput.value !== passwordInput.value) {
-          message.style.color = "var(--accent-red)";
-          message.textContent = "Passwords do not match. Please re‑enter.";
+          passwordMessage.style.color = "var(--accent-red)";
+          passwordMessage.textContent = "Passwords do not match. Please re‑enter.";
         } else {
-          message.style.color = "var(--accent-green)";
-          message.textContent = "Passwords match ✔";
+          passwordMessage.style.color = "var(--accent-green)";
+          passwordMessage.textContent = "Passwords match ✔";
         }
+        validateContactForm();
       });
     }
 
-    if (passwordInput && meter) {
+    if (passwordInput && passwordMeter) {
       passwordInput.addEventListener('input', () => {
-        const val = passwordInput.value;
+        const val = passwordInput.value || '';
         let score = 0;
         if (val.length >= 8) score++;
         if (/[A-Z]/.test(val)) score++;
         if (/[0-9]/.test(val)) score++;
         if (/[^A-Za-z0-9]/.test(val)) score++;
-        const target = score;
-        const step = target > meter.value ? 0.05 : -0.05;
-        function animate() {
-          if ((step > 0 && meter.value < target) || (step < 0 && meter.value > target)) {
-            meter.value = +(meter.value + step).toFixed(2);
-            requestAnimationFrame(animate);
-          } else {
-            meter.value = target;
-          }
+        // animate meter to new score quickly
+        passwordMeter.value = score;
+        validateContactForm();
+      });
+    }
+
+    // phone formatting fallback: keep raw digits (already wired above)
+    if (phone) {
+      phone.addEventListener('input', () => { /* already handled by formatPhoneInput */ });
+    }
+
+    // form submission handler (global function used by inline onsubmit)
+    window.handleFormSubmit = async function handleFormSubmit(e) {
+      e.preventDefault();
+      if (!submitBtn || submitBtn.disabled) return;
+
+      // require login
+      const loggedIn = sessionStorage.getItem('loggedIn') === 'true';
+      if (!loggedIn) { alert('Please log in before signing up.'); return; }
+
+      const phoneEl = document.getElementById('custPhone');
+      const payload = {
+        firstName: (document.getElementById('custFirstname')?.value || '').trim(),
+        lastName:  (document.getElementById('custLastname')?.value || '').trim(),
+        address:   (document.getElementById('custAddress')?.value || '').trim(),
+        city:      (document.getElementById('custCity')?.value || '').trim(),
+        state:     (document.getElementById('custState')?.value || '').trim(),
+        zip:       (document.getElementById('custZip')?.value || '').trim(),
+        email:     (document.getElementById('custEmail')?.value || '').trim(),
+        password:  (document.getElementById('custPassword')?.value || '').trim(),
+        phone:     (phoneEl?.dataset?.raw || (phoneEl?.value || '').replace(/\D/g, '')),
+        verificationCode: undefined
+      };
+
+      const confirm = (document.getElementById('custConfirmpassword')?.value || '');
+      if (payload.password !== confirm) { alert('Passwords do not match.'); return; }
+
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.classList.add('btn-loading');
+      submitBtn.textContent = 'Submitting…';
+      startLoading({ resetZoom: true });
+
+      try {
+        const omni = await getOmniTok(submitBtn.dataset.act || 'ppsc_signup');
+        if (!omni?.endpoint) throw new Error('Omnitok preflight did not return an endpoint');
+        payload.verificationCode = omni.verificationCode;
+
+        const jobId = `PPSSIGNUP-${crypto.randomUUID()}`;
+        const res = await fetch(omni.endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-auth-token': omni.authToken,
+            'x-omnitok': omni.OmniTok,
+            'x-sid': omni.sid,
+            'x-act': omni.act
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          let detail = '';
+          try { const j = await res.json(); detail = j?.error?.message || ''; } catch {}
+          throw new Error(detail || `Signup failed (${res.status})`);
         }
-        animate();
+
+        let result = null;
+        try { result = await res.json(); } catch(_) {}
+
+        alert(`✅ Welcome to the Trading Post, ${payload.firstName || payload.email}!`);
+        submitBtn.textContent = '✓ Account Created';
+        submitBtn.classList.add('is-success');
+        resetContactForm();
+
+        setTimeout(() => {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+          submitBtn.classList.remove('is-success', 'btn-loading', 'enabled');
+        }, 800);
+
+      } catch (err) {
+        console.error('Signup error:', err);
+        alert(`❌ Signup failed. ${err?.message || 'Please try again.'}`);
+        submitBtn.textContent = 'Retry Signup';
+        submitBtn.classList.add('is-error');
+        submitBtn.disabled = false;
+      } finally {
+        submitBtn.classList.remove('btn-loading');
+        stopLoading();
+      }
+    };
+
+    // Omnitok API helper (single implementation)
+    // NOTE: API.issueOmniTok set below; keep endpoint secure & do not expose secrets in client-side code for production
+    const API = {
+      issueOmniTok: 'https://default6eda43f3fbf04e2b9978b543d9dd31.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/e3755ec03d8241c09ddb4d73a1c2bb86/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9t0-qJP8VJW4G9_COUvGJxmFKL6IWjUBeEq4GYZj3kQ'
+    };
+
+    async function getOmniTok(act) {
+      let sid = sessionStorage.getItem('sid');
+      if (!sid) { sid = crypto.randomUUID(); sessionStorage.setItem('sid', sid); }
+      const body = { act, sid };
+      const res = await fetch(API.issueOmniTok, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
       });
+      if (!res.ok) throw new Error(`Failed to get OmniTok config for ${act}`);
+      const data = await res.json();
+      return { ...data, sid };
     }
 
-    // ===========================
-    // Phone Formatting
-    // ===========================
-    const phoneEl = document.getElementById('custPhone');
-    if (phoneEl) {
-      phoneEl.addEventListener('input', (e) => {
-        const raw = e.target.value.replace(/\D/g, '').substring(0, 10);
-        e.target.value = raw;
-        e.target.dataset.raw = raw;
-      });
-    }
-
-
-    // ===========================
-    // Field-level validation messages
-    // ===========================
-    setupFieldValidation('custFirstname', isNotEmpty, 'Please enter your first name');
-    setupFieldValidation('custLastname', isNotEmpty, 'Please enter your last name');
-    setupFieldValidation('custAddress', isValidStreetAddress, 'Please enter your street address');
-    setupFieldValidation('custCity', isNotEmpty, 'Please enter your city');
-    setupFieldValidation('custState', isValidState, 'Please select your state');
-    setupFieldValidation('custZip', isValidZip, 'Enter a 5-digit ZIP code');
-    setupFieldValidation('custEmail', isValidEmail, 'Enter a valid email like name@example.com');
-    setupFieldValidation('custPhone', isValidPhone, 'Enter a valid 10-digit phone number');
-    setupFieldValidation('loginUsername', isValidEmail, 'Enter a valid email like name@example.com');
-    setupFieldValidation('loginPassword', val => val.trim().length >= 8, 'Password must be at least 8 characters');
-  });
-
-  // ===== PASSWORD TOGGLE =====
-  window.togglePassword = function(inputId) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-    const makeVisible = input.type === 'password';
-    input.type = makeVisible ? 'text' : 'password';
-    const btn = window.event && window.event.target ? window.event.target : null;
-    if (btn && btn.classList) {
-      btn.setAttribute('aria-pressed', String(makeVisible));
-      btn.setAttribute('aria-label', makeVisible ? 'Hide password' : 'Show password');
-      btn.classList.toggle('is-visible', makeVisible);
-    }
-    input.focus({ preventScroll: true });
-    const v = input.value; try { input.setSelectionRange(v.length, v.length); } catch(_) {}
-  };
- 
-  // ===== CONTACT FORM SUBMISSION =====
-/**
- * Signup submit handler – uses Omnitok preflight with a distinct data-act ("signup")
- * Leaves the existing Login flow untouched.
- */
-
-window.handleFormSubmit = async function handleFormSubmit(e) {
-  e.preventDefault();
-
-  const btn = document.getElementById('submitBtn');
-  if (!btn || btn.disabled) return;
-
-  // Separate Omnitok action for signup (defined in your HTML: data-act="signup")
-  const act = btn.dataset.act || 'ppsc_signup';
-  const loggedIn = sessionStorage.getItem('loggedIn') === 'true';
-if (!loggedIn) { alert('Please log in before signing up.'); return; }
-
-  // Collect exactly what the backend expects
-  const phoneEl = document.getElementById('custPhone');
-  const payload = {
-    firstName: (document.getElementById('custFirstname')?.value || '').trim(),
-    lastName:  (document.getElementById('custLastname')?.value  || '').trim(),
-    address:   (document.getElementById('custAddress')?.value   || '').trim(),
-    city:      (document.getElementById('custCity')?.value      || '').trim(),
-    state:     (document.getElementById('custState')?.value     || '').trim(),
-    zip:       (document.getElementById('custZip')?.value       || '').trim(),
-    email:     (document.getElementById('custEmail')?.value     || '').trim(),
-    password:  (document.getElementById('custPassword')?.value  || '').trim(),
-    // Store RAW phone (digits only). Input handler already sets dataset.raw to 10 digits.
-    phone:     (phoneEl?.dataset?.raw || (phoneEl?.value || '').replace(/\D/g, '')),
-    // Optional if you later add it to the DOM
-    verificationCode: (document.getElementById('verificationCode')?.value || '').trim() || undefined
-  };
-
-  // Quick guard (you already validate continuously)
-  const confirm = (document.getElementById('custConfirmpassword')?.value || '');
-  if (payload.password !== confirm) {
-    alert('Passwords do not match.');
-    return;
-  }
-
-  // UX: busy
-  const originalText = btn.textContent;
-  btn.disabled = true;
-  btn.classList.add('btn-loading');
-  btn.textContent = 'Submitting…';
-  try { if (typeof startLoading === 'function') startLoading({ resetZoom: true }); } catch {}
-
-  try {
-    // Phase 1: Omnitok preflight for SIGNUP
-    const omni = await getOmniTok(act);
-    if (!omni?.endpoint) throw new Error('Omnitok preflight did not return an endpoint');
-    payload.verificationCode = omni.verificationCode; // <-- from preflight
-   
-
-
-    // Optional: idempotency key per attempt
-    const jobId = `PPSSIGNUP-${crypto.randomUUID()}`;
-
-    // Phase 2: call the signup endpoint
-    const response = await fetch(omni.endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-auth-token': omni.authToken,
-        'x-omnitok': omni.OmniTok,
-        'x-sid': omni.sid,
-        'x-act': omni.act,
-        // 'x-idempotency-key': jobId, // enable if your flow supports it
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      let detail = '';
-      try { const j = await response.json(); detail = j?.error?.message || ''; } catch {}
-      throw new Error(detail || `Signup failed (${response.status})`);
-    }
-
-    // We don't require a particular response body; treat 200 as success.
-    let result = null;
-    try { result = await response.json(); } catch (_) { /* backend may return empty body */ }
-
-    // ✅ Success UX
-    console.log('Signup success:', result || { ok: true });
-    alert(`✅ Welcome to the Trading Post, ${payload.firstName || payload.email}!`);
-
-    btn.textContent = '✓ Account Created';
-    btn.classList.remove('is-error');
-    btn.classList.add('is-success');
-
-    window.resetContactForm = resetContactForm;
-
-
-
-    // Re-enable after a short success state
-    setTimeout(() => {
-      btn.disabled = false;
-      btn.textContent = originalText;
-      btn.classList.remove('is-success', 'btn-loading', 'enabled');
-    }, 800);
-
-  } catch (err) {
-    console.error('Signup error:', err);
-    alert(`❌ Signup failed. ${err?.message || 'Please try again.'}`);
-
-    btn.textContent = 'Retry Signup';
-    btn.classList.remove('is-success');
-    btn.classList.add('is-error');
-    btn.disabled = false;
-
-  } finally {
-    btn.classList.remove('btn-loading');
-    try { if (typeof stopLoading === 'function') stopLoading(); } catch {}
-  }
-};
+    // Expose small helpers to window if needed
+    window.getOmniTok = getOmniTok;
+    window.showContactForm = function showContactForm() {
+      const login = document.getElementById('loginContainer');
+      const contact = document.getElementById('contactForm');
+      if (login) { login.classList.add('hidden'); login.style.zIndex = 1; }
+      if (contact) { contact.classList.remove('hidden'); contact.style.zIndex = 2; }
+    };
+  }); // end DOMContentLoaded
+})();
 </script>
 </body>
 </html>
