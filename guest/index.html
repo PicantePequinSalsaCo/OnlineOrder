@@ -1035,7 +1035,6 @@ meter::-moz-meter-bar {
   <footer>
     © <span id="y"></span> Picante Pequin Salsa Co. All rights reserved.
   </footer>
-
 <script>
 /* Consolidated and cleaned script for auth + contact form */
 (function() {
@@ -1085,7 +1084,7 @@ meter::-moz-meter-bar {
   function setupFieldValidation(fieldId, validatorFn, messageText) {
     const field = document.getElementById(fieldId);
     if (!field) return;
-    // ensure we don't add multiple message elements
+    // avoid duplicating message nodes
     if (field.nextElementSibling && field.nextElementSibling.classList?.contains('field-message')) return;
     const messageEl = document.createElement('div');
     messageEl.className = 'field-message';
@@ -1116,19 +1115,21 @@ meter::-moz-meter-bar {
     field.addEventListener('blur', updateMessage);
   }
 
-  // Phone formatter (single authoritative impl). keeps raw digits in dataset.raw.
+  // Canonical phone formatter: keeps raw digits in dataset.raw and formats visually
   function formatPhoneInput(input) {
     if (!input) return;
     const raw = (input.value || '').replace(/\D/g, '').substring(0, 10);
     input.dataset.raw = raw;
     if (raw.length === 10) {
-      input.value = `(${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
+      input.value = `+1 (${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
     } else if (raw.length >= 6) {
-      input.value = `(${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
+      input.value = `+1 (${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
     } else if (raw.length >= 3) {
-      input.value = `(${raw.slice(0,3)}) ${raw.slice(3)}`;
-    } else {
+      input.value = `+1 (${raw.slice(0,3)}) ${raw.slice(3)}`;
+    } else if (raw.length > 0) {
       input.value = raw;
+    } else {
+      input.value = '';
     }
   }
 
@@ -1144,7 +1145,36 @@ meter::-moz-meter-bar {
     if (phone) { phone.dataset.raw = ''; phone.value = ''; }
     if (typeof validateContactForm === 'function') validateContactForm();
   }
-  window.resetContactForm = resetContactForm; // expose if desired
+  window.resetContactForm = resetContactForm; // optional exposure
+
+  // Omnitok API helper (single implementation)
+  // NOTE: Keep this endpoint secure in production (move to server-side)
+  const API = {
+    issueOmniTok: 'https://default6eda43f3fbf04e2b9978b543d9dd31.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/e3755ec03d8241c09ddb4d73a1c2bb86/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9t0-qJP8VJW4G9_COUvGJxmFKL6IWjUBeEq4GYZj3kQ'
+  };
+
+  async function getOmniTok(act) {
+    let sid = sessionStorage.getItem('sid');
+    if (!sid) { sid = crypto.randomUUID(); sessionStorage.setItem('sid', sid); }
+    const body = { act, sid };
+    const res = await fetch(API.issueOmniTok, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error(`Failed to get OmniTok config for ${act}`);
+    const data = await res.json();
+    return { ...data, sid };
+  }
+
+  // Expose small helpers if needed
+  window.getOmniTok = getOmniTok;
+  window.showContactForm = function showContactForm() {
+    const login = document.getElementById('loginContainer');
+    const contact = document.getElementById('contactForm');
+    if (login) { login.classList.add('hidden'); login.style.zIndex = 1; }
+    if (contact) { contact.classList.remove('hidden'); contact.style.zIndex = 2; }
+  };
 
   // Single DOMContentLoaded initialization
   document.addEventListener('DOMContentLoaded', () => {
@@ -1152,17 +1182,23 @@ meter::-moz-meter-bar {
     const yearEl = document.getElementById('y');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-    // shared phone element wiring
+    // Wire phone input (single canonical wiring)
     const phone = document.getElementById('custPhone');
     if (phone) {
+      let formatting = false;
       phone.addEventListener('input', (e) => {
-        formatPhoneInput(e.target);
-        e.target.dispatchEvent(new Event('input', { bubbles: true }));
+        if (formatting) return;
+        formatting = true;
+        try {
+          formatPhoneInput(e.target);
+        } finally {
+          formatting = false;
+        }
       });
       phone.addEventListener('blur', (e) => formatPhoneInput(e.target));
     }
 
-    // Setup field validations (safe guards inside)
+    // Field validation setup
     setupFieldValidation('custFirstname', isNotEmpty, 'Please enter your first name');
     setupFieldValidation('custLastname', isNotEmpty, 'Please enter your last name');
     setupFieldValidation('custAddress', isValidStreetAddress, 'Please enter your street address');
@@ -1170,7 +1206,7 @@ meter::-moz-meter-bar {
     setupFieldValidation('custState', isValidState, 'Please select your state');
     setupFieldValidation('custZip', isValidZip, 'Enter a 5-digit ZIP code');
     setupFieldValidation('custEmail', isValidEmail, 'Enter a valid email like name@example.com');
-    setupFieldValidation('custPhone', (v) => isValidPhone(document.getElementById('custPhone')?.value || ''), 'Enter a valid 10-digit phone number');
+    setupFieldValidation('custPhone', () => isValidPhone(document.getElementById('custPhone')?.value || ''), 'Enter a valid 10-digit phone number');
     setupFieldValidation('loginUsername', isValidEmail, 'Enter a valid email like name@example.com');
     setupFieldValidation('loginPassword', (v) => String(v || '').trim().length >= 8, 'Password must be at least 8 characters');
 
@@ -1204,7 +1240,6 @@ meter::-moz-meter-bar {
         startLoading({ resetZoom: true });
 
         try {
-          // call Omnitok preflight (api endpoint defined below)
           const omni = await getOmniTok(loginBtn.dataset.act || 'seclog');
           if (!omni?.endpoint) throw new Error('Omnitok preflight did not return an endpoint');
 
@@ -1229,7 +1264,7 @@ meter::-moz-meter-bar {
           if (!res.ok) throw new Error('Login failed');
 
           const result = await res.json();
-          // sample success criteria: jobId + email
+
           if (!result || typeof result.jobId !== 'string' || typeof result.email !== 'string') {
             throw new Error('Unexpected response shape (missing jobId/email)');
           }
@@ -1259,11 +1294,11 @@ meter::-moz-meter-bar {
     // CONTACT FORM: validation + submit
     const submitBtn = document.getElementById('submitBtn');
     const requiredFields = [
-      'custFirstname', 'custLastname', 'custAddress', 'custCity',
-      'custState', 'custZip', 'custEmail', 'custPhone', 'custPassword', 'custConfirmpassword'
+      'custFirstname','custLastname','custAddress','custCity',
+      'custState','custZip','custEmail','custPhone','custPassword','custConfirmpassword'
     ];
 
-    // safe validateContactForm placed to global scope so resetContactForm can call it
+    // validateContactForm exposed globally so resetContactForm can call it
     window.validateContactForm = function validateContactForm() {
       try {
         let allValid = requiredFields.every(id => {
@@ -1284,7 +1319,7 @@ meter::-moz-meter-bar {
 
     requiredFields.forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.addEventListener('input', validateContactForm);
+      if (el) el.addEventListener('input', window.validateContactForm);
     });
 
     // password strength + match
@@ -1302,7 +1337,7 @@ meter::-moz-meter-bar {
           passwordMessage.style.color = "var(--accent-green)";
           passwordMessage.textContent = "Passwords match ✔";
         }
-        validateContactForm();
+        window.validateContactForm();
       });
     }
 
@@ -1314,23 +1349,21 @@ meter::-moz-meter-bar {
         if (/[A-Z]/.test(val)) score++;
         if (/[0-9]/.test(val)) score++;
         if (/[^A-Za-z0-9]/.test(val)) score++;
-        // animate meter to new score quickly
         passwordMeter.value = score;
-        validateContactForm();
+        window.validateContactForm();
       });
     }
 
-    // phone formatting fallback: keep raw digits (already wired above)
+    // phone formatting fallback (already wired above)
     if (phone) {
-      phone.addEventListener('input', () => { /* already handled by formatPhoneInput */ });
+      phone.addEventListener('input', () => { /* handled by formatPhoneInput */ });
     }
 
-    // form submission handler (global function used by inline onsubmit)
+    // global form submission handler (used by inline onsubmit)
     window.handleFormSubmit = async function handleFormSubmit(e) {
       e.preventDefault();
       if (!submitBtn || submitBtn.disabled) return;
 
-      // require login
       const loggedIn = sessionStorage.getItem('loggedIn') === 'true';
       if (!loggedIn) { alert('Please log in before signing up.'); return; }
 
@@ -1399,6 +1432,7 @@ meter::-moz-meter-bar {
         console.error('Signup error:', err);
         alert(`❌ Signup failed. ${err?.message || 'Please try again.'}`);
         submitBtn.textContent = 'Retry Signup';
+        submitBtn.classList.remove('is-success');
         submitBtn.classList.add('is-error');
         submitBtn.disabled = false;
       } finally {
@@ -1406,36 +1440,23 @@ meter::-moz-meter-bar {
         stopLoading();
       }
     };
-
-    // Omnitok API helper (single implementation)
-    // NOTE: API.issueOmniTok set below; keep endpoint secure & do not expose secrets in client-side code for production
-    const API = {
-      issueOmniTok: 'https://default6eda43f3fbf04e2b9978b543d9dd31.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/e3755ec03d8241c09ddb4d73a1c2bb86/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9t0-qJP8VJW4G9_COUvGJxmFKL6IWjUBeEq4GYZj3kQ'
-    };
-
-    async function getOmniTok(act) {
-      let sid = sessionStorage.getItem('sid');
-      if (!sid) { sid = crypto.randomUUID(); sessionStorage.setItem('sid', sid); }
-      const body = { act, sid };
-      const res = await fetch(API.issueOmniTok, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      if (!res.ok) throw new Error(`Failed to get OmniTok config for ${act}`);
-      const data = await res.json();
-      return { ...data, sid };
-    }
-
-    // Expose small helpers to window if needed
-    window.getOmniTok = getOmniTok;
-    window.showContactForm = function showContactForm() {
-      const login = document.getElementById('loginContainer');
-      const contact = document.getElementById('contactForm');
-      if (login) { login.classList.add('hidden'); login.style.zIndex = 1; }
-      if (contact) { contact.classList.remove('hidden'); contact.style.zIndex = 2; }
-    };
   }); // end DOMContentLoaded
+
+  // Password toggle helper (exposed)
+  window.togglePassword = function(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const makeVisible = input.type === 'password';
+    input.type = makeVisible ? 'text' : 'password';
+    const btn = window.event && window.event.target ? window.event.target : null;
+    if (btn && btn.setAttribute) {
+      btn.setAttribute('aria-pressed', String(makeVisible));
+      btn.setAttribute('aria-label', makeVisible ? 'Hide password' : 'Show password');
+      btn.classList.toggle('is-visible', makeVisible);
+    }
+    try { input.focus({ preventScroll: true }); } catch(_) {}
+    const v = input.value; try { input.setSelectionRange(v.length, v.length); } catch(_) {}
+  };
 })();
 </script>
 </body>
