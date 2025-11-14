@@ -1233,11 +1233,10 @@ loginForm.addEventListener('submit', async (e) => {
   const hasExpected =
     result &&
     typeof result.jobId === 'string' &&
-    typeof result.statusUrl === 'string' &&
     typeof result.email === 'string';
 
   if (!hasExpected) {
-    throw new Error("Unexpected response shape (missing jobId/statusUrl/email)");
+    throw new Error("Unexpected response shape (missing jobId/email)");
   }
 
   // At this point, your contract is satisfied → treat as success
