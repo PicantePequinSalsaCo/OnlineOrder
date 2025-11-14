@@ -1145,6 +1145,50 @@ meter::-moz-meter-bar {
     field.addEventListener('blur', updateMessage);
   }
 
+      // Reset form + validators so you can run again immediately
+function resetContactForm() {
+  const form = document.querySelector('#contactForm form');
+  if (form) form.reset();
+
+  // Reset password strength meter and message
+  const meter = document.getElementById('passwordStrength');
+  if (meter) meter.value = 0;
+
+  const msg = document.getElementById('passwordMessage');
+  if (msg) {
+    msg.textContent = '';
+    msg.removeAttribute('style');
+  }
+
+  // Clear stored RAW phone
+  if (phoneEl) phoneEl.dataset.raw = '';
+
+  // Disable submit button again
+  if (typeof validateContactForm === 'function') validateContactForm();
+
+  // Restore default validation messages
+  const defaultMessages = {
+    custFirstname: 'Please enter your first name',
+    custLastname: 'Please enter your last name',
+    custAddress: 'Please enter your street address',
+    custCity: 'Please enter your city',
+    custState: 'Please select your state',
+    custZip: 'Enter a 5-digit ZIP code',
+    custEmail: 'Enter a valid email like name@example.com',
+    custPhone: 'Enter a valid 10-digit phone number',
+    loginUsername: 'Enter a valid email like name@example.com',
+    loginPassword: 'Password must be at least 8 characters'
+  };
+
+  Object.entries(defaultMessages).forEach(([id, message]) => {
+    const el = document.getElementById(id);
+    const msgEl = el?.closest('.field')?.querySelector('.validation-message');
+    if (msgEl) {
+      msgEl.textContent = message;
+      msgEl.removeAttribute('style'); // Reset color
+    }
+  });
+}
   // ===========================
   // Omnitok integration
   // ===========================
@@ -1168,7 +1212,15 @@ meter::-moz-meter-bar {
     const data = await res.json();
     return { ...data, sid };
   }
-
+  
+window.formatPhone = function(input) {
+  const raw = input.value.replace(/\D/g, '').substring(0, 10);
+  if (raw.length === 10) {
+    input.value = `(${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
+  } else {
+    input.value = raw;
+  }
+};
   // ===========================
   // LOGIN FORM: Validation + Flow
   // ===========================
@@ -1364,16 +1416,6 @@ if (!hasExpected) {
       });
     }
 
-    
-    function formatPhone(input) {
-        const raw = input.value.replace(/\D/g, '').substring(0, 10);
-        if (raw.length === 10) {
-            input.value = `(${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
-        } else {
-            input.value = raw; // Keep partial digits
-        }
-    }
-
 
     // ===========================
     // Field-level validation messages
@@ -1497,50 +1539,9 @@ if (!loggedIn) { alert('Please log in before signing up.'); return; }
     btn.classList.remove('is-error');
     btn.classList.add('is-success');
 
-    // Reset form + validators so you can run again immediately
-function resetContactForm() {
-  const form = document.querySelector('#contactForm form');
-  if (form) form.reset();
+    window.resetContactForm = resetContactForm;
 
-  // Reset password strength meter and message
-  const meter = document.getElementById('passwordStrength');
-  if (meter) meter.value = 0;
 
-  const msg = document.getElementById('passwordMessage');
-  if (msg) {
-    msg.textContent = '';
-    msg.removeAttribute('style');
-  }
-
-  // Clear stored RAW phone
-  if (phoneEl) phoneEl.dataset.raw = '';
-
-  // Disable submit button again
-  if (typeof validateContactForm === 'function') validateContactForm();
-
-  // Restore default validation messages
-  const defaultMessages = {
-    custFirstname: 'Please enter your first name',
-    custLastname: 'Please enter your last name',
-    custAddress: 'Please enter your street address',
-    custCity: 'Please enter your city',
-    custState: 'Please select your state',
-    custZip: 'Enter a 5-digit ZIP code',
-    custEmail: 'Enter a valid email like name@example.com',
-    custPhone: 'Enter a valid 10-digit phone number',
-    loginUsername: 'Enter a valid email like name@example.com',
-    loginPassword: 'Password must be at least 8 characters'
-  };
-
-  Object.entries(defaultMessages).forEach(([id, message]) => {
-    const el = document.getElementById(id);
-    const msgEl = el?.closest('.field')?.querySelector('.validation-message');
-    if (msgEl) {
-      msgEl.textContent = message;
-      msgEl.removeAttribute('style'); // Reset color
-    }
-  });
-}
 
     // Re-enable after a short success state
     setTimeout(() => {
