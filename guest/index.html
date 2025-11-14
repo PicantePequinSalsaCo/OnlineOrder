@@ -1229,36 +1229,40 @@ loginForm.addEventListener('submit', async (e) => {
       body: JSON.stringify(loginData)
     });
 
-    if (!response.ok) throw new Error("Login failed");
-    const result = await response.json();
+ // ✅ Success criterion: all expected fields present
+  const hasExpected =
+    result &&
+    typeof result.jobId === 'string' &&
+    typeof result.statusUrl === 'string' &&
+    typeof result.email === 'string';
 
-    if (result.verificationToken) {
-      sessionStorage.setItem('verificationToken', result.verificationToken);
-    }
-
-    console.log("Login success:", result);
-    alert(`✅ Login successful! Employee: ${loginData.username}`);
-    showContactForm();
-
-  } catch (err) {
-    console.error("Login error:", err);
-    alert("❌ Login failed. Please try again.");
-    btn.disabled = false;
-  } finally {
-  btn.classList.remove('btn-loading'); // Remove shimmer
-
-  if (response && response.ok) {
-    // ✅ Success state
-    btn.textContent = '✓ Logged In';
-    btn.classList.add('is-success');
-    btn.disabled = true; // Keep disabled after success
-  } else {
-    // ❌ Failure state
-    btn.textContent = 'Retry Login';
-    btn.classList.add('is-error');
-    btn.disabled = false;
+  if (!hasExpected) {
+    throw new Error("Unexpected response shape (missing jobId/statusUrl/email)");
   }
 
+  // At this point, your contract is satisfied → treat as success
+  console.log("Login started:", result); // (async job created)
+  alert(`✅ Login started for ${loginData.username}`);
+  showContactForm();
+
+  // Success UI
+  btn.textContent = '✓ Logged In';
+  btn.classList.remove('is-error');
+  btn.classList.add('is-success');
+  btn.disabled = true;
+
+} catch (err) {
+  console.error("Login error:", err);
+  alert("❌ Login failed. Please try again.");
+
+  // Failure UI
+  btn.textContent = 'Retry Login';
+  btn.classList.remove('is-success');
+  btn.classList.add('is-error');
+  btn.disabled = false;
+
+} finally {
+  btn.classList.remove('btn-loading');
   stopLoading();
 }
 });
