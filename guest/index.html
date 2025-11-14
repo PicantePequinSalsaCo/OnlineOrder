@@ -1400,8 +1400,6 @@ if (!hasExpected) {
  * Signup submit handler – uses Omnitok preflight with a distinct data-act ("signup")
  * Leaves the existing Login flow untouched.
  */
-const loggedIn = sessionStorage.getItem('loggedIn') === 'true';
-if (!loggedIn) { alert('Please log in before signing up.'); return; }
 
 window.handleFormSubmit = async function handleFormSubmit(e) {
   e.preventDefault();
@@ -1411,6 +1409,8 @@ window.handleFormSubmit = async function handleFormSubmit(e) {
 
   // Separate Omnitok action for signup (defined in your HTML: data-act="signup")
   const act = btn.dataset.act || 'ppsc_signup';
+  const loggedIn = sessionStorage.getItem('loggedIn') === 'true';
+if (!loggedIn) { alert('Please log in before signing up.'); return; }
 
   // Collect exactly what the backend expects
   const phoneEl = document.getElementById('custPhone');
