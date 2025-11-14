@@ -1393,6 +1393,122 @@ if (!hasExpected) {
     input.focus({ preventScroll: true });
     const v = input.value; try { input.setSelectionRange(v.length, v.length); } catch(_) {}
   };
+ 
+  // ===== CONTACT FORM SUBMISSION =====
+/**
+ * Signup submit handler – uses Omnitok preflight with a distinct data-act ("signup")
+ * Leaves the existing Login flow untouched.
+ */
+window.handleFormSubmit = async function handleFormSubmit(e) {
+  e.preventDefault();
+
+  const btn = document.getElementById('submitBtn');
+  if (!btn || btn.disabled) return;
+
+  // Separate Omnitok action for signup (defined in your HTML: data-act="signup")
+  const act = btn.dataset.act || 'signup';
+
+  // Collect exactly what the backend expects
+  const phoneEl = document.getElementById('custPhone');
+  const payload = {
+    firstName: (document.getElementById('custFirstname')?.value || '').trim(),
+    lastName:  (document.getElementById('custLastname')?.value  || '').trim(),
+    address:   (document.getElementById('custAddress')?.value   || '').trim(),
+    city:      (document.getElementById('custCity')?.value      || '').trim(),
+    state:     (document.getElementById('custState')?.value     || '').trim(),
+    zip:       (document.getElementById('custZip')?.value       || '').trim(),
+    email:     (document.getElementById('custEmail')?.value     || '').trim(),
+    password:  (document.getElementById('custPassword')?.value  || '').trim(),
+    // Store RAW phone (digits only). Input handler already sets dataset.raw to 10 digits.
+    phone:     (phoneEl?.dataset?.raw || (phoneEl?.value || '').replace(/\D/g, '')),
+    // Optional if you later add it to the DOM
+    verificationCode: (document.getElementById('verificationCode')?.value || '').trim() || undefined
+  };
+
+  // Quick guard (you already validate continuously)
+  const confirm = (document.getElementById('custConfirmpassword')?.value || '');
+  if (payload.password !== confirm) {
+    alert('Passwords do not match.');
+    return;
+  }
+
+  // UX: busy
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.classList.add('btn-loading');
+  btn.textContent = 'Submitting…';
+  try { if (typeof startLoading === 'function') startLoading({ resetZoom: true }); } catch {}
+
+  try {
+    // Phase 1: Omnitok preflight for SIGNUP
+    const omni = await getOmniTok(act);
+    if (!omni?.endpoint) throw new Error('Omnitok preflight did not return an endpoint');
+
+    // Optional: idempotency key per attempt
+    const jobId = `PPSSIGNUP-${crypto.randomUUID()}`;
+
+    // Phase 2: call the signup endpoint
+    const response = await fetch(omni.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-auth-token': omni.authToken,
+        'x-omnitok': omni.OmniTok,
+        'x-sid': omni.sid,
+        'x-act': omni.act,
+        // 'x-idempotency-key': jobId, // enable if your flow supports it
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      let detail = '';
+      try { const j = await response.json(); detail = j?.error?.message || ''; } catch {}
+      throw new Error(detail || `Signup failed (${response.status})`);
+    }
+
+    // We don't require a particular response body; treat 200 as success.
+    let result = null;
+    try { result = await response.json(); } catch (_) { /* backend may return empty body */ }
+
+    // ✅ Success UX
+    console.log('Signup success:', result || { ok: true });
+    alert(`✅ Welcome to the Trading Post, ${payload.firstName || payload.email}!`);
+
+    btn.textContent = '✓ Account Created';
+    btn.classList.remove('is-error');
+    btn.classList.add('is-success');
+
+    // Reset form + validators so you can run again immediately
+    const form = document.querySelector('#contactForm form');
+    if (form) form.reset();
+    const meter = document.getElementById('passwordStrength'); if (meter) meter.value = 0;
+    const msg = document.getElementById('passwordMessage'); if (msg) { msg.textContent = ''; msg.removeAttribute('style'); }
+    // Clear stored RAW phone and re-run your validator to disable the button again
+    if (phoneEl) phoneEl.dataset.raw = '';
+    if (typeof validateContactForm === 'function') validateContactForm();
+
+    // Re-enable after a short success state
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = originalText;
+      btn.classList.remove('is-success', 'btn-loading', 'enabled');
+    }, 800);
+
+  } catch (err) {
+    console.error('Signup error:', err);
+    alert(`❌ Signup failed. ${err?.message || 'Please try again.'}`);
+
+    btn.textContent = 'Retry Signup';
+    btn.classList.remove('is-success');
+    btn.classList.add('is-error');
+    btn.disabled = false;
+
+  } finally {
+    btn.classList.remove('btn-loading');
+    try { if (typeof stopLoading === 'function') stopLoading(); } catch {}
+  }
+};
 </script>
 </body>
 </html>
