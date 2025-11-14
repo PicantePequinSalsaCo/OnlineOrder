@@ -1447,7 +1447,7 @@ if (!loggedIn) { alert('Please log in before signing up.'); return; }
     // Phase 1: Omnitok preflight for SIGNUP
     const omni = await getOmniTok(act);
     if (!omni?.endpoint) throw new Error('Omnitok preflight did not return an endpoint');
-    payload.verificationCode = omni.verificationCode; // <-- from preflight
+   
 
 
     // Optional: idempotency key per attempt
