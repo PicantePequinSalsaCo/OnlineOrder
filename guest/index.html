@@ -1138,14 +1138,49 @@ meter::-moz-meter-bar {
   };
 
   /* ---------- Reset contact form ---------- */
-  function resetContactForm() {
-    const form = qs('contactForm')?.querySelector('form'); if (form) form.reset();
-    const meter = qs('passwordStrength'); if (meter) meter.value = 0;
-    const msg = qs('passwordMessage'); if (msg) msg.textContent = '';
-    const phone = qs('custPhone'); if (phone) { phone.dataset.raw = ''; phone.value = ''; }
-    if (typeof validateContactForm === 'function') validateContactForm();
-  }
-  window.resetContactForm = resetContactForm;
+// Replace or update your resetContactForm with this version
+function resetContactForm() {
+  const form = document.querySelector('#contactForm form');
+  if (form) form.reset();
+
+  // clear password meter and message
+  const meter = document.getElementById('passwordStrength');
+  if (meter) meter.value = 0;
+  const msg = document.getElementById('passwordMessage');
+  if (msg) msg.textContent = '';
+
+  // clear phone raw + value
+  const phone = document.getElementById('custPhone');
+  if (phone) { phone.dataset.raw = ''; phone.value = ''; }
+
+  // run your main form validator (enables/disables submit)
+  if (typeof validateContactForm === 'function') validateContactForm();
+
+  // Update all visible field-message nodes by dispatching input+blur
+  // This ensures setupFieldValidation's message elements refresh immediately
+  const fieldsToRefresh = [
+    'custFirstname','custLastname','custAddress','custCity','custState',
+    'custZip','custEmail','custPhone','custPassword','custConfirmpassword',
+    'loginUsername','loginPassword'
+  ];
+
+  fieldsToRefresh.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    // Removing and re-adding focus briefly would trigger browser UI; avoid it.
+    // Instead, dispatch an 'input' event (validators listen for this) and then 'blur'.
+    try {
+      const inputEvent = new Event('input', { bubbles: true, cancelable: true });
+      el.dispatchEvent(inputEvent);
+      const blurEvent = new Event('blur', { bubbles: true, cancelable: true });
+      el.dispatchEvent(blurEvent);
+    } catch (e) {
+      // fallback: call validateContactForm again
+      if (typeof validateContactForm === 'function') validateContactForm();
+    }
+  });
+}
+window.resetContactForm = resetContactForm;
 
   /* ---------- OmniTok preflight helper ---------- */
   const API = {
