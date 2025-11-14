@@ -1036,189 +1036,141 @@ meter::-moz-meter-bar {
     © <span id="y"></span> Picante Pequin Salsa Co. All rights reserved.
   </footer>
 <script>
-/* Consolidated, single-authority script for login + contact form.
-   - One formatPhone implementation (exposed as window.formatPhone)
-   - One DOMContentLoaded initialization block
-   - Prevents reentrant formatting that caused Maximum call stack size exceeded
-   - Maintains existing UX (shimmer, meter, Omnitok calls) */
-(function () {
-  // --------------------
-  // Helpers / globals
-  // --------------------
-  const htmlEl = document.documentElement;
-  const loaderEl = document.getElementById('page-loader'); // optional
-  let phoneFormattingLock = false; // prevents reentrant formatting
-  let phoneEl = null; // shared phone reference
+/* Consolidated, single-source script for login + contact/signup form.
+   - One canonical phone formatter (stores digits in dataset.raw)
+   - One DOMContentLoaded init block
+   - Field-level validation messages, login flow, signup flow (OmniTok)
+   - Safe guards against duplicate wiring and recursive events
+*/
 
-  function resetViewportScale(options = { allowPinchAfter: true }) {
+(function () {
+  /* ---------- Utilities ---------- */
+  const yearEl = document.getElementById('y');
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  function qs(id) { return document.getElementById(id); }
+  function safeText(v) { return String(v || '').trim(); }
+
+  // Viewport / page loading helpers (minimal)
+  const htmlEl = document.documentElement;
+  const loaderEl = qs('page-loader');
+  function resetViewportScale({ allowPinchAfter = true } = {}) {
     let meta = document.querySelector('meta[name="viewport"]');
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.name = 'viewport';
-      document.head.appendChild(meta);
-    }
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'viewport'; document.head.appendChild(meta); }
     const base = 'width=device-width';
     meta.content = base + ', initial-scale=1.0001';
     requestAnimationFrame(() => {
-      meta.content =
-        base + ', initial-scale=1.0' +
-        (options.allowPinchAfter ? ', user-scalable=yes' : ', maximum-scale=1.0');
+      meta.content = base + ', initial-scale=1.0' + (allowPinchAfter ? ', user-scalable=yes' : ', maximum-scale=1.0');
     });
-    if (document.activeElement && typeof document.activeElement.blur === 'function') {
-      document.activeElement.blur();
-    }
-    setTimeout(() => { window.scrollTo(0, Math.max(0, window.pageYOffset || 0)); }, 0);
+    if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
+    setTimeout(() => window.scrollTo(0, Math.max(0, window.pageYOffset || 0)), 0);
   }
+  function startLoading(opts) { resetViewportScale(opts); htmlEl.classList.add('is-loading'); if (loaderEl) loaderEl.setAttribute('aria-hidden', 'false'); }
+  function stopLoading() { htmlEl.classList.remove('is-loading'); if (loaderEl) loaderEl.setAttribute('aria-hidden', 'true'); }
 
-  function startLoading({ resetZoom = true } = {}) {
-    if (resetZoom) resetViewportScale();
-    htmlEl.classList.add('is-loading');
-    if (loaderEl) loaderEl.setAttribute('aria-hidden', 'false');
-  }
-  function stopLoading() {
-    htmlEl.classList.remove('is-loading');
-    if (loaderEl) loaderEl.setAttribute('aria-hidden', 'true');
-  }
+  /* ---------- Validators ---------- */
+  const reEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const reZip = /^\d{5}$/;
+  const reStreet = /^\d+\s+[\w\s]+/;
+  function isValidEmail(v) { return reEmail.test(safeText(v)); }
+  function isNotEmpty(v) { return safeText(v).length > 0; }
+  function isValidZip(v) { return reZip.test(safeText(v)); }
+  function isValidState(v) { return String(v || '') !== ''; }
+  function isValidStreetAddress(v) { return reStreet.test(safeText(v)); }
+  function isValidPhoneFormatted(v) { return /^\+1 \(\d{3}\) \d{3}-\d{4}$/.test(safeText(v)); }
 
-  // --------------------
-  // Validators
-  // --------------------
-  function isValidEmail(val) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(val || '').trim()); }
-  function isNotEmpty(val) { return String(val || '').trim().length > 0; }
-  function isValidZip(val) { return /^\d{5}$/.test(String(val || '')); }
-  function isValidState(val) { return String(val || '') !== ''; }
-  function isValidStreetAddress(val) { return /^\d+\s+[\w\s]+/.test(String(val || '').trim()); }
-  function isValidPhoneFormatted(val) { return /^\+1 \(\d{3}\) \d{3}-\d{4}$/.test(String(val || '')); }
-
-  // --------------------
-  // Field-level validation UI helper
-  // --------------------
+  /* ---------- Field message helper ---------- */
   function setupFieldValidation(fieldId, validatorFn, messageText) {
-    const field = document.getElementById(fieldId);
+    const field = qs(fieldId);
     if (!field) return;
-    // avoid adding duplicate message nodes
+    // avoid multiple message nodes
     if (field.nextElementSibling && field.nextElementSibling.classList?.contains('field-message')) return;
-    const messageEl = document.createElement('div');
-    messageEl.className = 'field-message';
-    messageEl.style.cssText = 'font-size:.9rem;margin-top:4px;color:var(--muted);transition:color .3s ease;';
-    field.insertAdjacentElement('afterend', messageEl);
+    const msg = document.createElement('div');
+    msg.className = 'field-message';
+    msg.style.cssText = 'font-size:.9rem;margin-top:4px;color:var(--muted);transition:color .3s ease;';
+    field.insertAdjacentElement('afterend', msg);
 
-    function updateMessage() {
+    function update() {
       try {
-        if (validatorFn(field.value)) {
-          messageEl.textContent = '✔ Looks good';
-          messageEl.style.color = 'var(--accent-green)';
-        } else {
-          messageEl.textContent = messageText;
-          messageEl.style.color = 'var(--muted)';
-        }
+        if (validatorFn(field.value)) { msg.textContent = '✔ Looks good'; msg.style.color = 'var(--accent-green)'; }
+        else { msg.textContent = messageText; msg.style.color = 'var(--muted)'; }
       } catch (e) { /* ignore */ }
     }
-
-    field.addEventListener('focus', () => {
-      if (!field.value.trim()) {
-        messageEl.textContent = messageText;
-        messageEl.style.color = 'var(--muted)';
-      }
-    });
-    field.addEventListener('input', updateMessage);
-    field.addEventListener('blur', updateMessage);
+    field.addEventListener('focus', () => { if (!field.value.trim()) { msg.textContent = messageText; msg.style.color = 'var(--muted)'; }});
+    field.addEventListener('input', update);
+    field.addEventListener('blur', update);
   }
 
-  // --------------------
-  // Phone formatting (single authoritative implementation)
-  // - Keeps raw digits in input.dataset.raw
-  // - Formats progressively as (xxx) xxx-xxxx
-  // - Prevents reentrant "input" loops with phoneFormattingLock
-  // --------------------
-  function formatPhoneInternal(input) {
+  /* ---------- Phone formatter (single authoritative impl) ---------- */
+  function formatPhone(input) {
     if (!input) return;
     const raw = (input.value || '').replace(/\D/g, '').substring(0, 10);
     input.dataset.raw = raw;
-    if (raw.length === 10) {
-      input.value = `+1 (${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
-    } else if (raw.length >= 6) {
-      input.value = `(${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
-    } else if (raw.length >= 3) {
-      input.value = `(${raw.slice(0,3)}) ${raw.slice(3)}`;
-    } else {
-      input.value = raw;
-    }
+    if (raw.length === 10) input.value = `+1 (${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
+    else if (raw.length >= 6) input.value = `(${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
+    else if (raw.length >= 3) input.value = `(${raw.slice(0,3)}) ${raw.slice(3)}`;
+    else input.value = raw;
   }
 
-  // Expose a single global formatPhone function for inline onblur attributes
-  window.formatPhone = function (input) {
-    // callers may pass element or this from onblur
-    const el = input && input.tagName ? input : document.getElementById(input);
-    formatPhoneInternal(el);
-  };
+  /* ---------- UI helpers ---------- */
+  function showContactForm() {
+    const login = qs('loginContainer'), contact = qs('contactForm');
+    if (login) { login.classList.add('hidden'); login.style.zIndex = 1; }
+    if (contact) { contact.classList.remove('hidden'); contact.style.zIndex = 2; }
+  }
+  window.showContactForm = showContactForm;
 
-  // --------------------
-  // Reset contact form helper
-  // --------------------
+  function togglePassword(id) {
+    const input = qs(id); if (!input) return;
+    const makeVisible = input.type === 'password';
+    input.type = makeVisible ? 'text' : 'password';
+    try { input.focus({ preventScroll: true }); const v = input.value; input.setSelectionRange(v.length, v.length); } catch (_) {}
+  }
+  window.togglePassword = togglePassword;
+
+  /* ---------- Reset contact form ---------- */
   function resetContactForm() {
-    const form = document.querySelector('#contactForm form');
-    if (form) form.reset();
-    const meter = document.getElementById('passwordStrength');
-    if (meter) meter.value = 0;
-    const msg = document.getElementById('passwordMessage');
-    if (msg) msg.textContent = '';
-    const phone = document.getElementById('custPhone');
-    if (phone) { phone.dataset.raw = ''; phone.value = ''; }
+    const form = document.querySelector('#contactForm form'); if (form) form.reset();
+    const meter = qs('passwordStrength'); if (meter) meter.value = 0;
+    const msg = qs('passwordMessage'); if (msg) msg.textContent = '';
+    const phone = qs('custPhone'); if (phone) { phone.dataset.raw = ''; phone.value = ''; }
     if (typeof validateContactForm === 'function') validateContactForm();
   }
   window.resetContactForm = resetContactForm;
 
-  // --------------------
-  // Omnitok helper
-  // --------------------
+  /* ---------- OmniTok preflight helper ---------- */
   const API = {
+    // NOTE: keep server endpoint secure; client-side exposures are OK for dev but treat carefully in prod
     issueOmniTok: 'https://default6eda43f3fbf04e2b9978b543d9dd31.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/e3755ec03d8241c09ddb4d73a1c2bb86/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9t0-qJP8VJW4G9_COUvGJxmFKL6IWjUBeEq4GYZj3kQ'
   };
-
   async function getOmniTok(act) {
     let sid = sessionStorage.getItem('sid');
     if (!sid) { sid = crypto.randomUUID(); sessionStorage.setItem('sid', sid); }
     const body = { act, sid };
-    const res = await fetch(API.issueOmniTok, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
+    const res = await fetch(API.issueOmniTok, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(body) });
     if (!res.ok) throw new Error(`Failed to get OmniTok config for ${act}`);
     const data = await res.json();
     return { ...data, sid };
   }
   window.getOmniTok = getOmniTok;
 
-  // --------------------
-  // DOMContentLoaded initialization (single block)
-  // --------------------
+  /* ---------- DOM initialization (single block) ---------- */
   document.addEventListener('DOMContentLoaded', () => {
-    // set year
-    const yearEl = document.getElementById('y');
-    if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-    // wire phone once
-    phoneEl = document.getElementById('custPhone');
-    if (phoneEl) {
-      phoneEl.addEventListener('input', (e) => {
-        if (phoneFormattingLock) return;
-        phoneFormattingLock = true;
-        try {
-          // format in-place; do not dispatch another input event to avoid loops
-          formatPhoneInternal(e.target);
-        } finally {
-          phoneFormattingLock = false;
-        }
+    // Wire phone formatting once (guarded)
+    const phone = qs('custPhone');
+    if (phone) {
+      let formatting = false;
+      phone.addEventListener('input', (e) => {
+        if (formatting) return;
+        formatting = true;
+        try { formatPhone(e.target); } finally { formatting = false; }
+        // dispatch input for validators/listeners
+        e.target.dispatchEvent(new Event('input', { bubbles: true }));
       });
-      phoneEl.addEventListener('blur', (e) => {
-        // final formatting on blur
-        formatPhoneInternal(e.target);
-      });
+      phone.addEventListener('blur', (e) => formatPhone(e.target));
     }
 
-    // field-level validations (safe; will no-op if element missing)
+    // Field-level validations
     setupFieldValidation('custFirstname', isNotEmpty, 'Please enter your first name');
     setupFieldValidation('custLastname', isNotEmpty, 'Please enter your last name');
     setupFieldValidation('custAddress', isValidStreetAddress, 'Please enter your street address');
@@ -1226,36 +1178,33 @@ meter::-moz-meter-bar {
     setupFieldValidation('custState', isValidState, 'Please select your state');
     setupFieldValidation('custZip', isValidZip, 'Enter a 5-digit ZIP code');
     setupFieldValidation('custEmail', isValidEmail, 'Enter a valid email like name@example.com');
-    setupFieldValidation('custPhone', (v) => isValidPhoneFormatted(document.getElementById('custPhone')?.value || ''), 'Enter a valid 10-digit phone number');
+    setupFieldValidation('custPhone', () => isValidPhoneFormatted(qs('custPhone')?.value || ''), 'Enter a valid 10-digit phone number');
     setupFieldValidation('loginUsername', isValidEmail, 'Enter a valid email like name@example.com');
-    setupFieldValidation('loginPassword', (v) => String(v || '').trim().length >= 8, 'Password must be at least 8 characters');
+    setupFieldValidation('loginPassword', (v) => safeText(v).length >= 8, 'Password must be at least 8 characters');
 
-    // LOGIN: validation + submit
-    const loginForm = document.getElementById('loginForm');
-    const loginBtn = document.getElementById('loginBtn');
-    const loginUserInput = document.getElementById('loginUsername');
-    const loginPassInput = document.getElementById('loginPassword');
+    /* ---------- Login form ---------- */
+    const loginForm = qs('loginForm');
+    const loginBtn = qs('loginBtn');
+    const loginUser = qs('loginUsername');
+    const loginPass = qs('loginPassword');
 
-    if (loginForm && loginBtn && loginUserInput && loginPassInput) {
-      function validateLoginForm() {
-        const u = (loginUserInput.value || '').trim();
-        const p = (loginPassInput.value || '').trim();
-        const ok = isValidEmail(u) && p.length >= 8;
+    if (loginForm && loginBtn && loginUser && loginPass) {
+      function validateLogin() {
+        const ok = isValidEmail(loginUser.value) && safeText(loginPass.value).length >= 8;
         loginBtn.disabled = !ok;
         loginBtn.classList.toggle('enabled', ok);
         loginBtn.setAttribute('aria-disabled', String(!ok));
       }
-      validateLoginForm();
-      loginUserInput.addEventListener('input', validateLoginForm);
-      loginPassInput.addEventListener('input', validateLoginForm);
+      validateLogin();
+      loginUser.addEventListener('input', validateLogin);
+      loginPass.addEventListener('input', validateLogin);
 
       loginForm.addEventListener('submit', async (ev) => {
         ev.preventDefault();
         if (loginBtn.disabled) return;
-
         loginBtn.disabled = true;
         loginBtn.classList.add('btn-loading');
-        const originalText = loginBtn.textContent;
+        const original = loginBtn.textContent;
         loginBtn.textContent = 'Logging in...';
         startLoading({ resetZoom: true });
 
@@ -1263,12 +1212,7 @@ meter::-moz-meter-bar {
           const omni = await getOmniTok(loginBtn.dataset.act || 'seclog');
           if (!omni?.endpoint) throw new Error('Omnitok preflight did not return an endpoint');
 
-          const payload = {
-            jobId: `PPSLOGIN-${crypto.randomUUID()}`,
-            username: loginUserInput.value.trim(),
-            password: loginPassInput.value.trim()
-          };
-
+          const payload = { jobId: `PPSLOGIN-${crypto.randomUUID()}`, username: loginUser.value.trim(), password: loginPass.value.trim() };
           const res = await fetch(omni.endpoint, {
             method: 'POST',
             headers: {
@@ -1280,22 +1224,16 @@ meter::-moz-meter-bar {
             },
             body: JSON.stringify(payload)
           });
-
           if (!res.ok) throw new Error('Login failed');
-
           const result = await res.json();
-          if (!result || typeof result.jobId !== 'string' || typeof result.email !== 'string') {
-            throw new Error('Unexpected response shape (missing jobId/email)');
-          }
+          if (!result || typeof result.jobId !== 'string' || typeof result.email !== 'string') throw new Error('Unexpected response shape (missing jobId/email)');
 
           alert(`✅ Login successful! Employee: ${payload.username}`);
           sessionStorage.setItem('loggedIn', 'true');
           showContactForm();
-
           loginBtn.textContent = '✓ Logged In';
           loginBtn.classList.add('is-success');
           loginBtn.classList.remove('is-error');
-
         } catch (err) {
           console.error('Login error:', err);
           alert('❌ Login failed. Please try again.');
@@ -1310,54 +1248,46 @@ meter::-moz-meter-bar {
       });
     }
 
-    // CONTACT FORM: validation + submit
-    const submitBtn = document.getElementById('submitBtn');
-    const requiredFields = [
-      'custFirstname', 'custLastname', 'custAddress', 'custCity',
-      'custState', 'custZip', 'custEmail', 'custPhone', 'custPassword', 'custConfirmpassword'
+    /* ---------- Contact / Signup form ---------- */
+    const submitBtn = qs('submitBtn');
+    const required = [
+      'custFirstname','custLastname','custAddress','custCity',
+      'custState','custZip','custEmail','custPhone','custPassword','custConfirmpassword'
     ];
 
-    // expose validateContactForm globally (used by resetContactForm)
     window.validateContactForm = function validateContactForm() {
       try {
-        let allValid = requiredFields.every(id => {
-          const el = document.getElementById(id);
-          return el && String(el.value || '').trim() !== '';
+        let all = required.every(id => {
+          const el = qs(id);
+          return el && safeText(el.value).length > 0;
         });
-        const password = document.getElementById('custPassword')?.value || '';
-        const confirmPassword = document.getElementById('custConfirmpassword')?.value || '';
-        if (password !== confirmPassword || password.length < 8) allValid = false;
+        const pass = qs('custPassword')?.value || '';
+        const conf = qs('custConfirmpassword')?.value || '';
+        if (pass !== conf || pass.length < 8) all = false;
         if (submitBtn) {
-          submitBtn.disabled = !allValid;
-          submitBtn.classList.toggle('enabled', allValid);
+          submitBtn.disabled = !all;
+          submitBtn.classList.toggle('enabled', all);
         }
       } catch (e) { /* ignore */ }
     };
-
-    requiredFields.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener('input', window.validateContactForm);
-    });
+    required.forEach(id => { const el = qs(id); if (el) el.addEventListener('input', validateContactForm); });
 
     // password strength + match UI
-    const passwordInput = document.getElementById('custPassword');
-    const confirmInput = document.getElementById('custConfirmpassword');
-    const passwordMessage = document.getElementById('passwordMessage');
-    const passwordMeter = document.getElementById('passwordStrength');
+    const passwordInput = qs('custPassword');
+    const confirmInput = qs('custConfirmpassword');
+    const passwordMessage = qs('passwordMessage');
+    const passwordMeter = qs('passwordStrength');
 
     if (confirmInput && passwordInput && passwordMessage) {
       confirmInput.addEventListener('input', () => {
         if (confirmInput.value !== passwordInput.value) {
-          passwordMessage.style.color = 'var(--accent-red)';
-          passwordMessage.textContent = 'Passwords do not match. Please re‑enter.';
+          passwordMessage.style.color = 'var(--accent-red)'; passwordMessage.textContent = 'Passwords do not match. Please re‑enter.';
         } else {
-          passwordMessage.style.color = 'var(--accent-green)';
-          passwordMessage.textContent = 'Passwords match ✔';
+          passwordMessage.style.color = 'var(--accent-green)'; passwordMessage.textContent = 'Passwords match ✔';
         }
-        window.validateContactForm();
+        validateContactForm();
       });
     }
-
     if (passwordInput && passwordMeter) {
       passwordInput.addEventListener('input', () => {
         const val = passwordInput.value || '';
@@ -1367,33 +1297,31 @@ meter::-moz-meter-bar {
         if (/[0-9]/.test(val)) score++;
         if (/[^A-Za-z0-9]/.test(val)) score++;
         passwordMeter.value = score;
-        window.validateContactForm();
+        validateContactForm();
       });
     }
 
-    // wire submit handler (used by inline onsubmit or form submit)
+    // final submit handler
     window.handleFormSubmit = async function handleFormSubmit(e) {
-      if (e && e.preventDefault) e.preventDefault();
+      e.preventDefault();
       if (!submitBtn || submitBtn.disabled) return;
-
       const loggedIn = sessionStorage.getItem('loggedIn') === 'true';
       if (!loggedIn) { alert('Please log in before signing up.'); return; }
 
-      const phoneElLocal = document.getElementById('custPhone');
+      const phoneEl = qs('custPhone');
       const payload = {
-        firstName: (document.getElementById('custFirstname')?.value || '').trim(),
-        lastName:  (document.getElementById('custLastname')?.value || '').trim(),
-        address:   (document.getElementById('custAddress')?.value || '').trim(),
-        city:      (document.getElementById('custCity')?.value || '').trim(),
-        state:     (document.getElementById('custState')?.value || '').trim(),
-        zip:       (document.getElementById('custZip')?.value || '').trim(),
-        email:     (document.getElementById('custEmail')?.value || '').trim(),
-        password:  (document.getElementById('custPassword')?.value || '').trim(),
-        phone:     (phoneElLocal?.dataset?.raw || (phoneElLocal?.value || '').replace(/\D/g, '')),
+        firstName: safeText(qs('custFirstname')?.value),
+        lastName: safeText(qs('custLastname')?.value),
+        address: safeText(qs('custAddress')?.value),
+        city: safeText(qs('custCity')?.value),
+        state: safeText(qs('custState')?.value),
+        zip: safeText(qs('custZip')?.value),
+        email: safeText(qs('custEmail')?.value),
+        password: safeText(qs('custPassword')?.value),
+        phone: (phoneEl?.dataset?.raw || (phoneEl?.value || '').replace(/\D/g, '')),
         verificationCode: undefined
       };
-
-      const confirm = (document.getElementById('custConfirmpassword')?.value || '');
+      const confirm = safeText(qs('custConfirmpassword')?.value);
       if (payload.password !== confirm) { alert('Passwords do not match.'); return; }
 
       const originalText = submitBtn.textContent;
@@ -1406,8 +1334,8 @@ meter::-moz-meter-bar {
         const omni = await getOmniTok(submitBtn.dataset.act || 'ppsc_signup');
         if (!omni?.endpoint) throw new Error('Omnitok preflight did not return an endpoint');
         payload.verificationCode = omni.verificationCode;
-
         const jobId = `PPSSIGNUP-${crypto.randomUUID()}`;
+
         const res = await fetch(omni.endpoint, {
           method: 'POST',
           headers: {
@@ -1419,26 +1347,18 @@ meter::-moz-meter-bar {
           },
           body: JSON.stringify(payload)
         });
-
         if (!res.ok) {
           let detail = '';
-          try { const j = await res.json(); detail = j?.error?.message || ''; } catch {}
+          try { const j = await res.json(); detail = j?.error?.message || ''; } catch(_) {}
           throw new Error(detail || `Signup failed (${res.status})`);
         }
-
-        try { await res.json(); } catch (_) { /* may be empty */ }
-
+        let result = null;
+        try { result = await res.json(); } catch(_) {}
         alert(`✅ Welcome to the Trading Post, ${payload.firstName || payload.email}!`);
         submitBtn.textContent = '✓ Account Created';
         submitBtn.classList.add('is-success');
         resetContactForm();
-
-        setTimeout(() => {
-          submitBtn.disabled = false;
-          submitBtn.textContent = originalText;
-          submitBtn.classList.remove('is-success', 'btn-loading', 'enabled');
-        }, 800);
-
+        setTimeout(() => { submitBtn.disabled = false; submitBtn.textContent = originalText; submitBtn.classList.remove('is-success','btn-loading','enabled'); }, 800);
       } catch (err) {
         console.error('Signup error:', err);
         alert(`❌ Signup failed. ${err?.message || 'Please try again.'}`);
@@ -1452,38 +1372,8 @@ meter::-moz-meter-bar {
       }
     };
 
-    // initial validation run
-    if (typeof window.validateContactForm === 'function') window.validateContactForm();
   }); // end DOMContentLoaded
 
-  // --------------------
-  // Simple UI helper used by login success
-  // --------------------
-  window.showContactForm = function showContactForm() {
-    const login = document.getElementById('loginContainer');
-    const contact = document.getElementById('contactForm');
-    if (login) { login.classList.add('hidden'); login.style.zIndex = 1; }
-    if (contact) { contact.classList.remove('hidden'); contact.style.zIndex = 2; }
-  };
-
-  // --------------------
-  // Password toggle utility
-  // --------------------
-  window.togglePassword = function (inputId) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-    const makeVisible = input.type === 'password';
-    input.type = makeVisible ? 'text' : 'password';
-    // event target (if present) may be used for ARIA updates by caller
-    const btn = (typeof window.event !== 'undefined' && window.event && window.event.target) ? window.event.target : null;
-    if (btn && btn.setAttribute) {
-      btn.setAttribute('aria-pressed', String(makeVisible));
-      btn.setAttribute('aria-label', makeVisible ? 'Hide password' : 'Show password');
-      btn.classList.toggle('is-visible', makeVisible);
-    }
-    input.focus({ preventScroll: true });
-    try { const v = input.value; input.setSelectionRange(v.length, v.length); } catch (_) {}
-  };
 })();
 </script>
 </body>
