@@ -1289,106 +1289,186 @@ window.resetContactForm = resetContactForm;
     // set footer year
     const yearEl = qs('y'); if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-    // Wire phone formatting once with guards and improved UX
-const phone = qs('custPhone');
-if (phone) {
+// Authoritative phone edit handler using beforeinput (replace older handlers)
+(function wirePhoneBeforeInput() {
+  const phone = qs('custPhone');
+  if (!phone) return;
+
   phone.setAttribute('inputmode', 'numeric');
   phone.setAttribute('autocomplete', 'tel');
-  phone.setAttribute('maxlength', '20'); // visible cap for formatting characters; logic enforces 10 digits
+  phone.setAttribute('maxlength', '20'); // visible cap; digits are limited in code
 
-// Deterministic caret restore: build an array of indices where digits appear,
-// then map the requested digit offset to an exact character index in the formatted string.
-function placeCaretAfterDigits(input, digitIndex) {
-  if (!input || typeof digitIndex !== 'number') return;
-  const s = input.value || '';
-  // build digit positions
-  const pos = [];
-  for (let i = 0; i < s.length; i++) if (/\d/.test(s[i])) pos.push(i);
-  if (digitIndex <= 0) {
-    try { input.setSelectionRange(0, 0); } catch (_) {}
-    return;
-  }
-  // If user had N digits to left, we want caret after the Nth digit:
-  // - if digitIndex <= pos.length: place after pos[digitIndex-1]
-  // - otherwise place at end
-  if (pos.length >= digitIndex) {
-    const charIndex = pos[digitIndex - 1] + 1;
-    try { input.setSelectionRange(charIndex, charIndex); } catch (_) {}
-    return;
-  }
-  try { input.setSelectionRange(s.length, s.length); } catch (_) {}
-}
+  // Utility: turn formatted value into array of digits (string)
+  function digitsFrom(val) { return (String(val || '').replace(/\D/g, '') || '').slice(0, 11); /* allow leading 1 for detection */ }
 
-// Replacement onPhoneInput with deterministic caret logic and improved guards
-let phoneFormatting = false; // single guard used by handler
-function onPhoneInput(e) {
-  if (!e || !e.target) return;
-  const el = e.target;
-  if (el._phoneFormatting || phoneFormatting) return;
-  phoneFormatting = true;
-  el._phoneFormatting = true;
-  try {
-    // Number of digits left of caret before formatting
-    const selStart = (typeof el.selectionStart === 'number') ? el.selectionStart : el.value.length;
-    const left = el.value.slice(0, selStart);
-    const digitCountLeft = (left.match(/\d/g) || []).length;
-
-    // Canonicalize all digits from the visible value
-    let digits = (el.value || '').replace(/\D/g, '');
-    if (digits.length === 11 && digits[0] === '1') digits = digits.slice(1);
-    digits = digits.slice(0, 10);
-
-    // Persist + render
-    setPhoneRawAndRender(el, digits);
-
-    // Restore caret: use deterministic mapping
-    placeCaretAfterDigits(el, digitCountLeft);
-  } finally {
-    el._phoneFormatting = false;
-    phoneFormatting = false;
+  // Apply edit operation to canonical raw digits and render result.
+  // caretDigitIndex = number of digits to left of caret after operation (0..n)
+  function applyDigitsAndPlace(phoneEl, newDigits, caretDigitIndex) {
+    // Normalize leading 1 if present (and drop if needed)
+    if (newDigits.length > 10 && newDigits[0] === '1') newDigits = newDigits.slice(1);
+    newDigits = newDigits.replace(/\D/g, '').slice(0, 10);
+    setPhoneRawAndRender(phoneEl, newDigits);
+    // place caret after caretDigitIndex digits
+    const s = phoneEl.value || '';
+    const digitPos = [];
+    for (let i = 0; i < s.length; i++) if (/\d/.test(s[i])) digitPos.push(i);
+    if (caretDigitIndex <= 0) { try { phoneEl.setSelectionRange(0,0); } catch(_) {} return; }
+    if (digitPos.length >= caretDigitIndex) {
+      const ci = digitPos[caretDigitIndex - 1] + 1;
+      try { phoneEl.setSelectionRange(ci, ci); } catch(_) {}
+      return;
+    }
+    try { phoneEl.setSelectionRange(s.length, s.length); } catch(_) {}
   }
 
-  if (typeof validateContactForm === 'function') validateContactForm();
-}
-
-  // Prevent non-digit keystrokes while allowing navigation/edit keys
-  function phoneKeydown(e) {
-    const allowed =
-      e.key === 'Backspace' || e.key === 'Delete' ||
-      e.key === 'ArrowLeft' || e.key === 'ArrowRight' ||
-      e.key === 'Home' || e.key === 'End' ||
-      e.key === 'Tab' ||
-      (e.ctrlKey || e.metaKey);
-    if (allowed) return;
-    if (!/^\d$/.test(e.key)) e.preventDefault();
+  // Interpret selection as digit offsets (how many digits to left of selectionStart / selectionEnd)
+  function selectionToDigitOffsets(el) {
+    const s = el.value || '';
+    const selStart = (typeof el.selectionStart === 'number') ? el.selectionStart : s.length;
+    const selEnd = (typeof el.selectionEnd === 'number') ? el.selectionEnd : selStart;
+    const left = s.slice(0, selStart);
+    const right = s.slice(0, selEnd);
+    const startDigitCount = (left.match(/\d/g) || []).length;
+    const endDigitCount = (right.match(/\d/g) || []).length;
+    return { startDigitCount, endDigitCount };
   }
 
-  // Paste handler: sanitize pasted content and render canonical format
-  function phonePaste(e) {
-    e.preventDefault();
-    const text = (e.clipboardData || window.clipboardData).getData('text') || '';
-    const digits = text.replace(/\D/g, '').replace(/^1(?=\d{10}$)/,'').slice(0,10);
-    setPhoneRawAndRender(phone, digits);
+  // beforeinput handler: handle insertText, deleteContentBackward, deleteContentForward, insertFromPaste, insertFromDrop, replaceAroundCursor
+  function onPhoneBeforeInput(e) {
+    try {
+      // allow control keys and composition by deferring
+      if (!e.data && e.inputType === 'insertCompositionText') return;
+
+      const phoneEl = e.target;
+      if (!phoneEl) return;
+
+      // current canonical raw digits (ensure we have the authoritative raw)
+      const currentRaw = (phoneEl.dataset.raw || '').replace(/\D/g, '').slice(0, 10);
+
+      // selection digit offsets
+      const { startDigitCount, endDigitCount } = selectionToDigitOffsets(phoneEl);
+
+      // We'll compute newDigits and target caretDigitIndex
+      let newDigits = currentRaw;
+      let caretDigitIndex = startDigitCount;
+
+      switch (e.inputType) {
+        case 'insertText': {
+          // only accept digits typed
+          const ch = (e.data || '').replace(/\D/g, '');
+          if (!ch) { e.preventDefault(); return; }
+          // insert at startDigitCount position
+          const arr = newDigits.split('');
+          arr.splice(startDigitCount, endDigitCount - startDigitCount, ...ch.split(''));
+          newDigits = arr.join('');
+          caretDigitIndex = startDigitCount + ch.length;
+          e.preventDefault();
+          break;
+        }
+        case 'insertFromPaste': {
+          // sanitize paste
+          const pasted = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+          const digits = pasted.replace(/\D/g, '');
+          if (!digits) { e.preventDefault(); return; }
+          const arr = newDigits.split('');
+          arr.splice(startDigitCount, endDigitCount - startDigitCount, ...digits.split(''));
+          newDigits = arr.join('');
+          caretDigitIndex = startDigitCount + digits.length;
+          e.preventDefault();
+          break;
+        }
+        case 'deleteContentBackward': {
+          // if selection, remove selection; otherwise remove previous digit
+          if (endDigitCount > startDigitCount) {
+            const arr = newDigits.split('');
+            arr.splice(startDigitCount, endDigitCount - startDigitCount);
+            newDigits = arr.join('');
+            caretDigitIndex = startDigitCount;
+          } else if (startDigitCount > 0) {
+            const arr = newDigits.split('');
+            arr.splice(startDigitCount - 1, 1);
+            newDigits = arr.join('');
+            caretDigitIndex = startDigitCount - 1;
+          } else {
+            // nothing to delete; let browser do nothing
+          }
+          e.preventDefault();
+          break;
+        }
+        case 'deleteContentForward': {
+          // if selection, remove selection; otherwise remove next digit
+          if (endDigitCount > startDigitCount) {
+            const arr = newDigits.split('');
+            arr.splice(startDigitCount, endDigitCount - startDigitCount);
+            newDigits = arr.join('');
+            caretDigitIndex = startDigitCount;
+          } else {
+            const arr = newDigits.split('');
+            if (startDigitCount < arr.length) arr.splice(startDigitCount, 1);
+            newDigits = arr.join('');
+            caretDigitIndex = startDigitCount;
+          }
+          e.preventDefault();
+          break;
+        }
+        case 'insertFromDrop': {
+          const dragged = (e.dataTransfer || {}).getData?.('text') || '';
+          const digits = dragged.replace(/\D/g, '');
+          if (!digits) { e.preventDefault(); return; }
+          const arr = newDigits.split('');
+          arr.splice(startDigitCount, endDigitCount - startDigitCount, ...digits.split(''));
+          newDigits = arr.join('');
+          caretDigitIndex = startDigitCount + digits.length;
+          e.preventDefault();
+          break;
+        }
+        case 'insertReplacementText':
+        case 'insertParagraph':
+        default: {
+          // Unknown inputType — fallback to sanitizing entire value on next tick
+          // Let the browser update value then sanitize in input handler
+          return;
+        }
+      }
+
+      // Apply normalized digits and place caret
+      applyDigitsAndPlace(phoneEl, newDigits, caretDigitIndex);
+    } catch (err) {
+      // on any error, let browser handle it so user isn't blocked
+      return;
+    }
+  }
+
+  // Fallback input handler (covers cases beforeinput didn't handle)
+  function onPhoneInputFallback(e) {
+    try {
+      const el = e.target;
+      // compute digits from visible value and render canonical
+      const digits = digitsFrom(el.value);
+      applyDigitsAndPlace(el, digits, (digits || '').length);
+    } catch (_) {}
     if (typeof validateContactForm === 'function') validateContactForm();
   }
 
-  // Blur: final canonicalization (no extra side-effects)
-  function onPhoneBlur(e) {
-    formatPhoneInternal(e.target);
-    if (typeof validateContactForm === 'function') validateContactForm();
-  }
-
-  // Wire handlers idempotently
+  // Wire idempotently
   if (!phone._fv_phone_wired) {
-    phone.addEventListener('keydown', phoneKeydown);
-    phone.addEventListener('paste', phonePaste);
-    phone.addEventListener('input', onPhoneInput);
-    phone.addEventListener('blur', onPhoneBlur);
+    phone.addEventListener('beforeinput', onPhoneBeforeInput, { passive: false });
+    phone.addEventListener('input', onPhoneInputFallback);
+    phone.addEventListener('blur', (ev) => { formatPhoneInternal(ev.target); if (typeof validateContactForm === 'function') validateContactForm(); });
+    // still keep a keydown filter to reduce noise (optional)
+    phone.addEventListener('keydown', function (ev) {
+      const allowed =
+        ev.key === 'Backspace' || ev.key === 'Delete' ||
+        ev.key === 'ArrowLeft' || ev.key === 'ArrowRight' ||
+        ev.key === 'Home' || ev.key === 'End' ||
+        ev.key === 'Tab' ||
+        (ev.ctrlKey || ev.metaKey);
+      if (allowed) return;
+      if (!/^\d$/.test(ev.key)) ev.preventDefault();
+    });
     phone._fv_phone_wired = true;
-    formatPhoneInternal(phone);
   }
-}
-
+})();
 
     // Field-level validations
     setupFieldValidation('custFirstname', isNotEmpty, 'Please enter your first name');
