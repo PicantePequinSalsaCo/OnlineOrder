@@ -1289,14 +1289,12 @@ window.resetContactForm = resetContactForm;
     // set footer year
     const yearEl = qs('y'); if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-// Wire phone formatting once with guards and improved UX
+    // Wire phone formatting once with guards and improved UX
 const phone = qs('custPhone');
 if (phone) {
-  // Ensure input attributes are tight for UX
   phone.setAttribute('inputmode', 'numeric');
   phone.setAttribute('autocomplete', 'tel');
-  // visible maxlength kept generous because formatting adds chars; logic enforces 10 digits
-  phone.setAttribute('maxlength', '20');
+  phone.setAttribute('maxlength', '20'); // visible cap for formatting characters; logic enforces 10 digits
 
   // Helper: place caret immediately after the Nth digit in the visible formatted value
   function placeCaretAfterDigits(input, digitIndex) {
@@ -1319,33 +1317,26 @@ if (phone) {
   }
 
   // Robust input handler: preserves logical caret location and enforces 10-digit raw storage
-  let phoneFormatting = false;
   function onPhoneInput(e) {
     if (!e || !e.target) return;
     const el = e.target;
     if (el._phoneFormatting) return;
     el._phoneFormatting = true;
     try {
-      // number of digits to left of caret before formatting
       const selStart = (typeof el.selectionStart === 'number') ? el.selectionStart : el.value.length;
       const left = el.value.slice(0, selStart);
       const digitCountLeft = (left.match(/\d/g) || []).length;
 
-      // canonicalize digits from visible value (handles typing and pasted content)
       let digits = (el.value || '').replace(/\D/g, '');
       if (digits.length === 11 && digits[0] === '1') digits = digits.slice(1);
       digits = digits.slice(0, 10);
 
-      // persist + render
       setPhoneRawAndRender(el, digits);
-
-      // restore caret after same logical digit count
       placeCaretAfterDigits(el, digitCountLeft);
     } finally {
       el._phoneFormatting = false;
     }
 
-    // notify validators
     if (typeof validateContactForm === 'function') validateContactForm();
   }
 
@@ -1356,7 +1347,7 @@ if (phone) {
       e.key === 'ArrowLeft' || e.key === 'ArrowRight' ||
       e.key === 'Home' || e.key === 'End' ||
       e.key === 'Tab' ||
-      (e.ctrlKey || e.metaKey); // allow copy/paste/select all shortcuts
+      (e.ctrlKey || e.metaKey);
     if (allowed) return;
     if (!/^\d$/.test(e.key)) e.preventDefault();
   }
@@ -1369,7 +1360,6 @@ if (phone) {
     setPhoneRawAndRender(phone, digits);
     if (typeof validateContactForm === 'function') validateContactForm();
   }
-
 
   // Blur: final canonicalization (no extra side-effects)
   function onPhoneBlur(e) {
@@ -1384,10 +1374,10 @@ if (phone) {
     phone.addEventListener('input', onPhoneInput);
     phone.addEventListener('blur', onPhoneBlur);
     phone._fv_phone_wired = true;
-    // Initialize render if prefilled
     formatPhoneInternal(phone);
   }
 }
+
 
     // Field-level validations
     setupFieldValidation('custFirstname', isNotEmpty, 'Please enter your first name');
