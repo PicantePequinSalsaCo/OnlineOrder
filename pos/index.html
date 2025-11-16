@@ -1296,49 +1296,60 @@ if (phone) {
   phone.setAttribute('autocomplete', 'tel');
   phone.setAttribute('maxlength', '20'); // visible cap for formatting characters; logic enforces 10 digits
 
-  // Helper: place caret immediately after the Nth digit in the visible formatted value
-  function placeCaretAfterDigits(input, digitIndex) {
-    if (!input || typeof digitIndex !== 'number') return;
-    const s = input.value || '';
-    if (digitIndex <= 0) {
-      try { input.setSelectionRange(0, 0); } catch(_) {}
-      return;
-    }
-    let digitsSeen = 0;
-    for (let i = 0; i < s.length; i++) {
-      if (/\d/.test(s[i])) digitsSeen++;
-      if (digitsSeen === digitIndex) {
-        const pos = i + 1;
-        try { input.setSelectionRange(pos, pos); } catch(_) {}
-        return;
-      }
-    }
-    try { input.setSelectionRange(s.length, s.length); } catch(_) {}
+// Deterministic caret restore: build an array of indices where digits appear,
+// then map the requested digit offset to an exact character index in the formatted string.
+function placeCaretAfterDigits(input, digitIndex) {
+  if (!input || typeof digitIndex !== 'number') return;
+  const s = input.value || '';
+  // build digit positions
+  const pos = [];
+  for (let i = 0; i < s.length; i++) if (/\d/.test(s[i])) pos.push(i);
+  if (digitIndex <= 0) {
+    try { input.setSelectionRange(0, 0); } catch (_) {}
+    return;
+  }
+  // If user had N digits to left, we want caret after the Nth digit:
+  // - if digitIndex <= pos.length: place after pos[digitIndex-1]
+  // - otherwise place at end
+  if (pos.length >= digitIndex) {
+    const charIndex = pos[digitIndex - 1] + 1;
+    try { input.setSelectionRange(charIndex, charIndex); } catch (_) {}
+    return;
+  }
+  try { input.setSelectionRange(s.length, s.length); } catch (_) {}
+}
+
+// Replacement onPhoneInput with deterministic caret logic and improved guards
+let phoneFormatting = false; // single guard used by handler
+function onPhoneInput(e) {
+  if (!e || !e.target) return;
+  const el = e.target;
+  if (el._phoneFormatting || phoneFormatting) return;
+  phoneFormatting = true;
+  el._phoneFormatting = true;
+  try {
+    // Number of digits left of caret before formatting
+    const selStart = (typeof el.selectionStart === 'number') ? el.selectionStart : el.value.length;
+    const left = el.value.slice(0, selStart);
+    const digitCountLeft = (left.match(/\d/g) || []).length;
+
+    // Canonicalize all digits from the visible value
+    let digits = (el.value || '').replace(/\D/g, '');
+    if (digits.length === 11 && digits[0] === '1') digits = digits.slice(1);
+    digits = digits.slice(0, 10);
+
+    // Persist + render
+    setPhoneRawAndRender(el, digits);
+
+    // Restore caret: use deterministic mapping
+    placeCaretAfterDigits(el, digitCountLeft);
+  } finally {
+    el._phoneFormatting = false;
+    phoneFormatting = false;
   }
 
-  // Robust input handler: preserves logical caret location and enforces 10-digit raw storage
-  function onPhoneInput(e) {
-    if (!e || !e.target) return;
-    const el = e.target;
-    if (el._phoneFormatting) return;
-    el._phoneFormatting = true;
-    try {
-      const selStart = (typeof el.selectionStart === 'number') ? el.selectionStart : el.value.length;
-      const left = el.value.slice(0, selStart);
-      const digitCountLeft = (left.match(/\d/g) || []).length;
-
-      let digits = (el.value || '').replace(/\D/g, '');
-      if (digits.length === 11 && digits[0] === '1') digits = digits.slice(1);
-      digits = digits.slice(0, 10);
-
-      setPhoneRawAndRender(el, digits);
-      placeCaretAfterDigits(el, digitCountLeft);
-    } finally {
-      el._phoneFormatting = false;
-    }
-
-    if (typeof validateContactForm === 'function') validateContactForm();
-  }
+  if (typeof validateContactForm === 'function') validateContactForm();
+}
 
   // Prevent non-digit keystrokes while allowing navigation/edit keys
   function phoneKeydown(e) {
