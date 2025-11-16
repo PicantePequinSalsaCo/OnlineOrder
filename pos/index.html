@@ -1146,8 +1146,70 @@ window.formatPhone = function (inputOrId) {
   el._formatLock = true;
   try { formatPhoneInternal(el); } finally { el._formatLock = false; }
 };
+// Helper: place caret immediately after the Nth digit in the visible formatted value
+function placeCaretAfterDigits(input, digitIndex) {
+  if (!input || typeof digitIndex !== 'number') return;
+  const s = input.value || '';
+  if (digitIndex <= 0) {
+    try { input.setSelectionRange(0, 0); } catch(_) {}
+    return;
+  }
+  let digitsSeen = 0;
+  for (let i = 0; i < s.length; i++) {
+    if (/\d/.test(s[i])) digitsSeen++;
+    if (digitsSeen === digitIndex) {
+      const pos = i + 1;
+      try { input.setSelectionRange(pos, pos); } catch(_) {}
+      return;
+    }
+  }
+  try { input.setSelectionRange(s.length, s.length); } catch(_) {}
+}
+// Robust input handler: preserves logical caret location and enforces 10-digit raw storage
+function onPhoneInput(e) {
+  if (!e || !e.target) return;
+  const el = e.target;
+  if (el._phoneFormatting) return;
+  el._phoneFormatting = true;
+  try {
+    const selStart = (typeof el.selectionStart === 'number') ? el.selectionStart : el.value.length;
+    const left = el.value.slice(0, selStart);
+    const digitCountLeft = (left.match(/\d/g) || []).length;
 
-  /* ---------- UI helpers ---------- */
+    let digits = (el.value || '').replace(/\D/g, '');
+    if (digits.length === 11 && digits[0] === '1') digits = digits.slice(1);
+    digits = digits.slice(0, 10);
+
+    setPhoneRawAndRender(el, digits);
+    placeCaretAfterDigits(el, digitCountLeft);
+  } finally {
+    el._phoneFormatting = false;
+  }
+
+  if (typeof validateContactForm === 'function') validateContactForm();
+}
+
+function phoneKeydown(e) {
+  const allowed =
+    e.key === 'Backspace' || e.key === 'Delete' ||
+    e.key === 'ArrowLeft' || e.key === 'ArrowRight' ||
+    e.key === 'Home' || e.key === 'End' ||
+    e.key === 'Tab' ||
+    (e.ctrlKey || e.metaKey);
+  if (allowed) return;
+  if (!/^\d$/.test(e.key)) e.preventDefault();
+}
+
+function phonePaste(e) {
+  e.preventDefault();
+  const text = (e.clipboardData || window.clipboardData).getData('text') || '';
+  const digits = text.replace(/\D/g, '').replace(/^1(?=\d{10}$)/,'').slice(0,10);
+  const phone = e.target;
+  setPhoneRawAndRender(phone, digits);
+  if (typeof validateContactForm === 'function') validateContactForm();
+}
+
+ /* ---------- UI helpers ---------- */
   function showContactForm() {
     const login = qs('loginContainer'), contact = qs('contactForm');
     if (login) { login.classList.add('hidden'); login.style.zIndex = 1; }
@@ -1227,93 +1289,105 @@ window.resetContactForm = resetContactForm;
     // set footer year
     const yearEl = qs('y'); if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-  // Wire phone formatting once with guards and improved UX
-  const phone = qs('custPhone');
-  if (phone) {
-    // Ensure input attributes are tight for UX
-    phone.setAttribute('inputmode', 'numeric');
-    phone.setAttribute('autocomplete', 'tel');
-    // limit maxlength only on visible input to avoid unusual caret behavior; we still enforce digits cap in code
-    phone.setAttribute('maxlength', '20'); // visible length can be larger due to formatting, keep generous but logic caps digits
+// Wire phone formatting once with guards and improved UX
+const phone = qs('custPhone');
+if (phone) {
+  // Ensure input attributes are tight for UX
+  phone.setAttribute('inputmode', 'numeric');
+  phone.setAttribute('autocomplete', 'tel');
+  // visible maxlength kept generous because formatting adds chars; logic enforces 10 digits
+  phone.setAttribute('maxlength', '20');
 
-    // Prevent non-digit keystrokes while allowing navigation/edit keys
-    function phoneKeydown(e) {
-      const allowed =
-        e.key === 'Backspace' || e.key === 'Delete' ||
-        e.key === 'ArrowLeft' || e.key === 'ArrowRight' ||
-        e.key === 'Home' || e.key === 'End' ||
-        e.key === 'Tab' ||
-        (e.ctrlKey || e.metaKey); // allow copy/paste/select all shortcuts
-      if (allowed) return;
-      // allow digits only
-      if (!/^\d$/.test(e.key)) e.preventDefault();
+  // Helper: place caret immediately after the Nth digit in the visible formatted value
+  function placeCaretAfterDigits(input, digitIndex) {
+    if (!input || typeof digitIndex !== 'number') return;
+    const s = input.value || '';
+    if (digitIndex <= 0) {
+      try { input.setSelectionRange(0, 0); } catch(_) {}
+      return;
     }
-    // Paste handler: sanitize pasted content and render canonical format
-    function phonePaste(e) {
-      e.preventDefault();
-      const text = (e.clipboardData || window.clipboardData).getData('text') || '';
-      const digits = text.replace(/\D/g, '').replace(/^1(?=\d{10}$)/,'').slice(0,10);
-      setPhoneRawAndRender(phone, digits);
-      // after paste, trigger validators if present
-      if (typeof validateContactForm === 'function') validateContactForm();
+    let digitsSeen = 0;
+    for (let i = 0; i < s.length; i++) {
+      if (/\d/.test(s[i])) digitsSeen++;
+      if (digitsSeen === digitIndex) {
+        const pos = i + 1;
+        try { input.setSelectionRange(pos, pos); } catch(_) {}
+        return;
+      }
     }
-
-        // Input handler: canonicalize, cap digits, preserve reasonable caret
-    let phoneFormatting = false;
-    function onPhoneInput(e) {
-      if (phoneFormatting) return;
-      phoneFormatting = true;
-      try {
-        const el = e.target;
-
-        // Attempt to preserve caret position in terms of digit-offset
-        const selStart = typeof el.selectionStart === 'number' ? el.selectionStart : el.value.length;
-        const left = el.value.slice(0, selStart);
-        const digitCountLeft = (left.match(/\d/g) || []).length;
-
-        // Build new digits from full visible value (user may paste/mutate)
-        let digits = (el.value || '').replace(/\D/g, '');
-        // If user types a leading '1' unintentionally and digits is 11, drop it
-        if (digits.length === 11 && digits[0] === '1') digits = digits.slice(1);
-        digits = digits.slice(0, 10);
-
-        // Render canonical value
-        setPhoneRawAndRender(el, digits);
-
-        // Restore caret positioned after same count of digits where possible
-        const newRaw = el.value || '';
-        let placed = 0;
-        let pos = 0;
-        for (; pos < newRaw.length; pos++) {
-          if (/\d/.test(newRaw[pos])) placed++;
-          if (placed >= digitCountLeft) { pos = pos + 1; break; }
-        }
-        if (placed < digitCountLeft) pos = newRaw.length;
-        pos = Math.max(0, Math.min(newRaw.length, pos || digitCountLeft));
-        try { el.setSelectionRange(pos, pos); } catch (_) { /* ignore */ }
-
-      } finally { phoneFormatting = false; }
-            // notify validators
-      if (typeof validateContactForm === 'function') validateContactForm();
-    }
-
-    // Blur: final canonicalization (no extra side-effects)
-    function onPhoneBlur(e) {
-      formatPhoneInternal(e.target);
-      if (typeof validateContactForm === 'function') validateContactForm();
-    }
-
-    // Wire handlers idempotently
-    if (!phone._fv_phone_wired) {
-      phone.addEventListener('keydown', phoneKeydown);
-      phone.addEventListener('paste', phonePaste);
-      phone.addEventListener('input', onPhoneInput);
-      phone.addEventListener('blur', onPhoneBlur);
-      phone._fv_phone_wired = true;
-      // Initialize render if prefilled
-      formatPhoneInternal(phone);
-    }
+    try { input.setSelectionRange(s.length, s.length); } catch(_) {}
   }
+
+  // Robust input handler: preserves logical caret location and enforces 10-digit raw storage
+  let phoneFormatting = false;
+  function onPhoneInput(e) {
+    if (!e || !e.target) return;
+    const el = e.target;
+    if (el._phoneFormatting) return;
+    el._phoneFormatting = true;
+    try {
+      // number of digits to left of caret before formatting
+      const selStart = (typeof el.selectionStart === 'number') ? el.selectionStart : el.value.length;
+      const left = el.value.slice(0, selStart);
+      const digitCountLeft = (left.match(/\d/g) || []).length;
+
+      // canonicalize digits from visible value (handles typing and pasted content)
+      let digits = (el.value || '').replace(/\D/g, '');
+      if (digits.length === 11 && digits[0] === '1') digits = digits.slice(1);
+      digits = digits.slice(0, 10);
+
+      // persist + render
+      setPhoneRawAndRender(el, digits);
+
+      // restore caret after same logical digit count
+      placeCaretAfterDigits(el, digitCountLeft);
+    } finally {
+      el._phoneFormatting = false;
+    }
+
+    // notify validators
+    if (typeof validateContactForm === 'function') validateContactForm();
+  }
+
+  // Prevent non-digit keystrokes while allowing navigation/edit keys
+  function phoneKeydown(e) {
+    const allowed =
+      e.key === 'Backspace' || e.key === 'Delete' ||
+      e.key === 'ArrowLeft' || e.key === 'ArrowRight' ||
+      e.key === 'Home' || e.key === 'End' ||
+      e.key === 'Tab' ||
+      (e.ctrlKey || e.metaKey); // allow copy/paste/select all shortcuts
+    if (allowed) return;
+    if (!/^\d$/.test(e.key)) e.preventDefault();
+  }
+
+  // Paste handler: sanitize pasted content and render canonical format
+  function phonePaste(e) {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text') || '';
+    const digits = text.replace(/\D/g, '').replace(/^1(?=\d{10}$)/,'').slice(0,10);
+    setPhoneRawAndRender(phone, digits);
+    if (typeof validateContactForm === 'function') validateContactForm();
+  }
+
+
+  // Blur: final canonicalization (no extra side-effects)
+  function onPhoneBlur(e) {
+    formatPhoneInternal(e.target);
+    if (typeof validateContactForm === 'function') validateContactForm();
+  }
+
+  // Wire handlers idempotently
+  if (!phone._fv_phone_wired) {
+    phone.addEventListener('keydown', phoneKeydown);
+    phone.addEventListener('paste', phonePaste);
+    phone.addEventListener('input', onPhoneInput);
+    phone.addEventListener('blur', onPhoneBlur);
+    phone._fv_phone_wired = true;
+    // Initialize render if prefilled
+    formatPhoneInternal(phone);
+  }
+}
 
     // Field-level validations
     setupFieldValidation('custFirstname', isNotEmpty, 'Please enter your first name');
