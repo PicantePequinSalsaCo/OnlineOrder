@@ -1022,6 +1022,12 @@ meter::-moz-meter-bar {
   </div>
 </label><br>
 
+<!-- SMS Consent Checkbox -->
+<label style="display:block; margin-top:8px;">
+  <input type="checkbox" id="smsConsent" name="smsConsent" value="true" style="margin-right:8px;">
+  I consent to receiving transactional text messages and phone calls from Picante Pequin Salsa Co. <span style="color:var(--muted); font-size:.9rem;">(optional)</span>
+</label>
+
 <button type="submit" id="submitBtn" class="cta-btn" data-act="ppsc_signup"disabled>Join Now!</button>
       </form>
     </div>
@@ -1235,6 +1241,11 @@ function resetContactForm() {
   // clear phone raw + value
   const phone = document.getElementById('custPhone');
   if (phone) { phone.dataset.raw = ''; phone.value = ''; }
+
+    // clear SMS consent checkbox
+  const smsConsent = document.getElementById('smsConsent'); // 🔥
+  if (smsConsent) { smsConsent.checked = false; smsConsent.value = ''; }
+
 
   // run your main form validator (enables/disables submit)
   if (typeof validateContactForm === 'function') validateContactForm();
@@ -1630,6 +1641,8 @@ if (passwordInput && passwordMeter) {
       if (!loggedIn) { alert('Please log in before signing up.'); return; }
 
       const phoneEl = qs('custPhone');
+      const smsConsentEl = qs('smsConsent');
+
       const payload = {
         firstName: safeText(qs('custFirstname')?.value),
         lastName: safeText(qs('custLastname')?.value),
@@ -1640,6 +1653,7 @@ if (passwordInput && passwordMeter) {
         email: safeText(qs('custEmail')?.value),
         password: safeText(qs('custPassword')?.value),
         phone: (phoneEl?.dataset?.raw || (phoneEl?.value || '').replace(/\D/g, '')),
+        smsConsent: Boolean(smsConsentEl?.checked),
         verificationCode: undefined
       };
       const confirm = safeText(qs('custConfirmpassword')?.value);
