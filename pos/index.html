@@ -532,6 +532,7 @@ meter::-moz-meter-bar {
   100% { transform: translateX(100%); }
 }
 
+  /* Table styles */
   .table-wrap {
     overflow: auto;
     border-radius: 12px;
@@ -1217,12 +1218,7 @@ function phonePaste(e) {
   }
   window.showContactForm = showContactForm;
 
-  window.togglePassword = function(id) {
-    const input = qs(id); if (!input) return;
-    const makeVisible = input.type === 'password';
-    input.type = makeVisible ? 'text' : 'password';
-    try { input.focus({ preventScroll: true }); const v = input.value; input.setSelectionRange(v.length, v.length); } catch(_) {}
-  };
+
 
   /* ---------- Reset contact form ---------- */
 // Replace or update your resetContactForm with this version
@@ -1700,19 +1696,39 @@ if (passwordInput && passwordMeter) {
   }); // end DOMContentLoaded
 
   /* ---------- Password toggle utility (exposed) ---------- */
-  window.togglePassword = function (inputId) {
-    const input = qs(inputId);
-    if (!input) return;
-    const makeVisible = input.type === 'password';
-    input.type = makeVisible ? 'text' : 'password';
-    const btn = (typeof window.event !== 'undefined' && window.event && window.event.target) ? window.event.target : null;
-    if (btn && btn.setAttribute) {
-      btn.setAttribute('aria-pressed', String(makeVisible));
-      btn.setAttribute('aria-label', makeVisible ? 'Hide password' : 'Show password');
-      btn.classList.toggle('is-visible', makeVisible);
-    }
-    try { input.focus({ preventScroll: true }); const v = input.value; input.setSelectionRange(v.length, v.length); } catch (_) {}
-  };
+// Improved togglePassword (backwards compatible)
+window.togglePassword = function (inputOrId, evtOrBtn) {
+  // resolve input element
+  const input = (inputOrId && inputOrId.tagName) ? inputOrId : qs(inputOrId);
+  if (!input) return;
+
+  // resolve button element: prefer explicit arg, then event target, then nearby .pw-toggle
+  let btn = null;
+  if (evtOrBtn) {
+    // evtOrBtn might be an Event or a button element
+    if (evtOrBtn.currentTarget) btn = evtOrBtn.currentTarget;
+    else if (evtOrBtn.target) btn = evtOrBtn.target;
+    else if (evtOrBtn.tagName) btn = evtOrBtn;
+  }
+  if (!btn) {
+    // try to find a nearby toggle button: same .pw-field container or adjacent sibling
+    try {
+      const container = input.closest ? input.closest('.pw-field') : input.parentElement;
+      if (container) btn = container.querySelector('.pw-toggle') || container.querySelector('[data-pw-toggle]');
+    } catch (_) { /* ignore */ }
+  }
+
+  const makeVisible = input.type === 'password';
+  input.type = makeVisible ? 'text' : 'password';
+
+  if (btn && btn.setAttribute) {
+    btn.setAttribute('aria-pressed', String(makeVisible));
+    btn.setAttribute('aria-label', makeVisible ? 'Hide password' : 'Show password');
+    btn.classList.toggle('is-visible', makeVisible);
+  }
+
+  try { input.focus({ preventScroll: true }); const v = input.value; input.setSelectionRange(v.length, v.length); } catch (_) {}
+};
 })();
 </script>
 </body>
