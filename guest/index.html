@@ -532,6 +532,7 @@ meter::-moz-meter-bar {
   100% { transform: translateX(100%); }
 }
 
+  /* Table styles */
   .table-wrap {
     overflow: auto;
     border-radius: 12px;
@@ -979,8 +980,7 @@ meter::-moz-meter-bar {
         <label>
           Phone:<br>
           <input type="tel" id="custPhone" name="tel" autocomplete="tel"
-                 inputmode="numeric" maxlength="18"
-                 placeholder="Enter 10 digits"
+                 inputmode="numeric" placeholder="Enter 10 digits"
                  style="width:100%; padding:8px; margin:6px 0;" >
         </label><br>
 
@@ -1105,24 +1105,112 @@ meter::-moz-meter-bar {
     if (raw.length >= 3) return `(${raw.slice(0,3)}) ${raw.slice(3)}`;
     return raw;
   }
-  function formatPhoneInternal(input) {
-    if (!input) return;
-    const digits = (input.value || '').replace(/\D/g,'').replace(/^1(?=\d{10}$)/, '').substring(0,10);
-    input.dataset.raw = digits;
-    input.value = formatPhoneValueFromRaw(digits);
+
+  // NEW: strict canonicalizer that always writes exactly the allowed 10-digit raw value
+  function setPhoneRawAndRender(input, digits) {
+  if (!input) return;
+  // Normalize: drop any leading country digit '1' when user pasted/typed it as country code,
+  // but only if the resulting remaining digits are 10 or fewer.
+  if (digits.length > 10 && digits[0] === '1') {
+    digits = digits.slice(1);
+  }
+  // Enforce a hard 10-digit limit
+  digits = digits.replace(/\D/g, '').slice(0, 10);
+  input.dataset.raw = digits;
+  // Render the formatted view (progressive)
+  input.value = formatPhoneValueFromRaw(digits);
+}
+
+
+// UPDATED: canonical internal formatter used by input and blur handlers
+function formatPhoneInternal(input) {
+  if (!input) return;
+  // Extract digits only (from user visible value or dataset.raw)
+  let digits = (input.value || '').replace(/\D/g, '');
+
+  // If user typed an extra leading '1' and total becomes 11, drop leading 1 (US country code)
+  if (digits.length === 11 && digits[0] === '1') digits = digits.slice(1);
+
+  // Enforce 10-digit maximum
+  digits = digits.slice(0, 10);
+
+  // Persist the canonical raw digits and render the formatted value
+  input.dataset.raw = digits;
+  input.value = formatPhoneValueFromRaw(digits);
+}
+
+// Expose compatibility function (preserves onblur inline usage)
+window.formatPhone = function (inputOrId) {
+  const el = inputOrId && inputOrId.tagName ? inputOrId : qs(inputOrId);
+  if (!el) return;
+  if (el._formatLock) return;
+  el._formatLock = true;
+  try { formatPhoneInternal(el); } finally { el._formatLock = false; }
+};
+// Helper: place caret immediately after the Nth digit in the visible formatted value
+function placeCaretAfterDigits(input, digitIndex) {
+  if (!input || typeof digitIndex !== 'number') return;
+  const s = input.value || '';
+  if (digitIndex <= 0) {
+    try { input.setSelectionRange(0, 0); } catch(_) {}
+    return;
+  }
+  let digitsSeen = 0;
+  for (let i = 0; i < s.length; i++) {
+    if (/\d/.test(s[i])) digitsSeen++;
+    if (digitsSeen === digitIndex) {
+      const pos = i + 1;
+      try { input.setSelectionRange(pos, pos); } catch(_) {}
+      return;
+    }
+  }
+  try { input.setSelectionRange(s.length, s.length); } catch(_) {}
+}
+// Robust input handler: preserves logical caret location and enforces 10-digit raw storage
+function onPhoneInput(e) {
+  if (!e || !e.target) return;
+  const el = e.target;
+  if (el._phoneFormatting) return;
+  el._phoneFormatting = true;
+  try {
+    const selStart = (typeof el.selectionStart === 'number') ? el.selectionStart : el.value.length;
+    const left = el.value.slice(0, selStart);
+    const digitCountLeft = (left.match(/\d/g) || []).length;
+
+    let digits = (el.value || '').replace(/\D/g, '');
+    if (digits.length === 11 && digits[0] === '1') digits = digits.slice(1);
+    digits = digits.slice(0, 10);
+
+    setPhoneRawAndRender(el, digits);
+    placeCaretAfterDigits(el, digitCountLeft);
+  } finally {
+    el._phoneFormatting = false;
   }
 
-  // Expose a single global formatPhone for any inline onblur usages
-  window.formatPhone = function (input) {
-    const el = input && input.tagName ? input : qs(input);
-    if (!el) return;
-    // lightweight reentry guard per element
-    if (el._formatLock) return;
-    el._formatLock = true;
-    try { formatPhoneInternal(el); } finally { el._formatLock = false; }
-  };
+  if (typeof validateContactForm === 'function') validateContactForm();
+}
 
-  /* ---------- UI helpers ---------- */
+function phoneKeydown(e) {
+  const allowed =
+    e.key === 'Backspace' || e.key === 'Delete' ||
+    e.key === 'ArrowLeft' || e.key === 'ArrowRight' ||
+    e.key === 'Home' || e.key === 'End' ||
+    e.key === 'Tab' ||
+    (e.ctrlKey || e.metaKey);
+  if (allowed) return;
+  if (!/^\d$/.test(e.key)) e.preventDefault();
+}
+
+function phonePaste(e) {
+  e.preventDefault();
+  const text = (e.clipboardData || window.clipboardData).getData('text') || '';
+  const digits = text.replace(/\D/g, '').replace(/^1(?=\d{10}$)/,'').slice(0,10);
+  const phone = e.target;
+  setPhoneRawAndRender(phone, digits);
+  if (typeof validateContactForm === 'function') validateContactForm();
+}
+
+ /* ---------- UI helpers ---------- */
   function showContactForm() {
     const login = qs('loginContainer'), contact = qs('contactForm');
     if (login) { login.classList.add('hidden'); login.style.zIndex = 1; }
@@ -1130,12 +1218,7 @@ meter::-moz-meter-bar {
   }
   window.showContactForm = showContactForm;
 
-  window.togglePassword = function(id) {
-    const input = qs(id); if (!input) return;
-    const makeVisible = input.type === 'password';
-    input.type = makeVisible ? 'text' : 'password';
-    try { input.focus({ preventScroll: true }); const v = input.value; input.setSelectionRange(v.length, v.length); } catch(_) {}
-  };
+
 
   /* ---------- Reset contact form ---------- */
 // Replace or update your resetContactForm with this version
@@ -1202,23 +1285,186 @@ window.resetContactForm = resetContactForm;
     // set footer year
     const yearEl = qs('y'); if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-    // Wire phone formatting once with reentry guard
-    const phone = qs('custPhone');
-    if (phone) {
-      let formatting = false;
-      phone.addEventListener('input', (e) => {
-        if (formatting) return;
-        formatting = true;
-        try {
-          formatPhoneInternal(e.target);
-        } finally { formatting = false; }
-        // validators already listen to input; no extra dispatch needed
-      });
-      phone.addEventListener('blur', (e) => {
-        // final formatting on blur (no extra dispatch)
-        formatPhoneInternal(e.target);
-      });
+// Authoritative phone edit handler using beforeinput (replace older handlers)
+(function wirePhoneBeforeInput() {
+  const phone = qs('custPhone');
+  if (!phone) return;
+
+  phone.setAttribute('inputmode', 'numeric');
+  phone.setAttribute('autocomplete', 'tel');
+  phone.setAttribute('maxlength', '20'); // visible cap; digits are limited in code
+
+  // Utility: turn formatted value into array of digits (string)
+  function digitsFrom(val) { return (String(val || '').replace(/\D/g, '') || '').slice(0, 11); /* allow leading 1 for detection */ }
+
+  // Apply edit operation to canonical raw digits and render result.
+  // caretDigitIndex = number of digits to left of caret after operation (0..n)
+  function applyDigitsAndPlace(phoneEl, newDigits, caretDigitIndex) {
+    // Normalize leading 1 if present (and drop if needed)
+    if (newDigits.length > 10 && newDigits[0] === '1') newDigits = newDigits.slice(1);
+    newDigits = newDigits.replace(/\D/g, '').slice(0, 10);
+    setPhoneRawAndRender(phoneEl, newDigits);
+    // place caret after caretDigitIndex digits
+    const s = phoneEl.value || '';
+    const digitPos = [];
+    for (let i = 0; i < s.length; i++) if (/\d/.test(s[i])) digitPos.push(i);
+    if (caretDigitIndex <= 0) { try { phoneEl.setSelectionRange(0,0); } catch(_) {} return; }
+    if (digitPos.length >= caretDigitIndex) {
+      const ci = digitPos[caretDigitIndex - 1] + 1;
+      try { phoneEl.setSelectionRange(ci, ci); } catch(_) {}
+      return;
     }
+    try { phoneEl.setSelectionRange(s.length, s.length); } catch(_) {}
+  }
+
+  // Interpret selection as digit offsets (how many digits to left of selectionStart / selectionEnd)
+  function selectionToDigitOffsets(el) {
+    const s = el.value || '';
+    const selStart = (typeof el.selectionStart === 'number') ? el.selectionStart : s.length;
+    const selEnd = (typeof el.selectionEnd === 'number') ? el.selectionEnd : selStart;
+    const left = s.slice(0, selStart);
+    const right = s.slice(0, selEnd);
+    const startDigitCount = (left.match(/\d/g) || []).length;
+    const endDigitCount = (right.match(/\d/g) || []).length;
+    return { startDigitCount, endDigitCount };
+  }
+
+  // beforeinput handler: handle insertText, deleteContentBackward, deleteContentForward, insertFromPaste, insertFromDrop, replaceAroundCursor
+  function onPhoneBeforeInput(e) {
+    try {
+      // allow control keys and composition by deferring
+      if (!e.data && e.inputType === 'insertCompositionText') return;
+
+      const phoneEl = e.target;
+      if (!phoneEl) return;
+
+      // current canonical raw digits (ensure we have the authoritative raw)
+      const currentRaw = (phoneEl.dataset.raw || '').replace(/\D/g, '').slice(0, 10);
+
+      // selection digit offsets
+      const { startDigitCount, endDigitCount } = selectionToDigitOffsets(phoneEl);
+
+      // We'll compute newDigits and target caretDigitIndex
+      let newDigits = currentRaw;
+      let caretDigitIndex = startDigitCount;
+
+      switch (e.inputType) {
+        case 'insertText': {
+          // only accept digits typed
+          const ch = (e.data || '').replace(/\D/g, '');
+          if (!ch) { e.preventDefault(); return; }
+          // insert at startDigitCount position
+          const arr = newDigits.split('');
+          arr.splice(startDigitCount, endDigitCount - startDigitCount, ...ch.split(''));
+          newDigits = arr.join('');
+          caretDigitIndex = startDigitCount + ch.length;
+          e.preventDefault();
+          break;
+        }
+        case 'insertFromPaste': {
+          // sanitize paste
+          const pasted = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+          const digits = pasted.replace(/\D/g, '');
+          if (!digits) { e.preventDefault(); return; }
+          const arr = newDigits.split('');
+          arr.splice(startDigitCount, endDigitCount - startDigitCount, ...digits.split(''));
+          newDigits = arr.join('');
+          caretDigitIndex = startDigitCount + digits.length;
+          e.preventDefault();
+          break;
+        }
+        case 'deleteContentBackward': {
+          // if selection, remove selection; otherwise remove previous digit
+          if (endDigitCount > startDigitCount) {
+            const arr = newDigits.split('');
+            arr.splice(startDigitCount, endDigitCount - startDigitCount);
+            newDigits = arr.join('');
+            caretDigitIndex = startDigitCount;
+          } else if (startDigitCount > 0) {
+            const arr = newDigits.split('');
+            arr.splice(startDigitCount - 1, 1);
+            newDigits = arr.join('');
+            caretDigitIndex = startDigitCount - 1;
+          } else {
+            // nothing to delete; let browser do nothing
+          }
+          e.preventDefault();
+          break;
+        }
+        case 'deleteContentForward': {
+          // if selection, remove selection; otherwise remove next digit
+          if (endDigitCount > startDigitCount) {
+            const arr = newDigits.split('');
+            arr.splice(startDigitCount, endDigitCount - startDigitCount);
+            newDigits = arr.join('');
+            caretDigitIndex = startDigitCount;
+          } else {
+            const arr = newDigits.split('');
+            if (startDigitCount < arr.length) arr.splice(startDigitCount, 1);
+            newDigits = arr.join('');
+            caretDigitIndex = startDigitCount;
+          }
+          e.preventDefault();
+          break;
+        }
+        case 'insertFromDrop': {
+          const dragged = (e.dataTransfer || {}).getData?.('text') || '';
+          const digits = dragged.replace(/\D/g, '');
+          if (!digits) { e.preventDefault(); return; }
+          const arr = newDigits.split('');
+          arr.splice(startDigitCount, endDigitCount - startDigitCount, ...digits.split(''));
+          newDigits = arr.join('');
+          caretDigitIndex = startDigitCount + digits.length;
+          e.preventDefault();
+          break;
+        }
+        case 'insertReplacementText':
+        case 'insertParagraph':
+        default: {
+          // Unknown inputType — fallback to sanitizing entire value on next tick
+          // Let the browser update value then sanitize in input handler
+          return;
+        }
+      }
+
+      // Apply normalized digits and place caret
+      applyDigitsAndPlace(phoneEl, newDigits, caretDigitIndex);
+    } catch (err) {
+      // on any error, let browser handle it so user isn't blocked
+      return;
+    }
+  }
+
+  // Fallback input handler (covers cases beforeinput didn't handle)
+  function onPhoneInputFallback(e) {
+    try {
+      const el = e.target;
+      // compute digits from visible value and render canonical
+      const digits = digitsFrom(el.value);
+      applyDigitsAndPlace(el, digits, (digits || '').length);
+    } catch (_) {}
+    if (typeof validateContactForm === 'function') validateContactForm();
+  }
+
+  // Wire idempotently
+  if (!phone._fv_phone_wired) {
+    phone.addEventListener('beforeinput', onPhoneBeforeInput, { passive: false });
+    phone.addEventListener('input', onPhoneInputFallback);
+    phone.addEventListener('blur', (ev) => { formatPhoneInternal(ev.target); if (typeof validateContactForm === 'function') validateContactForm(); });
+    // still keep a keydown filter to reduce noise (optional)
+    phone.addEventListener('keydown', function (ev) {
+      const allowed =
+        ev.key === 'Backspace' || ev.key === 'Delete' ||
+        ev.key === 'ArrowLeft' || ev.key === 'ArrowRight' ||
+        ev.key === 'Home' || ev.key === 'End' ||
+        ev.key === 'Tab' ||
+        (ev.ctrlKey || ev.metaKey);
+      if (allowed) return;
+      if (!/^\d$/.test(ev.key)) ev.preventDefault();
+    });
+    phone._fv_phone_wired = true;
+  }
+})();
 
     // Field-level validations
     setupFieldValidation('custFirstname', isNotEmpty, 'Please enter your first name');
@@ -1298,58 +1544,83 @@ window.resetContactForm = resetContactForm;
       });
     }
 
-    /* ---------- Contact / Signup form ---------- */
-    const submitBtn = qs('submitBtn');
-    const required = [
-      'custFirstname','custLastname','custAddress','custCity',
-      'custState','custZip','custEmail','custPhone','custPassword','custConfirmpassword'
-    ];
+/* ---------- Contact / Signup form ---------- */
+const submitBtn = qs('submitBtn');
+const required = [
+  'custFirstname','custLastname','custAddress','custCity',
+  'custState','custZip','custEmail','custPhone','custPassword','custConfirmpassword'
+];
 
-    window.validateContactForm = function validateContactForm() {
-      try {
-        let all = required.every(id => {
-          const el = qs(id);
-          return el && safeText(el.value).length > 0;
-        });
-        const pass = qs('custPassword')?.value || '';
-        const conf = qs('custConfirmpassword')?.value || '';
-        if (pass !== conf || pass.length < 8) all = false;
-        if (submitBtn) {
-          submitBtn.disabled = !all;
-          submitBtn.classList.toggle('enabled', all);
-        }
-      } catch (e) {}
-    };
-    required.forEach(id => { const el = qs(id); if (el) el.addEventListener('input', validateContactForm); });
-
-    // password strength + match UI
-    const passwordInput = qs('custPassword');
-    const confirmInput = qs('custConfirmpassword');
-    const passwordMessage = qs('passwordMessage');
-    const passwordMeter = qs('passwordStrength');
-
-    if (confirmInput && passwordInput && passwordMessage) {
-      confirmInput.addEventListener('input', () => {
-        if (confirmInput.value !== passwordInput.value) {
-          passwordMessage.style.color = 'var(--accent-red)'; passwordMessage.textContent = 'Passwords do not match. Please re‑enter.';
-        } else {
-          passwordMessage.style.color = 'var(--accent-green)'; passwordMessage.textContent = 'Passwords match ✔';
-        }
-        validateContactForm();
-      });
+window.validateContactForm = function validateContactForm() {
+  try {
+    let all = required.every(id => {
+      const el = qs(id);
+      return el && safeText(el.value).length > 0;
+    });
+    const pass = qs('custPassword')?.value || '';
+    const conf = qs('custConfirmpassword')?.value || '';
+    if (pass !== conf || pass.length < 8) all = false;
+    if (submitBtn) {
+      submitBtn.disabled = !all;
+      submitBtn.classList.toggle('enabled', all);
     }
-    if (passwordInput && passwordMeter) {
-      passwordInput.addEventListener('input', () => {
-        const val = passwordInput.value || '';
-        let score = 0;
-        if (val.length >= 8) score++;
-        if (/[A-Z]/.test(val)) score++;
-        if (/[0-9]/.test(val)) score++;
-        if (/[^A-Za-z0-9]/.test(val)) score++;
-        passwordMeter.value = score;
-        validateContactForm();
-      });
-    }
+  } catch (e) {}
+};
+required.forEach(id => { const el = qs(id); if (el) el.addEventListener('input', validateContactForm); });
+
+// password strength + match UI
+const passwordInput = qs('custPassword');
+const confirmInput = qs('custConfirmpassword');
+const passwordMessage = qs('passwordMessage');
+const passwordMeter = qs('passwordStrength');
+
+
+// Helper: update match message (runs when either field changes)
+function updatePasswordMatchMessage() {
+  if (!passwordMessage || !passwordInput || !confirmInput) return;
+
+  // Clear message when both empty (keeps resetContactForm tidy)
+  if (!passwordInput.value && !confirmInput.value) {
+    passwordMessage.textContent = '';
+    passwordMessage.style.color = 'var(--muted)';
+    if (typeof validateContactForm === 'function') validateContactForm();
+    return;
+  }
+
+  if (confirmInput.value !== passwordInput.value) {
+    passwordMessage.style.color = 'var(--accent-red)';
+    passwordMessage.textContent = 'Passwords do not match. Please re‑enter.';
+  } else {
+    passwordMessage.style.color = 'var(--accent-green)';
+    passwordMessage.textContent = 'Passwords match ✔';
+  }
+
+  if (typeof validateContactForm === 'function') validateContactForm();
+}
+
+// Wire both directions: revalidate as user types in either field
+if (confirmInput && passwordInput && passwordMessage) {
+  // Keep confirm listener (user typing confirm still sees instant feedback)
+  confirmInput.addEventListener('input', updatePasswordMatchMessage);
+  // NEW: also run match update when primary password changes
+  passwordInput.addEventListener('input', updatePasswordMatchMessage);
+}
+
+// Strength meter logic remains but also triggers match update
+if (passwordInput && passwordMeter) {
+  passwordInput.addEventListener('input', () => {
+    const val = passwordInput.value || '';
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    passwordMeter.value = score;
+
+    // Keep form state in sync and refresh match message in case password changed
+    if (typeof updatePasswordMatchMessage === 'function') updatePasswordMatchMessage();
+  });
+}
 
     // final submit handler
     window.handleFormSubmit = async function handleFormSubmit(e) {
@@ -1425,19 +1696,39 @@ window.resetContactForm = resetContactForm;
   }); // end DOMContentLoaded
 
   /* ---------- Password toggle utility (exposed) ---------- */
-  window.togglePassword = function (inputId) {
-    const input = qs(inputId);
-    if (!input) return;
-    const makeVisible = input.type === 'password';
-    input.type = makeVisible ? 'text' : 'password';
-    const btn = (typeof window.event !== 'undefined' && window.event && window.event.target) ? window.event.target : null;
-    if (btn && btn.setAttribute) {
-      btn.setAttribute('aria-pressed', String(makeVisible));
-      btn.setAttribute('aria-label', makeVisible ? 'Hide password' : 'Show password');
-      btn.classList.toggle('is-visible', makeVisible);
-    }
-    try { input.focus({ preventScroll: true }); const v = input.value; input.setSelectionRange(v.length, v.length); } catch (_) {}
-  };
+// Improved togglePassword (backwards compatible)
+window.togglePassword = function (inputOrId, evtOrBtn) {
+  // resolve input element
+  const input = (inputOrId && inputOrId.tagName) ? inputOrId : qs(inputOrId);
+  if (!input) return;
+
+  // resolve button element: prefer explicit arg, then event target, then nearby .pw-toggle
+  let btn = null;
+  if (evtOrBtn) {
+    // evtOrBtn might be an Event or a button element
+    if (evtOrBtn.currentTarget) btn = evtOrBtn.currentTarget;
+    else if (evtOrBtn.target) btn = evtOrBtn.target;
+    else if (evtOrBtn.tagName) btn = evtOrBtn;
+  }
+  if (!btn) {
+    // try to find a nearby toggle button: same .pw-field container or adjacent sibling
+    try {
+      const container = input.closest ? input.closest('.pw-field') : input.parentElement;
+      if (container) btn = container.querySelector('.pw-toggle') || container.querySelector('[data-pw-toggle]');
+    } catch (_) { /* ignore */ }
+  }
+
+  const makeVisible = input.type === 'password';
+  input.type = makeVisible ? 'text' : 'password';
+
+  if (btn && btn.setAttribute) {
+    btn.setAttribute('aria-pressed', String(makeVisible));
+    btn.setAttribute('aria-label', makeVisible ? 'Hide password' : 'Show password');
+    btn.classList.toggle('is-visible', makeVisible);
+  }
+
+  try { input.focus({ preventScroll: true }); const v = input.value; input.setSelectionRange(v.length, v.length); } catch (_) {}
+};
 })();
 </script>
 </body>
