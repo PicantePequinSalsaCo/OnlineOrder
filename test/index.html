@@ -1380,10 +1380,11 @@ function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
 
     const sid = refreshSid();
     const email = emailInput ? emailInput.value.trim() : undefined;
+    const smsConsentEl = qs('smsConsent');
 
     const result = await handleApiButton(btn, async () => {
       // Build a flat payload; getOmniTok will inject sid
-      const payload = email ? { act, email } : { act };
+      const payload = email ? { act, email, smsConsent: Boolean(smsConsentEl?.checked)} : { act };
       await getOmniTok(payload); // backend returns minimal OK/FAIL for _code flows
       return { status: 'OK', message: 'Verification code sent' };
     });
