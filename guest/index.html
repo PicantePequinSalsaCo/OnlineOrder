@@ -532,6 +532,85 @@ meter::-moz-meter-bar {
   100% { transform: translateX(100%); }
 }
 
+/* Inline consent container */
+.consent-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--ink, #fff);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  padding: 0;
+  flex: 0 0 auto;       /* 🔒 Prevent flex/grid stretching */
+  width: auto;          /* 🔒 Shrink to fit content */
+}
+
+/* Checkbox: force square */
+.consent-inline input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--accent-orange, #ff6a00);
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+  appearance: none;
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+  flex: 0 0 18px;       /* 🔒 Explicit fixed size in flex/grid */
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Checked state: orange fill + white checkmark */
+.consent-inline input[type="checkbox"]:checked {
+  background-color: var(--accent-orange, #ff6a00);
+}
+
+.consent-inline input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: white;
+  font-weight: bold;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* Consent text */
+.consent-text {
+  flex: 1 1 auto;
+  color: var(--muted, #ccc);
+}
+
+/* Optional microcopy */
+.consent-optional {
+  color: var(--muted, #888);
+  font-size: 0.88rem;
+  margin-left: 4px;
+}
+
+/* Responsive wrap for mobile */
+@media (max-width: 600px) {
+  .consent-inline {
+    white-space: normal;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .consent-inline input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    flex: 0 0 17px;     /* 🔒 Keep square on mobile */
+  }
+}
+  
   /* Table styles */
   .table-wrap {
     overflow: auto;
@@ -1022,6 +1101,20 @@ meter::-moz-meter-bar {
   </div>
 </label><br>
 
+<!-- SMS Consent Checkbox -->
+<div id="SMSConsentMessage" style="font-size:.9rem; color:var(--muted); margin-top:12px;">
+  <strong>Optional SMS Notifications</strong>
+</div>
+<!-- Inline consent (place where you want it, e.g., under Phone) -->
+<label class="consent-inline" for="smsConsent">
+  <input type="checkbox" id="smsConsent" name="smsConsent" value="true" />
+  <span class="consent-text">
+    I consent to receiving transactional text messages and phone calls from 
+    <strong>Picante Pequin Salsa Co.</strong>
+    <span class="consent-optional">(optional)</span>
+  </span>
+</label>
+
 <button type="submit" id="submitBtn" class="cta-btn" data-act="ppsc_signup"disabled>Join Now!</button>
       </form>
     </div>
@@ -1235,6 +1328,11 @@ function resetContactForm() {
   // clear phone raw + value
   const phone = document.getElementById('custPhone');
   if (phone) { phone.dataset.raw = ''; phone.value = ''; }
+
+    // clear SMS consent checkbox
+  const smsConsent = document.getElementById('smsConsent'); // 🔥
+  if (smsConsent) { smsConsent.checked = false; smsConsent.value = ''; }
+
 
   // run your main form validator (enables/disables submit)
   if (typeof validateContactForm === 'function') validateContactForm();
@@ -1630,6 +1728,8 @@ if (passwordInput && passwordMeter) {
       if (!loggedIn) { alert('Please log in before signing up.'); return; }
 
       const phoneEl = qs('custPhone');
+      const smsConsentEl = qs('smsConsent');
+
       const payload = {
         firstName: safeText(qs('custFirstname')?.value),
         lastName: safeText(qs('custLastname')?.value),
@@ -1640,6 +1740,7 @@ if (passwordInput && passwordMeter) {
         email: safeText(qs('custEmail')?.value),
         password: safeText(qs('custPassword')?.value),
         phone: (phoneEl?.dataset?.raw || (phoneEl?.value || '').replace(/\D/g, '')),
+        smsConsent: Boolean(smsConsentEl?.checked),
         verificationCode: undefined
       };
       const confirm = safeText(qs('custConfirmpassword')?.value);
