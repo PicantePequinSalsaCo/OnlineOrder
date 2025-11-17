@@ -532,59 +532,77 @@ meter::-moz-meter-bar {
   100% { transform: translateX(100%); }
 }
 
-  
-
-.consent-inline {
-  display: inline-flex;       /* ✅ Inline so it only wraps content */
-  width: fit-content;                /* ✅ Prevent full-width stretching */
-  max-width: 100%;
-  justify-content: flex-start;
+  /* Container: checkbox + text inline */
+.consent-row {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  white-space: nowrap;        /* ✅ Keep text inline on desktop */
-  padding: 0;
-  border: none;
-  flex: 0 0 auto;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--ink, #222);
+  cursor: pointer;
+  user-select: none;
+  flex-wrap: wrap;
+  white-space: normal;
 }
 
-/* Checkbox styling */
-.consent-inline input[type="checkbox"] {
+/* Checkbox: medium square with visible checkmark */
+.consent-checkbox {
   width: 18px;
   height: 18px;
-  box-sizing: border-box;       /* ✅ Include border in size */
   margin: 0;
-  accent-color: var(--accent-orange, #ff6a00);
   flex-shrink: 0;
-  border: 2px solid var(--accent-orange, #ff6a00); /* ✅ Visible border */
-  appearance: none;             /* ✅ Remove default styles */
+  appearance: none;
+  border: 2px solid var(--accent-orange, #ff6a00);
   background-color: transparent;
   cursor: pointer;
   position: relative;
+  box-sizing: border-box;
 }
-/* Show checkmark when checked */
-.consent-inline input[type="checkbox"]:checked::after {
+
+/* Checked state: orange fill + white checkmark */
+.consent-checkbox:checked {
+  background-color: var(--accent-orange, #ff6a00);
+}
+
+.consent-checkbox:checked::after {
   content: '✓';
   position: absolute;
   top: 0;
-  left: 2px;
+  left: 3px;
   font-size: 14px;
   color: white;
-  line-height: 18px;
   font-weight: bold;
+  line-height: 18px;
 }
 
-.consent-inline input[type="checkbox"]:checked {
-  background-color: var(--accent-orange, #ff6a00); /* ✅ Fill when checked */
+/* Consent text */
+.consent-text {
+  flex: 1 1 auto;
+  color: var(--muted, #444);
 }
-  
-/* Force single line on larger screens */
-@media (max-width: 600px) {
-  .consent-inline {
-    white-space: normal;
-    flex-wrap: wrap;
-    align-items: flex-start;  /* Checkbox stays top-left */
+
+/* Optional microcopy */
+.consent-optional {
+  color: var(--muted, #888);
+  font-size: 0.88rem;
+  margin-left: 4px;
+}
+
+/* Responsive tweak */
+@media (max-width: 420px) {
+  .consent-row {
+    gap: 6px;
+    font-size: 0.92rem;
+  }
+  .consent-checkbox {
+    width: 17px;
+    height: 17px;
   }
 }
+
+
   
   /* Table styles */
   .table-wrap {
@@ -1081,9 +1099,14 @@ meter::-moz-meter-bar {
   <strong>Optional SMS Notifications</strong>
 </div>
 <!-- Inline consent (place where you want it, e.g., under Phone) -->
-<label class="consent-inline" for="smsConsent">
-  <input type="checkbox" id="smsConsent" name="smsConsent" value="true" />I consent to receiving transactional text messages and phone calls from <strong>Picante Pequin Salsa Co.</strong><span class="consent-optional">(optional)</span>
-</label
+<label class="consent-row" for="smsConsent">
+  <input type="checkbox" id="smsConsent" name="smsConsent" value="true" class="consent-checkbox" />
+  <span class="consent-text">
+    I consent to receiving transactional text messages and phone calls from 
+    <strong>Picante Pequin Salsa Co.</strong>
+    <span class="consent-optional"> (optional)</span>
+  </span>
+</label>
 
 
 <button type="submit" id="submitBtn" class="cta-btn" data-act="ppsc_signup"disabled>Join Now!</button>
