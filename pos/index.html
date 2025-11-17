@@ -533,21 +533,20 @@ meter::-moz-meter-bar {
 }
 
   
-/* Inline consent: checkbox + text */
 .consent-inline {
-  display: flex;              /* Use flex for alignment */
-  align-items: flex-start;    /* Align checkbox to top when wrapping */
+  display: flex;
+  align-items: flex-start; /* Checkbox stays top-left when wrapping */
   gap: 8px;
   font-size: 0.95rem;
   line-height: 1.4;
-  color: var(--ink, #222);
+  color: var(--ink, #fff); /* Adjust for dark theme */
   cursor: pointer;
   user-select: none;
-  flex-wrap: wrap;            /* Allow wrapping on small screens */
+  flex-wrap: wrap; /* Wrap on small screens */
   max-width: 100%;
 }
 
-/* Checkbox: flush left */
+/* Checkbox styling */
 .consent-inline input[type="checkbox"] {
   width: 18px;
   height: 18px;
@@ -555,12 +554,22 @@ meter::-moz-meter-bar {
   accent-color: var(--accent-orange, #ff6a00);
   flex-shrink: 0;
 }
-  @media (min-width: 600px) {
+
+/* Optional microcopy */
+.consent-optional {
+  color: var(--muted, #888);
+  font-size: 0.88rem;
+  margin-left: 4px;
+}
+
+/* Force single line on larger screens */
+@media (min-width: 600px) {
   .consent-inline {
-    flex-wrap: nowrap; /* Keep single line on wider screens */
+    flex-wrap: nowrap;
+    align-items: center; /* Align vertically on desktop */
+    white-space: nowrap; /* Prevent breaking */
   }
 }
-  
   /* Table styles */
   .table-wrap {
     overflow: auto;
@@ -1062,6 +1071,7 @@ meter::-moz-meter-bar {
   <strong>Picante Pequin Salsa Co.</strong>
   <span class="consent-optional">(optional)</span>
 </label>
+
 
 <button type="submit" id="submitBtn" class="cta-btn" data-act="ppsc_signup"disabled>Join Now!</button>
       </form>
