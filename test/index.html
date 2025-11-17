@@ -470,16 +470,16 @@
     }
     .state-select-wrapper select {
       flex: 1;
-      appearance: auto;
-      -webkit-appearance: auto;
-      -moz-appearance: auto;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
       padding: 8px;
       border: 1px solid var(--card-border);
       border-radius: var(--radius-sm);
       background: var(--row-alt);
       color: var(--muted);
       font: inherit;
-      line-height: 1.0;
+      font-size: 1rem;
     }
 
     /* Shimmer effect */
@@ -520,7 +520,7 @@
   color: var(--ink, #fff);
   cursor: pointer;
   user-select: none;
-  white-space: nowrap;
+  white-space: wrap;
   padding: 0;
   flex: 0 0 auto;       /* 🔒 Prevent flex/grid stretching */
   width: auto;          /* 🔒 Shrink to fit content */
@@ -886,7 +886,7 @@
 
 <div class="state-select-wrapper">
   <select id="signup-state" name="state" required autocomplete="address-level1">
-    <option value="">Select State</option>
+    <option style= "color: var(--muted)";value="">Select State</option>
     <option value="AL">AL</option>
     <option value="AK">AK</option>
     <option value="AZ">AZ</option>
@@ -1322,6 +1322,20 @@ const resetCodeInput       = document.getElementById('reset-verification-code');
 // Stripe Elements setup
 let stripe, elements, card, cardMounted = false;
 
+// Default state
+let smsConsent = false;
+
+// Grab the checkbox
+const smsConsentEl = document.getElementById('smsConsent');
+
+// Attach a listener
+if (smsConsentEl) {
+  smsConsentEl.addEventListener('change', () => {
+    smsConsent = smsConsentEl.checked;   // true if checked, false if not
+    console.log('smsConsent is now:', smsConsent);
+  });
+}
+
 function mountStripeElements() {
   if (!stripe) {
     stripe = Stripe('pk_live_51RqP1xGVhbxOz1NuTFAsWTaV6X0PJt4TxC4BFeAjLE4olqFlNGLh5ZOjifotx2qCQZRxBsISzexWaV9oO8BZrGU800LSSMudS9'); // TODO: replace with your publishable key
@@ -1371,7 +1385,6 @@ function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
   const btn = document.getElementById(btnId);
   const codeInput = document.getElementById(codeInputId);
   const emailInput = emailInputId ? document.getElementById(emailInputId) : null;
-  const smsConsentCheckbox = document.getElementById('smsConsent');
   if (!btn || !codeInput) return;
 
   btn.dataset.codeSent = 'false';
@@ -1384,7 +1397,7 @@ function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
 
     const result = await handleApiButton(btn, async () => {
       // Build a flat payload; getOmniTok will inject sid
-      const payload = email ? { act, email, smsConsentCheckbox} : { act };
+      const payload = email ? { act, email, smsConsent} : { act };
       await getOmniTok(payload); // backend returns minimal OK/FAIL for _code flows
       return { status: 'OK', message: 'Verification code sent' };
     });
