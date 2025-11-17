@@ -1008,6 +1008,19 @@
          placeholder="Phone (10 digits)" required
          pattern="^\d{10}$" maxlength="10" inputmode="numeric"
          oninput="this.value = this.value.replace(/\D/g, '')" />
+           <!-- SMS Consent Checkbox -->
+<div id="SMSConsentMessage" style="font-size:.9rem; color:var(--muted); margin-top:12px;">
+  <strong>Optional SMS Notifications</strong>
+</div>
+<!-- Inline consent (place where you want it, e.g., under Phone) -->
+<label class="consent-inline" for="smsConsent">
+  <input type="checkbox" id="smsConsent" name="smsConsent" value="true" />
+  <span class="consent-text">
+    I consent to receiving transactional text messages and phone calls from 
+    <strong>Picante Pequin Salsa Co.</strong>
+    <span class="consent-optional">(optional)</span>
+  </span>
+</label><br>
 <button type="button" id="reset-request-code" class="api-btn" style="background-color: orange;" disabled>
   Request verification code
 </button>
@@ -1394,7 +1407,7 @@ function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
 
     const sid = refreshSid();
     const email = emailInput ? emailInput.value.trim() : undefined;
-    const phsms = document.getElementById('signup-phone')?.value.trim() || "";
+    const phsms = document.getElementById('signup-phone')?.value.trim() || document.getElementById('reset-phone')?.value.trim() || "";
 
 
     const result = await handleApiButton(btn, async () => {
