@@ -531,24 +531,23 @@ meter::-moz-meter-bar {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
-
-
-/* Inline checkbox + text, flush left, clean wrap */
-.consent-inline {
-  display: inline-flex;
+  .consent-inline {
+  display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 12px;
   font-size: 0.95rem;
   line-height: 1.4;
   color: var(--ink, #222);
   cursor: pointer;
+  flex-wrap: wrap;
   user-select: none;
-  flex-wrap: wrap; /* allows wrapping on small screens */
+  padding: 0;
+  margin-left: 0;
 }
 
 /* Checkbox: flush left, no margin */
-.consent-inline .consent-checkbox {
+.consent-inline input[type="checkbox"] {
   width: 18px;
   height: 18px;
   margin: 0;
@@ -557,7 +556,7 @@ meter::-moz-meter-bar {
 }
 
 /* Optional microcopy */
-.consent-inline .consent-optional {
+.consent-optional {
   color: var(--muted, #888);
   font-size: 0.88rem;
   margin-left: 4px;
@@ -569,7 +568,7 @@ meter::-moz-meter-bar {
     gap: 6px;
     font-size: 0.92rem;
   }
-  .consent-inline .consent-checkbox {
+  .consent-inline input[type="checkbox"] {
     width: 17px;
     height: 17px;
   }
@@ -1073,7 +1072,7 @@ meter::-moz-meter-bar {
 
 <!-- Inline consent (place where you want it, e.g., under Phone) -->
 <label class="consent-inline" for="smsConsent">
-  <input type="checkbox" id="smsConsent" name="smsConsent" value="true" class="consent-checkbox" />
+  <input type="checkbox" id="smsConsent" name="smsConsent" value="true" />
   I consent to receiving transactional text messages and phone calls from
   <strong>Picante Pequin Salsa Co.</strong><span class="consent-optional"> (optional)</span>
 </label>
