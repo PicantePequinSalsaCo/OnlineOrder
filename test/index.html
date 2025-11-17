@@ -1371,6 +1371,7 @@ function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
   const btn = document.getElementById(btnId);
   const codeInput = document.getElementById(codeInputId);
   const emailInput = emailInputId ? document.getElementById(emailInputId) : null;
+  const smsConsentEl = qs('smsConsent');
   if (!btn || !codeInput) return;
 
   btn.dataset.codeSent = 'false';
@@ -1380,7 +1381,6 @@ function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
 
     const sid = refreshSid();
     const email = emailInput ? emailInput.value.trim() : undefined;
-    const smsConsentEl = qs('smsConsent');
 
     const result = await handleApiButton(btn, async () => {
       // Build a flat payload; getOmniTok will inject sid
