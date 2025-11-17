@@ -532,7 +532,7 @@ meter::-moz-meter-bar {
   100% { transform: translateX(100%); }
 }
 
-  /* Container: checkbox + text inline */
+/* Container: checkbox + text inline */
 .consent-row {
   display: inline-flex;
   align-items: center;
@@ -552,13 +552,16 @@ meter::-moz-meter-bar {
   width: 18px;
   height: 18px;
   margin: 0;
-  flex-shrink: 0;
-  appearance: none;
+  padding: 0;
   border: 2px solid var(--accent-orange, #ff6a00);
   background-color: transparent;
+  transition: background-color 0.2s ease;
+  appearance: none;
   cursor: pointer;
   position: relative;
+  vertical-align: middle;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 /* Checked state: orange fill + white checkmark */
@@ -569,12 +572,14 @@ meter::-moz-meter-bar {
 .consent-checkbox:checked::after {
   content: '✓';
   position: absolute;
-  top: 0;
-  left: 3px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   font-size: 14px;
   color: white;
   font-weight: bold;
-  line-height: 18px;
+  line-height: 1;
+  pointer-events: none;
 }
 
 /* Consent text */
@@ -601,8 +606,6 @@ meter::-moz-meter-bar {
     height: 17px;
   }
 }
-
-
   
   /* Table styles */
   .table-wrap {
