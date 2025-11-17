@@ -531,8 +531,10 @@ meter::-moz-meter-bar {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
-  .consent-inline {
-  display: flex;
+
+  
+.consent-inline {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   margin-top: 12px;
@@ -540,10 +542,9 @@ meter::-moz-meter-bar {
   line-height: 1.4;
   color: var(--ink, #222);
   cursor: pointer;
-  flex-wrap: wrap;
   user-select: none;
-  padding: 0;
-  margin-left: 0;
+  white-space: normal;
+  flex-wrap: nowrap; /*  prevents wrapping between checkbox and text */
 }
 
 /* Checkbox: flush left, no margin */
@@ -567,13 +568,13 @@ meter::-moz-meter-bar {
   .consent-inline {
     gap: 6px;
     font-size: 0.92rem;
+    flex-wrap: wrap; /* 🔥 allow wrapping on small screens */
   }
   .consent-inline input[type="checkbox"] {
     width: 17px;
     height: 17px;
   }
 }
-
 
   /* Table styles */
   .table-wrap {
