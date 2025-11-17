@@ -534,20 +534,20 @@ meter::-moz-meter-bar {
 
 /* Inline consent container */
 .consent-inline {
-  display: inline-flex !important;       /* Inline so it only wraps content */
-  width: fit-content;         /* Shrinks to checkbox + text */
-  max-width: 100%;            /* Prevent overflow */
+  display: inline-flex !important; /* Override parent flex/grid */
+  width: fit-content;              /* Shrinks to checkbox + text */
+  max-width: 100%;
   justify-content: flex-start;
   align-items: center;
   gap: 6px;
   font-size: 0.95rem;
   line-height: 1.4;
-  color: var(--ink, #fff);    /* Dark theme text */
+  color: var(--ink, #fff);
   cursor: pointer;
   user-select: none;
-  white-space: nowrap;        /* Keep text inline on desktop */
+  white-space: nowrap;
   padding: 0;
-  flex: 0 0 auto;             /* Prevent flex-grow */
+  flex: 0 0 auto;                  /* Prevent flex-grow */
 }
 
 /* Checkbox styling */
@@ -557,14 +557,14 @@ meter::-moz-meter-bar {
   box-sizing: border-box;
   margin: 0;
   flex-shrink: 0;
-  border: 2px solid var(--accent-orange, #ff6a00); /* Visible border */
-  appearance: none;           /* Remove default browser styles */
+  border: 2px solid var(--accent-orange, #ff6a00);
+  appearance: none;
   background-color: transparent;
   cursor: pointer;
 }
 
 .consent-inline input[type="checkbox"]:checked {
-  background-color: var(--accent-orange, #ff6a00); /* Fill when checked */
+  background-color: var(--accent-orange, #ff6a00);
 }
 
 /* Optional microcopy */
@@ -579,9 +579,10 @@ meter::-moz-meter-bar {
   .consent-inline {
     white-space: normal;
     flex-wrap: wrap;
-    align-items: flex-start;  /* Checkbox stays top-left */
+    align-items: flex-start;
   }
 }
+
   
   /* Table styles */
   .table-wrap {
