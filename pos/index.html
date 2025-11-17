@@ -533,48 +533,59 @@ meter::-moz-meter-bar {
 }
 
 
-/* Keep checkbox as the first inline "character" and text on same row */
-.consent-row {
-  display: flex;              /* linear row: checkbox then text */
-  align-items: center;        /* vertical center alignment */
-  gap: 10px;                  /* space between checkbox and text */
-  margin-top: 10px;
+/* Ensure no left indent, checkbox at absolute start, text flows to the right */
+.consent-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
   cursor: pointer;
-  color: var(--ink, #222);
   font-size: 0.95rem;
   line-height: 1.25;
+  color: var(--ink, #222);
   user-select: none;
-  white-space: normal;        /* allow wrapping if needed on small screens */
+  white-space: normal;
 }
 
-/* Checkbox fixed size, stays at row start */
-.consent-row .consent-checkbox {
-  flex: 0 0 auto;             /* never shrink or grow */
+/* Reset any global label styles that might push content right */
+.consent-inline, .consent-inline * {
+  text-indent: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Checkbox is the first visual element, no extra offset */
+.consent-inline .consent-checkbox {
+  flex: 0 0 auto;
   width: 18px;
   height: 18px;
-  margin: 0;                  /* ensure it is the first visual element */
+  margin: 0;                    /* critical: remove default margins */
   accent-color: var(--accent-orange, #ff6a00);
   vertical-align: middle;
+  appearance: checkbox;         /* keep native look but ensure consistent baseline */
 }
 
-/* Text immediately to the right, takes remaining width */
-.consent-row .consent-text {
-  flex: 1 1 auto;             /* expand to available width */
+/* Text directly after checkbox, uses remaining width */
+.consent-inline .consent-text {
+  flex: 1 1 auto;
   color: var(--muted, #444);
-  display: inline;            /* inline flow so it appears as text, not block */
+  display: inline; 
 }
 
-/* Optional microcopy slightly muted */
-.consent-row .consent-optional {
+/* Microcopy */
+.consent-inline .consent-optional {
   color: var(--muted, #8a8a8a);
   font-size: .88rem;
   margin-left: 6px;
 }
 
-/* Small screen: allow wrapping but keep checkbox at the start of the wrapped block */
+/* Small screens: keep layout readable */
 @media (max-width: 420px) {
-  .consent-row { gap: 8px; font-size: 0.92rem; }
-  .consent-row .consent-checkbox { width: 17px; height: 17px; }
+  .consent-inline { gap: 6px; font-size: 0.92rem; }
+  .consent-inline .consent-checkbox { width: 17px; height: 17px; }
 }
 
 
@@ -1074,12 +1085,11 @@ meter::-moz-meter-bar {
 </div>
 
 <!-- Inline consent (place where you want it, e.g., under Phone) -->
-<label class="consent-row" for="smsConsent">
+<label class="consent-inline" for="smsConsent">
   <input type="checkbox" id="smsConsent" name="smsConsent" value="true" class="consent-checkbox" />
   <span class="consent-text">
-    I consent to receiving transactional text messages and phone calls from 
-    <strong>Picante Pequin Salsa Co.</strong>
-    <span class="consent-optional"> (optional)</span>
+    I consent to receiving transactional text messages and phone calls from
+    <strong>Picante Pequin Salsa Co.</strong><span class="consent-optional"> (optional)</span>
   </span>
 </label>
 
