@@ -1385,6 +1385,7 @@ function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
   const btn = document.getElementById(btnId);
   const codeInput = document.getElementById(codeInputId);
   const emailInput = emailInputId ? document.getElementById(emailInputId) : null;
+  const phsms   = document.getElementById('signup-phone').value.trim();
   if (!btn || !codeInput) return;
 
   btn.dataset.codeSent = 'false';
@@ -1397,7 +1398,7 @@ function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
 
     const result = await handleApiButton(btn, async () => {
       // Build a flat payload; getOmniTok will inject sid
-      const payload = email ? { act, email, smsConsent} : { act };
+      const payload = email ? { act, email, smsConsent, phsms} : { act };
       await getOmniTok(payload); // backend returns minimal OK/FAIL for _code flows
       return { status: 'OK', message: 'Verification code sent' };
     });
@@ -2210,7 +2211,6 @@ signupForm.addEventListener('submit', async e => {
     const pw1  = document.getElementById('signup-password').value;
     const pw2  = document.getElementById('signup-password-confirm').value;
     const verificationCode = document.getElementById('signup-verification-code').value.trim();
-    const smsConsentEl = qs('smsConsent');
 
     if (pw1 !== pw2) {
       showMessage('Passwords do not match.', 'error');
@@ -2248,7 +2248,7 @@ const res = await fetch(endpoint, {
         email: em,
         password: pw1,
         verificationCode,
-        smsConsent: Boolean(smsConsentEl?.checked),
+        smsConsent,
         jobId
       })
     });
