@@ -470,16 +470,16 @@
     }
     .state-select-wrapper select {
       flex: 1;
-      appearance: auto;
-      -webkit-appearance: auto;
-      -moz-appearance: auto;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
       padding: 8px;
       border: 1px solid var(--card-border);
       border-radius: var(--radius-sm);
       background: var(--row-alt);
       color: var(--muted);
       font: inherit;
-      line-height: 1.0;
+      font-size: 1rem;
     }
 
     /* Shimmer effect */
@@ -509,6 +509,86 @@
     left: 150%;
   }
 }
+
+/* Inline consent container */
+.consent-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--ink, #fff);
+  cursor: pointer;
+  user-select: none;
+  white-space: wrap;
+  padding: 0;
+  flex: 0 0 auto;       /* 🔒 Prevent flex/grid stretching */
+  width: auto;          /* 🔒 Shrink to fit content */
+}
+
+/* Checkbox: force square */
+.consent-inline input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--accent-orange, #ff6a00);
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+  appearance: none;
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+  flex: 0 0 18px;       /* 🔒 Explicit fixed size in flex/grid */
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Checked state: orange fill + white checkmark */
+.consent-inline input[type="checkbox"]:checked {
+  background-color: var(--accent-orange, #ff6a00);
+}
+
+.consent-inline input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: white;
+  font-weight: bold;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* Consent text */
+.consent-text {
+  flex: 1 1 auto;
+  color: var(--muted, #ccc);
+}
+
+/* Optional microcopy */
+.consent-optional {
+  color: var(--muted, #888);
+  font-size: 0.88rem;
+  margin-left: 4px;
+}
+
+/* Responsive wrap for mobile */
+@media (max-width: 600px) {
+  .consent-inline {
+    white-space: normal;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .consent-inline input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    flex: 0 0 17px;     /* 🔒 Keep square on mobile */
+  }
+}
+
 
     /* Toast-style message box */
 .message-box {
@@ -806,7 +886,7 @@
 
 <div class="state-select-wrapper">
   <select id="signup-state" name="state" required autocomplete="address-level1">
-    <option value="">Select State</option>
+    <option style= "color: var(--muted)";value="">Select State</option>
     <option value="AL">AL</option>
     <option value="AK">AK</option>
     <option value="AZ">AZ</option>
@@ -863,6 +943,19 @@
   <input type="text" id="signup-zip" name="zip" placeholder="ZIP Code (5 digits)" required pattern="^\d{5}$" maxlength="5" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '')" />
   <input type="text" id="signup-phone" name="phone" placeholder="Phone (10 digits)" required pattern="^\d{10}$" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '')" />
   <input type="email" id="signup-email" name="email" placeholder="Email address" required autocomplete="username" />
+  <!-- SMS Consent Checkbox -->
+<div id="SMSConsentMessage" style="font-size:.9rem; color:var(--muted); margin-top:12px;">
+  <strong>Optional SMS Notifications</strong>
+</div>
+<!-- Inline consent (place where you want it, e.g., under Phone) -->
+<label class="consent-inline" for="signup-smsConsent">
+  <input type="checkbox" id="signup-smsConsent" name="smsConsent" value="true" />
+  <span class="consent-text">
+    I consent to receiving transactional text messages and phone calls from 
+    <strong>Picante Pequin Salsa Co.</strong>
+    <span class="consent-optional">(optional)</span>
+  </span>
+</label><br>
   <small id="email-error-msg" style="color: var(--accent-red); font-weight: bold; display: none;">Please enter a valid email address</small>
 <button type="button" id="signup-request-code" class="api-btn" style="background-color: orange;" disabled>
   Request verification code
@@ -915,6 +1008,19 @@
          placeholder="Phone (10 digits)" required
          pattern="^\d{10}$" maxlength="10" inputmode="numeric"
          oninput="this.value = this.value.replace(/\D/g, '')" />
+           <!-- SMS Consent Checkbox -->
+<div id="SMSConsentMessage" style="font-size:.9rem; color:var(--muted); margin-top:12px;">
+  <strong>Optional SMS Notifications</strong>
+</div>
+<!-- Inline consent (place where you want it, e.g., under Phone) -->
+<label class="consent-inline" for="reset-smsConsent">
+  <input type="checkbox" id="reset-smsConsent" name="smsConsent" value="true" />
+  <span class="consent-text">
+    I consent to receiving transactional text messages and phone calls from 
+    <strong>Picante Pequin Salsa Co.</strong>
+    <span class="consent-optional">(optional)</span>
+  </span>
+</label><br>
 <button type="button" id="reset-request-code" class="api-btn" style="background-color: orange;" disabled>
   Request verification code
 </button>
@@ -1229,6 +1335,21 @@ const resetCodeInput       = document.getElementById('reset-verification-code');
 // Stripe Elements setup
 let stripe, elements, card, cardMounted = false;
 
+// SMS Optional Consent checkbox state
+let smsConsent = false;
+
+const signupSmsConsentEl = document.getElementById('signup-smsConsent');
+const resetSmsConsentEl  = document.getElementById('reset-smsConsent');
+
+[signupSmsConsentEl, resetSmsConsentEl].forEach(el => {
+  if (el) {
+    el.addEventListener('change', () => {
+      smsConsent = el.checked;
+      console.log('smsConsent is now:', smsConsent);
+    });
+  }
+});
+
 function mountStripeElements() {
   if (!stripe) {
     stripe = Stripe('pk_live_51RqP1xGVhbxOz1NuTFAsWTaV6X0PJt4TxC4BFeAjLE4olqFlNGLh5ZOjifotx2qCQZRxBsISzexWaV9oO8BZrGU800LSSMudS9'); // TODO: replace with your publishable key
@@ -1287,10 +1408,12 @@ function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
 
     const sid = refreshSid();
     const email = emailInput ? emailInput.value.trim() : undefined;
+    const phsms = document.getElementById('signup-phone')?.value.trim() || document.getElementById('reset-phone')?.value.trim() || "";
+
 
     const result = await handleApiButton(btn, async () => {
       // Build a flat payload; getOmniTok will inject sid
-      const payload = email ? { act, email } : { act };
+      const payload = email ? { act, email, smsConsent, phone: phsms} : { act };
       await getOmniTok(payload); // backend returns minimal OK/FAIL for _code flows
       return { status: 'OK', message: 'Verification code sent' };
     });
@@ -2140,6 +2263,7 @@ const res = await fetch(endpoint, {
         email: em,
         password: pw1,
         verificationCode,
+        smsConsent,
         jobId
       })
     });
