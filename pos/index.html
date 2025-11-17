@@ -543,8 +543,9 @@ meter::-moz-meter-bar {
   color: var(--ink, #222);
   cursor: pointer;
   user-select: none;
+  flex-wrap: wrap;
   white-space: normal;
-  flex-wrap: nowrap; /*  prevents wrapping between checkbox and text */
+  max-width: 100%;
 }
 
 /* Checkbox: flush left, no margin */
@@ -554,6 +555,7 @@ meter::-moz-meter-bar {
   margin: 0;
   accent-color: var(--accent-orange, #ff6a00);
   flex-shrink: 0;
+  vertical-align: middle;
 }
 
 /* Optional microcopy */
@@ -568,7 +570,6 @@ meter::-moz-meter-bar {
   .consent-inline {
     gap: 6px;
     font-size: 0.92rem;
-    flex-wrap: wrap; /* 🔥 allow wrapping on small screens */
   }
   .consent-inline input[type="checkbox"] {
     width: 17px;
