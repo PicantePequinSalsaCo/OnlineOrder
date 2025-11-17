@@ -534,10 +534,7 @@ meter::-moz-meter-bar {
 
 /* Inline consent container */
 .consent-inline {
-  display: inline-flex !important;
-  width: auto !important;
-  max-width: 100%;
-  justify-content: flex-start;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 0.95rem;
@@ -547,14 +544,14 @@ meter::-moz-meter-bar {
   user-select: none;
   white-space: nowrap;
   padding: 0;
-  flex: 0 0 auto;
+  flex: 0 0 auto;       /* 🔒 Prevent flex/grid stretching */
+  width: auto;          /* 🔒 Shrink to fit content */
 }
 
-/* Checkbox styling: medium square with visible checkmark */
+/* Checkbox: force square */
 .consent-inline input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  aspect-ratio: 1/1;
   margin: 0;
   padding: 0;
   border: 2px solid var(--accent-orange, #ff6a00);
@@ -564,7 +561,7 @@ meter::-moz-meter-bar {
   cursor: pointer;
   position: relative;
   box-sizing: border-box;
-  flex-shrink: 0;
+  flex: 0 0 18px;       /* 🔒 Explicit fixed size in flex/grid */
   display: inline-block;
   vertical-align: middle;
 }
@@ -610,6 +607,7 @@ meter::-moz-meter-bar {
   .consent-inline input[type="checkbox"] {
     width: 17px;
     height: 17px;
+    flex: 0 0 17px;     /* 🔒 Keep square on mobile */
   }
 }
   
