@@ -532,6 +532,52 @@ meter::-moz-meter-bar {
   100% { transform: translateX(100%); }
 }
 
+
+/* Consent row styling */
+.consent-row {
+  display: inline-flex;
+  align-items: flex-start;        /* checkbox aligns to first line of text */
+  gap: 10px;
+  margin-top: 10px;
+  cursor: pointer;
+  color: var(--ink, #222);
+  font-size: 0.95rem;
+  line-height: 1.35;
+  user-select: none;
+}
+
+/* Make sure clicking text toggles checkbox (label/for pair already does) */
+.consent-row .consent-checkbox {
+  margin-top: 3px;               /* tweak so box lines up with text first line */
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-orange, #ff6a00);
+  flex: 0 0 auto;
+}
+
+/* Text block — allows wrapping and small microcopy */
+.consent-row .consent-text {
+  display: inline;
+  color: var(--muted, #555);
+  max-width: 72ch;               /* avoid super-long single-line text */
+}
+
+/* Optional microcopy slightly muted */
+.consent-row .consent-optional {
+  color: var(--muted, #8a8a8a);
+  font-size: .85rem;
+  margin-left: 6px;
+}
+
+/* Small-screen tweak: keep layout intact and readable */
+@media (max-width: 420px) {
+  .consent-row {
+    gap: 8px;
+    font-size: 0.92rem;
+  }
+  .consent-row .consent-checkbox { margin-top: 2px; width: 17px; height: 17px; }
+}
+
   /* Table styles */
   .table-wrap {
     overflow: auto;
@@ -1027,12 +1073,15 @@ meter::-moz-meter-bar {
   <strong>Optional SMS Notifications</strong>
 </div>
 
-<label>
-<div style="display:block; margin-top:8px;">
-  <input type="checkbox" id="smsConsent" name="smsConsent" value="true" style="margin-right:8px;">
-  I consent to receiving transactional text messages and phone calls from Picante Pequin Salsa Co. <span style="color:var(--muted); font-size:.9rem;">(optional)</span>
-</div>
-</label>
+<!-- Inline consent (place where you want it, e.g., under Phone) -->
+<label class="consent-row" for="smsConsent">
+  <input type="checkbox" id="smsConsent" name="smsConsent" value="true" class="consent-checkbox" />
+  <span class="consent-text">
+    I consent to receiving transactional text messages and phone calls from
+    <strong>Picante Pequin Salsa Co.</strong>
+    <span class="consent-optional"> (optional)</span>
+  </span>
+</label><br>
 
 <button type="submit" id="submitBtn" class="cta-btn" data-act="ppsc_signup"disabled>Join Now!</button>
       </form>
