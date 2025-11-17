@@ -554,17 +554,18 @@ meter::-moz-meter-bar {
 .consent-inline input[type="checkbox"] {
   width: 18px;
   height: 18px;
+  aspect-ratio: 1/1;
   margin: 0;
   padding: 0;
   border: 2px solid var(--accent-orange, #ff6a00);
   background-color: transparent;
+  transition: background-color 0.2s ease;
   appearance: none;
   cursor: pointer;
   position: relative;
   box-sizing: border-box;
   flex-shrink: 0;
   vertical-align: middle;
-  transition: background-color 0.2s ease;
 }
 
 /* Checked state: orange fill + white checkmark */
