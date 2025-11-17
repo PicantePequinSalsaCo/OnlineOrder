@@ -536,11 +536,13 @@ meter::-moz-meter-bar {
 
 .consent-inline {
   display: inline-flex;       /* ✅ Inline so it only wraps content */
-  width: auto;                /* ✅ Prevent full-width stretching */
+  width: fit-content;                /* ✅ Prevent full-width stretching */
+  max-width: 100%;
   justify-content: flex-start;
   align-items: center;
   gap: 6px;
   white-space: nowrap;        /* ✅ Keep text inline on desktop */
+  padding: 0;
 }
 
 /* Checkbox styling */
