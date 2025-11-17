@@ -533,54 +533,34 @@ meter::-moz-meter-bar {
 }
 
   
+/* Inline consent: checkbox + text */
 .consent-inline {
-  display: inline-flex;
-  align-items: center;
+  display: flex;              /* Use flex for alignment */
+  align-items: flex-start;    /* Align checkbox to top when wrapping */
   gap: 8px;
-  margin-top: 12px;
   font-size: 0.95rem;
   line-height: 1.4;
   color: var(--ink, #222);
   cursor: pointer;
   user-select: none;
-  flex-wrap: wrap;
-  white-space: normal;
+  flex-wrap: wrap;            /* Allow wrapping on small screens */
   max-width: 100%;
 }
 
-/* Checkbox: flush left, no margin */
-.consent-inline {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-  font-size: 0.95rem;
-  line-height: 1.4;
-  color: var(--ink, #222);
-  cursor: pointer;
-  user-select: none;
-  flex-wrap: nowrap;
-  white-space: normal;
-  max-width: 100%;
-}
-
-/* Checkbox: flush left, no margin */
+/* Checkbox: flush left */
 .consent-inline input[type="checkbox"] {
   width: 18px;
   height: 18px;
   margin: 0;
   accent-color: var(--accent-orange, #ff6a00);
   flex-shrink: 0;
-  vertical-align: left;
 }
-
-/* Optional microcopy */
-.consent-optional {
-  color: var(--muted, #888);
-  font-size: 0.88rem;
-  margin-left: 4px;
+  @media (min-width: 600px) {
+  .consent-inline {
+    flex-wrap: nowrap; /* Keep single line on wider screens */
+  }
 }
-
+  
   /* Table styles */
   .table-wrap {
     overflow: auto;
@@ -1074,15 +1054,13 @@ meter::-moz-meter-bar {
 <!-- SMS Consent Checkbox -->
 <div id="SMSConsentMessage" style="font-size:.9rem; color:var(--muted); margin-top:12px;">
   <strong>Optional SMS Notifications</strong>
-
-
+</div>
 <!-- Inline consent (place where you want it, e.g., under Phone) -->
 <label class="consent-inline" for="smsConsent">
   <input type="checkbox" id="smsConsent" name="smsConsent" value="true" />
   I consent to receiving transactional text messages and phone calls from
-  <strong>Picante Pequin Salsa Co.</strong><span class="consent-optional"> (optional)</span>
-</label>
-  </div>
+  <strong>Picante Pequin Salsa Co.</strong>
+  <span class="consent-optional">(optional)</span>
 
 <button type="submit" id="submitBtn" class="cta-btn" data-act="ppsc_signup"disabled>Join Now!</button>
       </form>
