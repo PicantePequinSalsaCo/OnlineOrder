@@ -559,6 +559,18 @@ meter::-moz-meter-bar {
   appearance: none;             /* ✅ Remove default styles */
   background-color: transparent;
   cursor: pointer;
+  position: relative;
+}
+/* Show checkmark when checked */
+.consent-inline input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 0;
+  left: 2px;
+  font-size: 14px;
+  color: white;
+  line-height: 18px;
+  font-weight: bold;
 }
 
 .consent-inline input[type="checkbox"]:checked {
@@ -1070,8 +1082,8 @@ meter::-moz-meter-bar {
 </div>
 <!-- Inline consent (place where you want it, e.g., under Phone) -->
 <label class="consent-inline" for="smsConsent">
-  <input type="checkbox" id="smsConsent" name="smsConsent" value="true">I consent to receiving transactional text messages and phone calls from <strong>Picante Pequin Salsa Co.</strong><span class="consent-optional">(optional)</span></input>
-</label>
+  <input type="checkbox" id="smsConsent" name="smsConsent" value="true" />I consent to receiving transactional text messages and phone calls from <strong>Picante Pequin Salsa Co.</strong><span class="consent-optional">(optional)</span>
+</label
 
 
 <button type="submit" id="submitBtn" class="cta-btn" data-act="ppsc_signup"disabled>Join Now!</button>
