@@ -948,8 +948,8 @@
   <strong>Optional SMS Notifications</strong>
 </div>
 <!-- Inline consent (place where you want it, e.g., under Phone) -->
-<label class="consent-inline" for="smsConsent">
-  <input type="checkbox" id="smsConsent" name="smsConsent" value="true" />
+<label class="consent-inline" for="signup-smsConsent">
+  <input type="checkbox" id="signup-smsConsent" name="smsConsent" value="true" />
   <span class="consent-text">
     I consent to receiving transactional text messages and phone calls from 
     <strong>Picante Pequin Salsa Co.</strong>
@@ -1013,8 +1013,8 @@
   <strong>Optional SMS Notifications</strong>
 </div>
 <!-- Inline consent (place where you want it, e.g., under Phone) -->
-<label class="consent-inline" for="smsConsent">
-  <input type="checkbox" id="smsConsent" name="smsConsent" value="true" />
+<label class="consent-inline" for="reset-smsConsent">
+  <input type="checkbox" id="reset-smsConsent" name="smsConsent" value="true" />
   <span class="consent-text">
     I consent to receiving transactional text messages and phone calls from 
     <strong>Picante Pequin Salsa Co.</strong>
@@ -1335,19 +1335,20 @@ const resetCodeInput       = document.getElementById('reset-verification-code');
 // Stripe Elements setup
 let stripe, elements, card, cardMounted = false;
 
-// Default state
+// SMS Optional Consent checkbox state
 let smsConsent = false;
 
-// Grab the checkbox
-const smsConsentEl = document.getElementById('smsConsent');
+const signupSmsConsentEl = document.getElementById('signup-smsConsent');
+const resetSmsConsentEl  = document.getElementById('reset-smsConsent');
 
-// Attach a listener
-if (smsConsentEl) {
-  smsConsentEl.addEventListener('change', () => {
-    smsConsent = smsConsentEl.checked;   // true if checked, false if not
-    console.log('smsConsent is now:', smsConsent);
-  });
-}
+[signupSmsConsentEl, resetSmsConsentEl].forEach(el => {
+  if (el) {
+    el.addEventListener('change', () => {
+      smsConsent = el.checked;
+      console.log('smsConsent is now:', smsConsent);
+    });
+  }
+});
 
 function mountStripeElements() {
   if (!stripe) {
