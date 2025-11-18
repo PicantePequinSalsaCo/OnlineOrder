@@ -2013,8 +2013,135 @@ function wireRewards() {
   form.removeEventListener('submit', form._rewardsHandler || onSubmit);
   form.addEventListener('submit', onSubmit);
   form._rewardsHandler = onSubmit;
-}
 
+// --- Insert this after you set window.rewardsMember ===> show UI in POS cart
+(function showRewardsInPOS(result, emailVal, phoneDigits){
+  // canonicalize parsed result into member object if not already set
+  const rawRewards = (result?.rewards ?? result?.balance ?? 0);
+  const rewardsNumber = Number(rawRewards) || 0;
+
+  // Heuristic formatting: treat server rewards as cents if small integer (e.g., 729 -> $7.29).
+  // If you prefer a different scale, adjust scaleDivisor.
+  const scaleDivisor = 100; // change to 1000 if your backend uses tenths-of-cents
+  const formattedBalance = (rewardsNumber / scaleDivisor).toFixed(2);
+
+  const member = window.rewardsMember = {
+    name: result?.firstName || result?.name || 'Member',
+    raw: result,
+    rewardsRaw: rewardsNumber,
+    balanceNumber: rewardsNumber / scaleDivisor,
+    balanceFormatted: formattedBalance,
+    email: result?.email || emailVal || undefined,
+    phone: result?.phone || phoneDigits || undefined
+  };
+
+  // find posCart container and ensure we have a rewards-row
+  const posCart = document.getElementById('posCart');
+  if (!posCart) {
+    console.warn('applyRewards: posCart not present; rewards UI will not be shown');
+    return;
+  }
+
+  // idempotent container
+  let rewardsRow = document.getElementById('rewards-row');
+  if (!rewardsRow) {
+    rewardsRow = document.createElement('div');
+    rewardsRow.id = 'rewards-row';
+    rewardsRow.style.cssText = 'display:flex;gap:8px;align-items:center;padding:10px 0;border-top:1px dashed rgba(255,255,255,0.06);margin-top:10px;';
+    rewardsRow.innerHTML = `
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;color:var(--ink);">Rewards</div>
+        <div id="rewards-member" style="color:var(--muted);font-size:.95rem;">&nbsp;</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="rewards-apply-input" type="number" min="0" step="0.01" style="width:120px;padding:6px;border-radius:8px;border:1px solid var(--surface);background:var(--card);color:var(--ink);" />
+        <button id="rewards-apply-btn" class="btn" style="padding:8px 10px;">Apply</button>
+        <button id="rewards-clear-btn" class="btn" style="padding:8px 10px;background:transparent;border:1px solid var(--surface);">Clear</button>
+      </div>
+    `;
+    posCart.appendChild(rewardsRow);
+  }
+
+  // populate the member text and set default apply value
+  const memberEl = document.getElementById('rewards-member');
+  const applyInput = document.getElementById('rewards-apply-input');
+  const applyBtn = document.getElementById('rewards-apply-btn');
+  const clearBtn = document.getElementById('rewards-clear-btn');
+
+  if (memberEl) memberEl.textContent = `${member.name} · Balance: $${member.balanceFormatted}`;
+  if (applyInput) {
+    applyInput.value = member.balanceNumber ? Number(member.balanceNumber).toFixed(2) : '0.00';
+    applyInput.setAttribute('max', Number(member.balanceNumber || 0).toFixed(2));
+  }
+
+  // helper: read cart total element and update
+  function getCartTotalNumber() {
+    const totalEl = document.getElementById('posCartTotal');
+    if (!totalEl) return 0;
+    return Number((totalEl.textContent || '0').replace(/[^0-9.-]+/g,'')) || 0;
+  }
+  function setCartTotalNumber(n) {
+    const totalEl = document.getElementById('posCartTotal');
+    if (!totalEl) return;
+    totalEl.textContent = Number(n).toFixed(2);
+  }
+
+  // idempotent application: store applied amount on window.rewardsMember.applied
+  function applyRewards(amount) {
+    amount = Number(amount) || 0;
+    if (amount <= 0) { alert('Enter an amount greater than 0 to apply.'); return; }
+    const max = Number(member.balanceNumber || 0);
+    if (amount > max) { alert(`Amount exceeds rewards balance ($${max.toFixed(2)}).`); return; }
+
+    const cartTotal = getCartTotalNumber();
+    if (cartTotal <= 0) { alert('Cart total is zero; nothing to apply rewards against.'); return; }
+
+    const applied = Math.min(amount, cartTotal);
+    // persist applied state
+    member.applied = (member.applied || 0) + applied;
+    member.balanceNumber = Math.max(0, member.balanceNumber - applied);
+
+    // update cart total
+    setCartTotalNumber(Math.max(0, cartTotal - applied));
+
+    // update UI
+    if (memberEl) memberEl.textContent = `${member.name} · Balance: $${Number(member.balanceNumber).toFixed(2)} (Applied $${applied.toFixed(2)})`;
+    if (applyInput) { applyInput.value = Number(member.balanceNumber).toFixed(2); applyInput.setAttribute('max', Number(member.balanceNumber).toFixed(2)); }
+
+    // Extension point: allow other flows to know rewards were applied
+    if (typeof window.onRewardsApplied === 'function') {
+      try { window.onRewardsApplied(member, applied); } catch (e) { console.warn('onRewardsApplied handler failed', e); }
+    }
+  }
+
+  // wire buttons idempotently
+  applyBtn.onclick = () => applyRewards(applyInput?.value || 0);
+  clearBtn.onclick = () => {
+    // revert applied amounts (if you want rollback behavior)
+    if (member.applied) {
+      const cartTotal = getCartTotalNumber();
+      setCartTotalNumber(cartTotal + Number(member.applied));
+      member.balanceNumber = Number(member.balanceNumber || 0) + Number(member.applied);
+      member.applied = 0;
+      if (memberEl) memberEl.textContent = `${member.name} · Balance: $${Number(member.balanceNumber).toFixed(2)}`;
+      if (applyInput) { applyInput.value = Number(member.balanceNumber).toFixed(2); applyInput.setAttribute('max', Number(member.balanceNumber).toFixed(2)); }
+    } else {
+      // just clear input
+      if (applyInput) applyInput.value = Number(member.balanceNumber || 0).toFixed(2);
+    }
+  };
+
+  // small visual affordance: highlight that rewards applied
+  applyBtn.addEventListener('click', () => {
+    applyBtn.classList.add('btn-loading');
+    setTimeout(()=>applyBtn.classList.remove('btn-loading'), 600);
+  });
+
+  // expose apply function globally if needed
+  window.applyRewardsToPOS = (amt) => applyRewards(amt);
+
+})(result, emailVal, phoneDigits);
+}
   /* -------------------------
      Signup / Contact wiring
      ------------------------- */
