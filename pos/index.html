@@ -1431,7 +1431,6 @@ meter::-moz-meter-bar {
     let ran = false;
     return (...a) => { if (ran) return; ran = true; return fn(...a); };
   }
-showModeSelector();
   /* -------------------------
      Loading / viewport helpers
      ------------------------- */
