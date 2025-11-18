@@ -1421,6 +1421,13 @@ meter::-moz-meter-bar {
 (function () {
   'use strict';
 
+
+  // DEV: clear session only when ?forceLogout=1 is present in the URL
+if (location.search.includes('forceLogout=1')) {
+  sessionStorage.removeItem('loggedIn');
+  sessionStorage.removeItem('sid');
+  console.info('PPS dev: sessionStorage cleared via ?forceLogout=1 (loggedIn, sid).');
+}
   /* -------------------------
      Small helpers
      ------------------------- */
