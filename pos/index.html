@@ -1421,13 +1421,13 @@ meter::-moz-meter-bar {
 (function () {
   'use strict';
 
-
-  // DEV: clear session only when ?forceLogout=1 is present in the URL
+    // DEV: clear session only when ?forceLogout=1 is present in the URL
 if (location.search.includes('forceLogout=1')) {
   sessionStorage.removeItem('loggedIn');
   sessionStorage.removeItem('sid');
   console.info('PPS dev: sessionStorage cleared via ?forceLogout=1 (loggedIn, sid).');
 }
+
   /* -------------------------
      Small helpers
      ------------------------- */
@@ -2122,7 +2122,7 @@ function wireRewards() {
 
     // Default view: showModeSelector() or login depending on session
     if (sessionStorage.getItem('loggedIn') === 'true') showModeSelector();
-    else { /* keep login visible by default */ }
+    else { showModeSelector (false)}
 
     // Run initial validation
     if (typeof validateContactForm === 'function') validateContactForm();
