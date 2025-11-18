@@ -33,8 +33,11 @@
     --dropdown: #000000;
 
     --accent-orange: #f57c00;
+    --accent-softorange: #e4872ae0;
     --accent-green: #558b2f;
     --accent-red: #d84315;
+    --accent-softred: #df5227cb;
+    --accent-softborder: #4d4c4cb6;
 
     --card: #00001b63;      /* glass card tint from old table bg */
     --card-border: #f57c00; /* old table row divider */
@@ -257,7 +260,7 @@
     border-radius: 12px;
     border: 1px solid #ffffff1f;
     background: #ffffff0f;
-    color: #fff;
+    color: #ffc354;
     backdrop-filter: blur(6px);
     transition: transform .15s ease, background .2s ease;
   }
@@ -268,10 +271,30 @@
   }
 
   .btn.primary {
-    background: linear-gradient(180deg, var(--accent-orange), #e46f00);
-    color: #fff;
-    border: none;
+    background: linear-gradient(540deg, #ffa600ef, var(--accent-orange));
+    color: var(--dropdown);
+    border: 1px solid var(--banner);
+    box-shadow: var(--accent-glow);
     font-weight: 800;
+  }
+    .btn.primary:hover {
+    background: var(--accent-glow);
+    color: var(--accent-softorange);
+    border: 1px solid var(--accent-softorange);
+    box-shadow: var(--accent-glow);
+  }
+    .btn.rewards {
+    background: var(--surface);
+    color: var(--muted);
+    border: 1px solid var(--accent-green);
+    box-shadow: var(--card);
+    font-weight: 800;
+  }
+    .btn.rewards:hover {
+    background: var(--accent-green);
+    color: var(--dropdown);
+    border: 1px solid var(--card);
+    box-shadow: var(--accent-green);
   }
 
   /* Menu section */
@@ -532,6 +555,117 @@ meter::-moz-meter-bar {
   100% { transform: translateX(100%); }
 }
 
+/* PPS: Mode selector and POS container */
+#modeSelector, #posContainer { position: relative; z-index: 2; }
+
+.vertical-gallery {
+  max-width: var(--maxw);
+  margin: 20px auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.prod-card {
+  background: var(--card);
+  border: 1px solid var(--surface);
+  box-shadow: var(--accent-glow);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  box-shadow: var(--accent-glow);
+  display: flex;
+  flex-direction: column;
+}
+
+.prod-card img {
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+}
+
+.prod-name { margin: 0 0 8px; font-size: 1.2rem; }
+.prod-price { margin: 0 0 12px; color: var(--muted); }
+
+.quantity {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.qty-btn {
+  width: 32px; height: 32px;
+  background: var(--surface); border: 1px solid var(--surface);
+  border-radius: 6px; color: var(--muted); cursor: pointer;
+}
+.qty-btn:hover {
+  background: var(--accent-glow); 
+  color: var(--ink); border: 1px solid var(--accent-orange);
+  transform: translateY(-2%);
+}
+.qty-input {
+  width: 56px; text-align: center;
+  border: 1px solid var(--surface);
+  border-radius: var(--radius-sm);
+  background: #ffffff0d; color: var(--ink);
+}
+.add-to-cart {
+  margin-top: auto;
+  background: var(--surface);
+  color: var(--muted); border: solid 1px var(--accent-orange); padding: 10px;
+  border-radius: var(--radius-sm); font-weight: 700; cursor: pointer;
+}
+.add-to-cart:hover {
+  background: var(--accent-glow);
+  color: var(--ink); border: solid 1px var(--accent-orange);
+  transform: translateY(-2%);
+}
+
+/* POS cart wrap */
+.pos-cart-wrap {
+  margin-top: 16px;
+  background: var(--card);
+  border: 1px solid var(--accent-glow);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+}
+
+#posCartItems {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#posCartItems li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+}
+#posCartItems li:hover {
+  background: var(--card);
+  transform: translateY(-2%);
+}
+.cart-name { flex: 1; margin-right: 8px; color: var(--ink); }
+.cart-controls { display: flex; align-items: center; gap: 6px; }
+.cart-controls .qty-btn { width: 24px; height: 24px; }
+.cart-controls .qty-display { min-width: 24px; text-align: center; }
+.remove-btn {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--accent-red);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.remove-btn:hover {
+  background: var(--accent-softred);
+  color: var(--card);
+  border: 1px solid var(--accent-red);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
 /* Inline consent container */
 .consent-inline {
   display: inline-flex;
@@ -610,7 +744,7 @@ meter::-moz-meter-bar {
     flex: 0 0 17px;     /* 🔒 Keep square on mobile */
   }
 }
-  
+
   /* Table styles */
   .table-wrap {
     overflow: auto;
@@ -830,7 +964,7 @@ meter::-moz-meter-bar {
 .contact-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background:var(--card);
   backdrop-filter: blur(2px);
 }
 
@@ -844,7 +978,6 @@ meter::-moz-meter-bar {
   background: var(--card);
   border: 1px solid var(--card-border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
   color: var(--ink);
   padding: 20px 22px;
 }
@@ -853,9 +986,43 @@ meter::-moz-meter-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background: var(--card);
   gap: 10px;
   margin: 10px 0 8px;
   flex-wrap: nowrap;
+}
+/* Inputs inside Rewards modal */
+.contact-card input[type="text"],
+.contact-card input[type="email"],
+.contact-card input[type="tel"] {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-softborder); /* orange border ties into brand */
+  background: var(--card);             /* semi-transparent frosted background */
+  box-shadow: var(--accent-green);
+  color: var(--ink);
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Focus state */
+.contact-card input:focus {
+  outline: none;
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 2px #558b2f55; /* subtle green glow */
+}
+.contact-card input:hover {
+  background: var(--surface) !important;
+  box-shadow: var(--accent-green);
+  border-color: var(--surface);
+  box-shadow: 0 0 0 2px #558b2f55; /* subtle green glow */
+}
+
+/* Placeholder text */
+.contact-card input::placeholder {
+  color: var(--muted);
+  opacity: 0.8;
 }
 
 .contact-email {
@@ -871,9 +1038,9 @@ meter::-moz-meter-bar {
   flex-shrink: 0;
   padding: 6px 10px;
   border-radius: 10px;
-  border: 1px solid #ffffff1f;
+  border: 1px solid var(--surface);
   background: #ffffff10;
-  color: #fff;
+  color: var(--muted);
   cursor: pointer;
   transition: background .2s ease, transform .15s ease;
 }
@@ -904,7 +1071,68 @@ meter::-moz-meter-bar {
 .body-lock {
   overflow: hidden;
 }
+/* Rewards modal button */
+.contact-card button {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-softborder) !important;
+  background: var(--card);        /* semi-transparent frosted background */
+  box-shadow: none !important;
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.5s ease, color 0.5s ease, transform 0.25s ease;
+}
 
+/* Hover state */
+.contact-card button:hover {
+  background: var(--accent-green);
+  color: var(--dropdown);
+  transform: translateY(-1px);
+}
+
+/* Disabled state */
+.contact-card button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--muted);
+  border-color: var(--muted);
+}
+
+/* Success / error states (reuse your api-btn conventions) */
+.contact-card button.is-success {
+  background: var(--accent-green);
+  color: #fff;
+}
+.contact-card button.is-error {
+  background: var(--accent-red);
+  color: #fff;
+}
+
+.contact-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 6px;
+}
+
+.close-modal-btn {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--surface);
+  background: var(--card);        /* semi-transparent frosted background */
+  color: var(--muted);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.5s ease, color 0.5s ease, transform 0.25s ease;
+}
+
+.close-modal-btn:hover {
+  background: var(--accent-softred) !important;
+  color: var(--dropdown);
+  transform: scale(1.1);
+}
   @media (max-width: 420px) {
   .contact-card { padding: 18px; }
   .contact-email { font-size: .95rem; }
@@ -953,6 +1181,66 @@ meter::-moz-meter-bar {
         <button type="submit" id="loginBtn" class="cta-btn" data-act="seclog" disabled>Login</button>
       </form>
     </div>
+
+    <!-- 🔥 PPS: Mode selector (appears after login) -->
+<div class="card hidden" id="modeSelector">
+  <h2 style="text-align:center; margin-top:0; color:var(--ink)">
+    Choose <span style= "color:var(--accent-orange)">Checkout Mode</span>
+  </h2>
+  <div class="hero-actions" style="justify-content:center;">
+    <button id="choosePOSBtn" class="btn primary">POS</button>
+    <button id="chooseSelfBtn" class="btn">Self Checkout</button>
+  </div>
+  <p class="small" style="text-align:center;">
+    POS Mode for Employee's; Self Checkout for Guest.
+  </p>
+</div>
+
+<!-- 🔥 PPS: POS container (will host gallery + cart) -->
+<div class="card hidden" id="posContainer">
+  <h2 style="text-align:center; margin-top:0; color:var(--ink)">
+    Point of <span style="color: var(--accent-orange)";> Sale</span>
+  </h2>
+  <!-- Placeholder rails; we will inject the gallery + cart here next step -->
+  <section id="posGallery" class="vertical-gallery" role="region" aria-label="POS Catalog"></section>
+<aside id="posCart" class="pos-cart-wrap">
+  <ul id="posCartItems"></ul>
+  <div class="cart-total" style="display:flex; justify-content:space-between;">
+    <span>Total:</span>
+    <strong>$<span id="posCartTotal">0.00</span></strong>
+  </div>
+  <div class="hero-actions" style="margin-top:12px;">
+    <button id="posCheckoutBtn" class="btn primary">Checkout</button>
+    <button id="posClearBtn" class="btn">Clear Cart</button>
+    <button id="openRewardsModal" class="btn rewards">Get Rewards Member Info</button>
+  </div>
+</aside>
+</div>
+<!-- Rewards Member Info Modal -->
+<div id="rewardsModal" class="contact-popup contact-hidden" role="dialog" aria-modal="true" aria-label="Rewards Member Lookup">
+  <div class="contact-overlay"></div>
+  <div class="contact-card">
+    <h2 style="text-align:center; margin-top:0; color:var(--ink)">Rewards Member Lookup</h2>
+    <form id="rewardsForm">
+      <label class="contact-row">
+        <span style="flex:0 0 120px;">Email (optional):</span>
+        <input type="email" id="rewardsEmail" name="email" style="flex:1; padding:6px;" />
+      </label>
+      <label class="contact-row">
+        <span style="flex:0 0 120px;">Phone (optional):</span>
+        <input type="tel" id="rewardsPhone" name="phone" style="flex:1; padding:6px;" />
+      </label>
+      <div class="contact-actions">
+        <button type="submit" id="rewardsLookupBtn" class="cta api-btn" data-act="posrewardsmember" data-loading-text="Looking up...">
+          Get Rewards Balance
+        </button></div>
+      <div class="contact-actions" style="margin-top:8px;">
+        <button type="button"id="closeRewardsModal" class="close-modal-btn" aria-label="Close modal">✖</button>
+      </div>
+    </form>
+    <div id="rewardsToast" class="contact-toast">Balance retrieved ✔</div>
+  </div>
+</div>
 
     <!-- Contact Form -->
     <div class="card hidden" id="contactForm">
@@ -1128,708 +1416,725 @@ meter::-moz-meter-bar {
     © <span id="y"></span> Picante Pequin Salsa Co. All rights reserved.
   </footer>
 <script>
-/* Corrected single-source script:
-   - Single DOMContentLoaded init
-   - One canonical phone formatter (stores digits in dataset.raw)
-   - Guards against reentrant formatting and duplicate wiring
-   - Preserves OmniTok, login, signup, validation, password toggle, and UI states
-*/
-(function () {
-  /* ---------- Small helpers ---------- */
-  const qs = id => document.getElementById(id);
-  const safeText = v => String(v || '').trim();
-  const htmlEl = document.documentElement;
-  const loaderEl = qs('page-loader'); // optional
+// Picante POS — single consolidated script
 
-  function resetViewportScale({ allowPinchAfter = true } = {}) {
+(function () {
+  'use strict';
+
+  /* -------------------------
+     Small helpers
+     ------------------------- */
+  const $id = id => document.getElementById(id);
+  const safe = v => (v || '').toString().trim();
+
+  function once(fn) {
+    let ran = false;
+    return (...a) => { if (ran) return; ran = true; return fn(...a); };
+  }
+showModeSelector();
+  /* -------------------------
+     Loading / viewport helpers
+     ------------------------- */
+  function _resetViewportScale({ allowPinchAfter = true } = {}) {
     let meta = document.querySelector('meta[name="viewport"]');
     if (!meta) { meta = document.createElement('meta'); meta.name = 'viewport'; document.head.appendChild(meta); }
     const base = 'width=device-width';
     meta.content = base + ', initial-scale=1.0001';
-    requestAnimationFrame(() => {
-      meta.content = base + ', initial-scale=1.0' + (allowPinchAfter ? ', user-scalable=yes' : ', maximum-scale=1.0');
-    });
+    requestAnimationFrame(() => { meta.content = base + ', initial-scale=1.0' + (allowPinchAfter ? ', user-scalable=yes' : ', maximum-scale=1.0'); });
     if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
-    setTimeout(() => window.scrollTo(0, Math.max(0, window.pageYOffset || 0)), 0);
+    setTimeout(() => { window.scrollTo(0, Math.max(0, window.pageYOffset || 0)); }, 0);
   }
-  function startLoading(opts) { resetViewportScale(opts); htmlEl.classList.add('is-loading'); if (loaderEl) loaderEl.setAttribute('aria-hidden','false'); }
-  function stopLoading() { htmlEl.classList.remove('is-loading'); if (loaderEl) loaderEl.setAttribute('aria-hidden','true'); }
+  function startLoading(opts) { _resetViewportScale(opts); document.documentElement.classList.add('is-loading'); }
+  function stopLoading() { document.documentElement.classList.remove('is-loading'); }
 
-  /* ---------- Validators ---------- */
+  /* -------------------------
+     Validators
+     ------------------------- */
   const reEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const reZip = /^\d{5}$/;
   const reStreet = /^\d+\s+[\w\s]+/;
-  function isValidEmail(v){ return reEmail.test(safeText(v)); }
-  function isNotEmpty(v){ return safeText(v).length > 0; }
-  function isValidZip(v){ return reZip.test(safeText(v)); }
-  function isValidState(v){ return String(v || '') !== ''; }
-  function isValidStreetAddress(v){ return reStreet.test(safeText(v)); }
-  function isValidPhoneFormatted(v){ return /^\+1 \(\d{3}\) \d{3}-\d{4}$/.test(safeText(v)); }
+  const rePhoneFormatted = /^\+1 \(\d{3}\) \d{3}-\d{4}$/;
 
-  /* ---------- Field-level validation UI helper ---------- */
-  function setupFieldValidation(fieldId, validatorFn, messageText) {
-    const field = qs(fieldId);
-    if (!field) return;
-    if (field.nextElementSibling && field.nextElementSibling.classList?.contains('field-message')) return;
+  const validators = {
+    email: v => reEmail.test(safe(v)),
+    notEmpty: v => safe(v).length > 0,
+    zip5: v => reZip.test(safe(v)),
+    street: v => reStreet.test(safe(v)),
+    phoneFormatted: v => rePhoneFormatted.test(safe(v))
+  };
+
+  /* -------------------------
+     Field-level validation UI helper
+     ------------------------- */
+  function setupFieldValidation(fieldId, validateFn, hint) {
+    const el = $id(fieldId);
+    if (!el) return;
+    if (el.nextElementSibling && el.nextElementSibling.classList?.contains('field-message')) return;
     const msg = document.createElement('div');
     msg.className = 'field-message';
-    msg.style.cssText = 'font-size:.9rem;margin-top:4px;color:var(--muted);transition:color .3s ease;';
-    field.insertAdjacentElement('afterend', msg);
+    msg.style.cssText = 'font-size:.9rem;margin-top:4px;color:var(--muted);transition:color .25s ease;';
+    el.insertAdjacentElement('afterend', msg);
 
     function update() {
       try {
-        if (validatorFn(field.value)) { msg.textContent = '✔ Looks good'; msg.style.color = 'var(--accent-green)'; }
-        else { msg.textContent = messageText; msg.style.color = 'var(--muted)'; }
-      } catch (e) {}
+        if (validateFn(el.value)) { msg.textContent = '✔ Looks good'; msg.style.color = 'var(--accent-green)'; }
+        else { msg.textContent = hint; msg.style.color = 'var(--muted)'; }
+      } catch (e) { /* noop */ }
     }
-    field.addEventListener('focus', () => { if (!field.value.trim()) { msg.textContent = messageText; msg.style.color = 'var(--muted)'; }});
-    field.addEventListener('input', update);
-    field.addEventListener('blur', update);
+    el.addEventListener('focus', () => { if (!safe(el.value)) { msg.textContent = hint; msg.style.color = 'var(--muted)'; }});
+    el.addEventListener('input', update);
+    el.addEventListener('blur', update);
   }
 
-  /* ---------- Phone formatter (single authoritative implementation) ----------
-     - stores digits-only in input.dataset.raw
-     - formats visible value as: +1 (XXX) XXX-XXXX when 10 digits
-     - guarded to avoid recursive input events
-  */
-  function formatPhoneValueFromRaw(raw) {
-    if (raw.length === 10) return `+1 (${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
-    if (raw.length >= 6) return `(${raw.slice(0,3)}) ${raw.slice(3,6)}-${raw.slice(6)}`;
-    if (raw.length >= 3) return `(${raw.slice(0,3)}) ${raw.slice(3)}`;
-    return raw;
+  /* -------------------------
+     Phone handling (authoritative)
+     - dataset.raw stores digits-only (max 10)
+     - visible format: progressive, final +1 (XXX) XXX-XXXX
+     ------------------------- */
+  function _formatFromDigits(d) {
+    if (!d) return '';
+    if (d.length === 10) return `+1 (${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
+    if (d.length >= 6) return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
+    if (d.length >= 3) return `(${d.slice(0,3)}) ${d.slice(3)}`;
+    return d;
   }
 
-  // NEW: strict canonicalizer that always writes exactly the allowed 10-digit raw value
   function setPhoneRawAndRender(input, digits) {
-  if (!input) return;
-  // Normalize: drop any leading country digit '1' when user pasted/typed it as country code,
-  // but only if the resulting remaining digits are 10 or fewer.
-  if (digits.length > 10 && digits[0] === '1') {
-    digits = digits.slice(1);
-  }
-  // Enforce a hard 10-digit limit
-  digits = digits.replace(/\D/g, '').slice(0, 10);
-  input.dataset.raw = digits;
-  // Render the formatted view (progressive)
-  input.value = formatPhoneValueFromRaw(digits);
-}
-
-
-// UPDATED: canonical internal formatter used by input and blur handlers
-function formatPhoneInternal(input) {
-  if (!input) return;
-  // Extract digits only (from user visible value or dataset.raw)
-  let digits = (input.value || '').replace(/\D/g, '');
-
-  // If user typed an extra leading '1' and total becomes 11, drop leading 1 (US country code)
-  if (digits.length === 11 && digits[0] === '1') digits = digits.slice(1);
-
-  // Enforce 10-digit maximum
-  digits = digits.slice(0, 10);
-
-  // Persist the canonical raw digits and render the formatted value
-  input.dataset.raw = digits;
-  input.value = formatPhoneValueFromRaw(digits);
-}
-
-// Expose compatibility function (preserves onblur inline usage)
-window.formatPhone = function (inputOrId) {
-  const el = inputOrId && inputOrId.tagName ? inputOrId : qs(inputOrId);
-  if (!el) return;
-  if (el._formatLock) return;
-  el._formatLock = true;
-  try { formatPhoneInternal(el); } finally { el._formatLock = false; }
-};
-// Helper: place caret immediately after the Nth digit in the visible formatted value
-function placeCaretAfterDigits(input, digitIndex) {
-  if (!input || typeof digitIndex !== 'number') return;
-  const s = input.value || '';
-  if (digitIndex <= 0) {
-    try { input.setSelectionRange(0, 0); } catch(_) {}
-    return;
-  }
-  let digitsSeen = 0;
-  for (let i = 0; i < s.length; i++) {
-    if (/\d/.test(s[i])) digitsSeen++;
-    if (digitsSeen === digitIndex) {
-      const pos = i + 1;
-      try { input.setSelectionRange(pos, pos); } catch(_) {}
-      return;
-    }
-  }
-  try { input.setSelectionRange(s.length, s.length); } catch(_) {}
-}
-// Robust input handler: preserves logical caret location and enforces 10-digit raw storage
-function onPhoneInput(e) {
-  if (!e || !e.target) return;
-  const el = e.target;
-  if (el._phoneFormatting) return;
-  el._phoneFormatting = true;
-  try {
-    const selStart = (typeof el.selectionStart === 'number') ? el.selectionStart : el.value.length;
-    const left = el.value.slice(0, selStart);
-    const digitCountLeft = (left.match(/\d/g) || []).length;
-
-    let digits = (el.value || '').replace(/\D/g, '');
-    if (digits.length === 11 && digits[0] === '1') digits = digits.slice(1);
+    if (!input) return;
+    digits = (digits || '').replace(/\D/g, '');
+    if (digits.length > 10 && digits[0] === '1') digits = digits.slice(1);
     digits = digits.slice(0, 10);
-
-    setPhoneRawAndRender(el, digits);
-    placeCaretAfterDigits(el, digitCountLeft);
-  } finally {
-    el._phoneFormatting = false;
+    input.dataset.raw = digits;
+    input.value = _formatFromDigits(digits);
   }
 
-  if (typeof validateContactForm === 'function') validateContactForm();
-}
-
-function phoneKeydown(e) {
-  const allowed =
-    e.key === 'Backspace' || e.key === 'Delete' ||
-    e.key === 'ArrowLeft' || e.key === 'ArrowRight' ||
-    e.key === 'Home' || e.key === 'End' ||
-    e.key === 'Tab' ||
-    (e.ctrlKey || e.metaKey);
-  if (allowed) return;
-  if (!/^\d$/.test(e.key)) e.preventDefault();
-}
-
-function phonePaste(e) {
-  e.preventDefault();
-  const text = (e.clipboardData || window.clipboardData).getData('text') || '';
-  const digits = text.replace(/\D/g, '').replace(/^1(?=\d{10}$)/,'').slice(0,10);
-  const phone = e.target;
-  setPhoneRawAndRender(phone, digits);
-  if (typeof validateContactForm === 'function') validateContactForm();
-}
-
- /* ---------- UI helpers ---------- */
-  function showContactForm() {
-    const login = qs('loginContainer'), contact = qs('contactForm');
-    if (login) { login.classList.add('hidden'); login.style.zIndex = 1; }
-    if (contact) { contact.classList.remove('hidden'); contact.style.zIndex = 2; }
+  function formatPhoneInternal(input) {
+    if (!input) return;
+    let d = (input.value || '').replace(/\D/g, '');
+    if (d.length === 11 && d[0] === '1') d = d.slice(1);
+    d = d.slice(0, 10);
+    input.dataset.raw = d;
+    input.value = _formatFromDigits(d);
   }
-  window.showContactForm = showContactForm;
 
+  // Place caret after Nth digit (1..n)
+  function placeCaretAfterDigits(input, digitIndex) {
+    if (!input) return;
+    const s = input.value || '';
+    if (!digitIndex) { try { input.setSelectionRange(0,0); } catch(_) {} return; }
+    let seen = 0;
+    for (let i=0;i<s.length;i++) {
+      if (/\d/.test(s[i])) seen++;
+      if (seen === digitIndex) { try { input.setSelectionRange(i+1, i+1); } catch(_) {} return; }
+    }
+    try { input.setSelectionRange(s.length, s.length); } catch(_) {}
+  }
 
+  // beforeinput handler to keep canonical digits stable
+  function wirePhone(input) {
+    if (!input || input._fv_wired) return;
+    input.setAttribute('inputmode','numeric');
+    input.setAttribute('autocomplete','tel');
+    input.setAttribute('maxlength','20'); // visible cap
 
-  /* ---------- Reset contact form ---------- */
-// Replace or update your resetContactForm with this version
-function resetContactForm() {
-  const form = document.querySelector('#contactForm form');
-  if (form) form.reset();
+    const digitsFrom = v => (String(v||'').replace(/\D/g,'').slice(0,11)); // allow leading 1 for detection
 
-  // clear password meter and message
-  const meter = document.getElementById('passwordStrength');
-  if (meter) meter.value = 0;
-  const msg = document.getElementById('passwordMessage');
-  if (msg) msg.textContent = '';
+    function selectionDigitOffsets(el) {
+      const s = el.value || '';
+      const start = (typeof el.selectionStart === 'number') ? el.selectionStart : s.length;
+      const end = (typeof el.selectionEnd === 'number') ? el.selectionEnd : start;
+      const left = s.slice(0, start), right = s.slice(0, end);
+      return { startDigitCount: (left.match(/\d/g)||[]).length, endDigitCount: (right.match(/\d/g)||[]).length };
+    }
 
-  // clear phone raw + value
-  const phone = document.getElementById('custPhone');
-  if (phone) { phone.dataset.raw = ''; phone.value = ''; }
+    function applyDigitsAndPlace(phoneEl, newDigits, caretDigitIndex) {
+      if (!phoneEl) return;
+      if (newDigits.length > 10 && newDigits[0] === '1') newDigits = newDigits.slice(1);
+      newDigits = (newDigits || '').replace(/\D/g,'').slice(0,10);
+      setPhoneRawAndRender(phoneEl, newDigits);
+      placeCaretAfterDigits(phoneEl, caretDigitIndex);
+    }
 
-    // clear SMS consent checkbox
-  const smsConsent = document.getElementById('smsConsent'); // 🔥
-  if (smsConsent) { smsConsent.checked = false; smsConsent.value = ''; }
+    function beforeInput(e) {
+      try {
+        // allow composition
+        if (!e.data && e.inputType === 'insertCompositionText') return;
 
+        const phoneEl = e.target;
+        if (!phoneEl) return;
+        const currentRaw = (phoneEl.dataset.raw||'').replace(/\D/g,'').slice(0,10);
+        const { startDigitCount, endDigitCount } = selectionDigitOffsets(phoneEl);
+        let newDigits = currentRaw;
+        let caretDigitIndex = startDigitCount;
 
-  // run your main form validator (enables/disables submit)
-  if (typeof validateContactForm === 'function') validateContactForm();
+        switch (e.inputType) {
+          case 'insertText': {
+            const ch = (e.data||'').replace(/\D/g,'');
+            if (!ch) { e.preventDefault(); return; }
+            const arr = newDigits.split('');
+            arr.splice(startDigitCount, endDigitCount - startDigitCount, ...ch.split(''));
+            newDigits = arr.join('');
+            caretDigitIndex = startDigitCount + ch.length;
+            e.preventDefault();
+            break;
+          }
+          case 'insertFromPaste': {
+            const pasted = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+            const digits = pasted.replace(/\D/g,'');
+            if (!digits) { e.preventDefault(); return; }
+            const arr = newDigits.split('');
+            arr.splice(startDigitCount, endDigitCount - startDigitCount, ...digits.split(''));
+            newDigits = arr.join('');
+            caretDigitIndex = startDigitCount + digits.length;
+            e.preventDefault();
+            break;
+          }
+          case 'deleteContentBackward': {
+            if (endDigitCount > startDigitCount) {
+              const arr = newDigits.split('');
+              arr.splice(startDigitCount, endDigitCount - startDigitCount);
+              newDigits = arr.join('');
+              caretDigitIndex = startDigitCount;
+            } else if (startDigitCount > 0) {
+              const arr = newDigits.split('');
+              arr.splice(startDigitCount-1, 1);
+              newDigits = arr.join('');
+              caretDigitIndex = startDigitCount - 1;
+            } else { /* nothing */ }
+            e.preventDefault();
+            break;
+          }
+          case 'deleteContentForward': {
+            if (endDigitCount > startDigitCount) {
+              const arr = newDigits.split('');
+              arr.splice(startDigitCount, endDigitCount - startDigitCount);
+              newDigits = arr.join('');
+              caretDigitIndex = startDigitCount;
+            } else {
+              const arr = newDigits.split('');
+              if (startDigitCount < arr.length) arr.splice(startDigitCount, 1);
+              newDigits = arr.join('');
+              caretDigitIndex = startDigitCount;
+            }
+            e.preventDefault();
+            break;
+          }
+          case 'insertFromDrop': {
+            const dragged = (e.dataTransfer || {}).getData?.('text') || '';
+            const digits = dragged.replace(/\D/g,'');
+            if (!digits) { e.preventDefault(); return; }
+            const arr = newDigits.split('');
+            arr.splice(startDigitCount, endDigitCount - startDigitCount, ...digits.split(''));
+            newDigits = arr.join('');
+            caretDigitIndex = startDigitCount + digits.length;
+            e.preventDefault();
+            break;
+          }
+          default:
+            // let browser handle unknown / paragraph / replacements, fallback in input handler
+            return;
+        }
 
-  // Update all visible field-message nodes by dispatching input+blur
-  // This ensures setupFieldValidation's message elements refresh immediately
-  const fieldsToRefresh = [
-    'custFirstname','custLastname','custAddress','custCity','custState',
-    'custZip','custEmail','custPhone','custPassword','custConfirmpassword',
-    'loginUsername','loginPassword'
-  ];
+        applyDigitsAndPlace(phoneEl, newDigits, caretDigitIndex);
+      } catch (err) {
+        // don't block user — fallback to native behavior
+        return;
+      }
+    }
 
-  fieldsToRefresh.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    // Removing and re-adding focus briefly would trigger browser UI; avoid it.
-    // Instead, dispatch an 'input' event (validators listen for this) and then 'blur'.
-    try {
-      const inputEvent = new Event('input', { bubbles: true, cancelable: true });
-      el.dispatchEvent(inputEvent);
-      const blurEvent = new Event('blur', { bubbles: true, cancelable: true });
-      el.dispatchEvent(blurEvent);
-    } catch (e) {
-      // fallback: call validateContactForm again
+    function inputFallback(e) {
+      try {
+        const el = e.target;
+        const digits = digitsFrom(el.value).replace(/^1(?=\d{10}$)/,'').slice(0,10);
+        applyDigitsAndPlace(el, digits, (digits||'').length);
+      } catch (_) {}
       if (typeof validateContactForm === 'function') validateContactForm();
     }
+
+    function keydownGuard(e) {
+      const allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','Home','End','Tab'];
+      if (allowed.includes(e.key) || e.ctrlKey || e.metaKey) return;
+      if (!/^\d$/.test(e.key)) e.preventDefault();
+    }
+
+    input.addEventListener('beforeinput', beforeInput, { passive: false });
+    input.addEventListener('input', inputFallback);
+    input.addEventListener('blur', () => { formatPhoneInternal(input); if (typeof validateContactForm === 'function') validateContactForm(); });
+    input.addEventListener('keydown', keydownGuard);
+    input.addEventListener('paste', (e) => { e.preventDefault(); const text = (e.clipboardData || window.clipboardData).getData('text')||''; const digits = text.replace(/\D/g,'').replace(/^1(?=\d{10}$)/,'').slice(0,10); setPhoneRawAndRender(input, digits); if (typeof validateContactForm === 'function') validateContactForm(); });
+
+    input._fv_wired = true;
+  }
+
+  /* -------------------------
+     UI toggles / modals / views
+     ------------------------- */
+  function showModeSelector() {
+    const sel = $id('modeSelector'), login = $id('loginContainer'), contact = $id('contactForm');
+    if (login) login.classList.add('hidden');
+    if (contact) contact.classList.add('hidden');
+    if (sel) sel.classList.remove('hidden');
+  }
+
+  function showPOSContainer() {
+    const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm');
+    if (sel) sel.classList.add('hidden');
+    if (contact) contact.classList.add('hidden');
+    if (pos) pos.classList.remove('hidden');
+    // 🔥 Extension point A (POS init) — place logic here to wire external POS modules
+    initPOSCatalog();
+  }
+
+  function showSelfCheckout() {
+    const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm');
+    if (pos) pos.classList.add('hidden');
+    if (sel) sel.classList.add('hidden');
+    if (contact) contact.classList.remove('hidden');
+  }
+
+  function openRewardsModal() { document.body.classList.add('body-lock'); $id('rewardsModal')?.classList.remove('contact-hidden'); }
+  function closeRewardsModal() { document.body.classList.remove('body-lock'); $id('rewardsModal')?.classList.add('contact-hidden'); }
+
+  /* -------------------------
+     OmniTok helper (unchanged)
+     ------------------------- */
+  const API = { issueOmniTok: 'https://default6eda43f3fbf04e2b9978b543d9dd31.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/e3755ec03d8241c09ddb4d73a1c2bb86/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9t0-qJP8VJW4G9_COUvGJxmFKL6IWjUBeEq4GYZj3kQ' };
+
+// 🔥 getOmniTok: accept optional meta object to include in preflight POST
+async function getOmniTok(act, meta = undefined) {
+  let sid = sessionStorage.getItem('sid');
+  if (!sid) { sid = crypto.randomUUID(); sessionStorage.setItem('sid', sid); }
+
+  const body = { act, sid };
+  if (meta && typeof meta === 'object') {
+    // include only minimal identifiers to keep preflight small
+    body.meta = meta;
+  }
+
+  const res = await fetch(API.issueOmniTok, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
   });
+
+  if (!res.ok) throw new Error(`Failed to get OmniTok config for ${act}`);
+  const data = await res.json();
+  return { ...data, sid };
 }
-window.resetContactForm = resetContactForm;
+window.getOmniTok = getOmniTok;
 
-  /* ---------- OmniTok preflight helper ---------- */
-  const API = {
-    issueOmniTok: 'https://default6eda43f3fbf04e2b9978b543d9dd31.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/e3755ec03d8241c09ddb4d73a1c2bb86/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9t0-qJP8VJW4G9_COUvGJxmFKL6IWjUBeEq4GYZj3kQ'
-  };
-  async function getOmniTok(act) {
-    let sid = sessionStorage.getItem('sid');
-    if (!sid) { sid = crypto.randomUUID(); sessionStorage.setItem('sid', sid); }
-    const body = { act, sid };
-    const res = await fetch(API.issueOmniTok, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(body) });
-    if (!res.ok) throw new Error(`Failed to get OmniTok config for ${act}`);
-    const data = await res.json();
-    return { ...data, sid };
-  }
-  window.getOmniTok = getOmniTok;
+  /* -------------------------
+     POS catalog + cart (minimal, in-memory)
+     ------------------------- */
+  function initPOSCatalog() {
+    const gallery = $id('posGallery');
+    if (!gallery) return;
 
-  /* ---------- DOMContentLoaded initialization (single block) ---------- */
-  document.addEventListener('DOMContentLoaded', () => {
-    // set footer year
-    const yearEl = qs('y'); if (yearEl) yearEl.textContent = new Date().getFullYear();
+    const products = [
+      { id: 'house-pequin', name: 'House Pequin Salsa', price: 10, image: 'https://picantepequinsalsaco.com/images/image1.jpg' },
+      { id: 'spicy-green', name: 'Spicy Green Chile Pequin', price: 10, image: 'https://picantepequinsalsaco.com/images/image2.jpg' },
+      { id: 'red-hot', name: 'Red Hot Pepper Pequin', price: 10, image: 'https://picantepequinsalsaco.com/images/image3.jpg' },
+      { id: 'the-crew', name: 'The Crew (3‑Pack)', price: 30, image: 'https://picantepequinsalsaco.com/images/image4.jpg' }
+    ];
 
-// Authoritative phone edit handler using beforeinput (replace older handlers)
-(function wirePhoneBeforeInput() {
-  const phone = qs('custPhone');
-  if (!phone) return;
+    const cart = [];
 
-  phone.setAttribute('inputmode', 'numeric');
-  phone.setAttribute('autocomplete', 'tel');
-  phone.setAttribute('maxlength', '20'); // visible cap; digits are limited in code
-
-  // Utility: turn formatted value into array of digits (string)
-  function digitsFrom(val) { return (String(val || '').replace(/\D/g, '') || '').slice(0, 11); /* allow leading 1 for detection */ }
-
-  // Apply edit operation to canonical raw digits and render result.
-  // caretDigitIndex = number of digits to left of caret after operation (0..n)
-  function applyDigitsAndPlace(phoneEl, newDigits, caretDigitIndex) {
-    // Normalize leading 1 if present (and drop if needed)
-    if (newDigits.length > 10 && newDigits[0] === '1') newDigits = newDigits.slice(1);
-    newDigits = newDigits.replace(/\D/g, '').slice(0, 10);
-    setPhoneRawAndRender(phoneEl, newDigits);
-    // place caret after caretDigitIndex digits
-    const s = phoneEl.value || '';
-    const digitPos = [];
-    for (let i = 0; i < s.length; i++) if (/\d/.test(s[i])) digitPos.push(i);
-    if (caretDigitIndex <= 0) { try { phoneEl.setSelectionRange(0,0); } catch(_) {} return; }
-    if (digitPos.length >= caretDigitIndex) {
-      const ci = digitPos[caretDigitIndex - 1] + 1;
-      try { phoneEl.setSelectionRange(ci, ci); } catch(_) {}
-      return;
+    function renderCart() {
+      const list = $id('posCartItems'); const totalEl = $id('posCartTotal');
+      if (!list || !totalEl) return;
+      list.innerHTML = '';
+      let total = 0;
+      cart.forEach((item, idx) => {
+        total += item.price * item.qty;
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <span class="cart-name">${item.name}</span>
+          <div class="cart-controls">
+            <button class="qty-btn minus">−</button>
+            <span class="qty-display">${item.qty}</span>
+            <button class="qty-btn plus">+</button>
+            <button class="remove-btn">✖</button>
+          </div>
+        `;
+        li.querySelector('.minus').onclick = () => { if (item.qty > 1) item.qty--; else cart.splice(idx,1); renderCart(); };
+        li.querySelector('.plus').onclick = () => { item.qty++; renderCart(); };
+        li.querySelector('.remove-btn').onclick = () => { cart.splice(idx,1); renderCart(); };
+        list.appendChild(li);
+      });
+      totalEl.textContent = total.toFixed(2);
     }
-    try { phoneEl.setSelectionRange(s.length, s.length); } catch(_) {}
-  }
 
-  // Interpret selection as digit offsets (how many digits to left of selectionStart / selectionEnd)
-  function selectionToDigitOffsets(el) {
-    const s = el.value || '';
-    const selStart = (typeof el.selectionStart === 'number') ? el.selectionStart : s.length;
-    const selEnd = (typeof el.selectionEnd === 'number') ? el.selectionEnd : selStart;
-    const left = s.slice(0, selStart);
-    const right = s.slice(0, selEnd);
-    const startDigitCount = (left.match(/\d/g) || []).length;
-    const endDigitCount = (right.match(/\d/g) || []).length;
-    return { startDigitCount, endDigitCount };
-  }
-
-  // beforeinput handler: handle insertText, deleteContentBackward, deleteContentForward, insertFromPaste, insertFromDrop, replaceAroundCursor
-  function onPhoneBeforeInput(e) {
-    try {
-      // allow control keys and composition by deferring
-      if (!e.data && e.inputType === 'insertCompositionText') return;
-
-      const phoneEl = e.target;
-      if (!phoneEl) return;
-
-      // current canonical raw digits (ensure we have the authoritative raw)
-      const currentRaw = (phoneEl.dataset.raw || '').replace(/\D/g, '').slice(0, 10);
-
-      // selection digit offsets
-      const { startDigitCount, endDigitCount } = selectionToDigitOffsets(phoneEl);
-
-      // We'll compute newDigits and target caretDigitIndex
-      let newDigits = currentRaw;
-      let caretDigitIndex = startDigitCount;
-
-      switch (e.inputType) {
-        case 'insertText': {
-          // only accept digits typed
-          const ch = (e.data || '').replace(/\D/g, '');
-          if (!ch) { e.preventDefault(); return; }
-          // insert at startDigitCount position
-          const arr = newDigits.split('');
-          arr.splice(startDigitCount, endDigitCount - startDigitCount, ...ch.split(''));
-          newDigits = arr.join('');
-          caretDigitIndex = startDigitCount + ch.length;
-          e.preventDefault();
-          break;
-        }
-        case 'insertFromPaste': {
-          // sanitize paste
-          const pasted = (e.clipboardData || window.clipboardData)?.getData('text') || '';
-          const digits = pasted.replace(/\D/g, '');
-          if (!digits) { e.preventDefault(); return; }
-          const arr = newDigits.split('');
-          arr.splice(startDigitCount, endDigitCount - startDigitCount, ...digits.split(''));
-          newDigits = arr.join('');
-          caretDigitIndex = startDigitCount + digits.length;
-          e.preventDefault();
-          break;
-        }
-        case 'deleteContentBackward': {
-          // if selection, remove selection; otherwise remove previous digit
-          if (endDigitCount > startDigitCount) {
-            const arr = newDigits.split('');
-            arr.splice(startDigitCount, endDigitCount - startDigitCount);
-            newDigits = arr.join('');
-            caretDigitIndex = startDigitCount;
-          } else if (startDigitCount > 0) {
-            const arr = newDigits.split('');
-            arr.splice(startDigitCount - 1, 1);
-            newDigits = arr.join('');
-            caretDigitIndex = startDigitCount - 1;
-          } else {
-            // nothing to delete; let browser do nothing
-          }
-          e.preventDefault();
-          break;
-        }
-        case 'deleteContentForward': {
-          // if selection, remove selection; otherwise remove next digit
-          if (endDigitCount > startDigitCount) {
-            const arr = newDigits.split('');
-            arr.splice(startDigitCount, endDigitCount - startDigitCount);
-            newDigits = arr.join('');
-            caretDigitIndex = startDigitCount;
-          } else {
-            const arr = newDigits.split('');
-            if (startDigitCount < arr.length) arr.splice(startDigitCount, 1);
-            newDigits = arr.join('');
-            caretDigitIndex = startDigitCount;
-          }
-          e.preventDefault();
-          break;
-        }
-        case 'insertFromDrop': {
-          const dragged = (e.dataTransfer || {}).getData?.('text') || '';
-          const digits = dragged.replace(/\D/g, '');
-          if (!digits) { e.preventDefault(); return; }
-          const arr = newDigits.split('');
-          arr.splice(startDigitCount, endDigitCount - startDigitCount, ...digits.split(''));
-          newDigits = arr.join('');
-          caretDigitIndex = startDigitCount + digits.length;
-          e.preventDefault();
-          break;
-        }
-        case 'insertReplacementText':
-        case 'insertParagraph':
-        default: {
-          // Unknown inputType — fallback to sanitizing entire value on next tick
-          // Let the browser update value then sanitize in input handler
-          return;
-        }
-      }
-
-      // Apply normalized digits and place caret
-      applyDigitsAndPlace(phoneEl, newDigits, caretDigitIndex);
-    } catch (err) {
-      // on any error, let browser handle it so user isn't blocked
-      return;
+    function addToCart(it) {
+      const idx = cart.findIndex(x => x.id === it.id);
+      if (idx > -1) cart[idx].qty += it.qty;
+      else cart.push({ ...it });
+      renderCart();
     }
-  }
 
-  // Fallback input handler (covers cases beforeinput didn't handle)
-  function onPhoneInputFallback(e) {
-    try {
-      const el = e.target;
-      // compute digits from visible value and render canonical
-      const digits = digitsFrom(el.value);
-      applyDigitsAndPlace(el, digits, (digits || '').length);
-    } catch (_) {}
-    if (typeof validateContactForm === 'function') validateContactForm();
-  }
-
-  // Wire idempotently
-  if (!phone._fv_phone_wired) {
-    phone.addEventListener('beforeinput', onPhoneBeforeInput, { passive: false });
-    phone.addEventListener('input', onPhoneInputFallback);
-    phone.addEventListener('blur', (ev) => { formatPhoneInternal(ev.target); if (typeof validateContactForm === 'function') validateContactForm(); });
-    // still keep a keydown filter to reduce noise (optional)
-    phone.addEventListener('keydown', function (ev) {
-      const allowed =
-        ev.key === 'Backspace' || ev.key === 'Delete' ||
-        ev.key === 'ArrowLeft' || ev.key === 'ArrowRight' ||
-        ev.key === 'Home' || ev.key === 'End' ||
-        ev.key === 'Tab' ||
-        (ev.ctrlKey || ev.metaKey);
-      if (allowed) return;
-      if (!/^\d$/.test(ev.key)) ev.preventDefault();
+    gallery.innerHTML = '';
+    products.forEach(p => {
+      const card = document.createElement('div'); card.className = 'prod-card';
+      card.innerHTML = `
+        <img src="${p.image}" alt="${p.name}">
+        <h3 class="prod-name">${p.name}</h3>
+        <p class="prod-price">$${p.price.toFixed(2)}</p>
+        <div class="quantity">
+          <button class="qty-btn minus">−</button>
+          <input type="number" class="qty-input" value="0" min="0">
+          <button class="qty-btn plus">+</button>
+        </div>
+        <button class="add-to-cart">Add to Cart</button>
+      `;
+      const qtyInput = card.querySelector('.qty-input');
+      card.querySelector('.qty-btn.minus').onclick = () => { qtyInput.value = Math.max(0, +qtyInput.value - 1); };
+      card.querySelector('.qty-btn.plus').onclick = () => { qtyInput.value = +qtyInput.value + 1; };
+      card.querySelector('.add-to-cart').onclick = () => {
+        const q = +qtyInput.value;
+        if (!q) return;
+        addToCart({ id: p.id, name: p.name, price: p.price, qty: q });
+        qtyInput.value = 0;
+      };
+      gallery.appendChild(card);
     });
-    phone._fv_phone_wired = true;
+
+    $id('posClearBtn')?.addEventListener('click', () => { cart.length = 0; renderCart(); });
+    $id('posCheckoutBtn')?.addEventListener('click', () => {
+      if (!cart.length) { alert('Cart is empty.'); return; }
+      // 🔥 Extension point B (POS checkout): wire OmniTok/Stripe here
+      alert('Proceeding to POS checkout…');
+    });
+
+    renderCart();
   }
-})();
 
-    // Field-level validations
-    setupFieldValidation('custFirstname', isNotEmpty, 'Please enter your first name');
-    setupFieldValidation('custLastname', isNotEmpty, 'Please enter your last name');
-    setupFieldValidation('custAddress', isValidStreetAddress, 'Please enter your street address');
-    setupFieldValidation('custCity', isNotEmpty, 'Please enter your city');
-    setupFieldValidation('custState', isValidState, 'Please select your state');
-    setupFieldValidation('custZip', isValidZip, 'Enter a 5-digit ZIP code');
-    setupFieldValidation('custEmail', isValidEmail, 'Enter a valid email like name@example.com');
-    setupFieldValidation('custPhone', () => isValidPhoneFormatted(qs('custPhone')?.value || ''), 'Enter a valid 10-digit phone number');
-    setupFieldValidation('loginUsername', isValidEmail, 'Enter a valid email like name@example.com');
-    setupFieldValidation('loginPassword', (v) => safeText(v).length >= 8, 'Password must be at least 8 characters');
+  /* -------------------------
+     Form reset and validation
+     ------------------------- */
+  function resetContactForm() {
+    const form = document.querySelector('#contactForm form');
+    if (form) form.reset();
+    const meter = $id('passwordStrength'); if (meter) meter.value = 0;
+    const msg = $id('passwordMessage'); if (msg) msg.textContent = '';
+    const phone = $id('custPhone'); if (phone) { phone.dataset.raw = ''; phone.value = ''; }
+    const sms = $id('smsConsent'); if (sms) { sms.checked = false; sms.value = ''; }
+    if (typeof validateContactForm === 'function') validateContactForm();
+    const refresh = ['custFirstname','custLastname','custAddress','custCity','custState','custZip','custEmail','custPhone','custPassword','custConfirmpassword','loginUsername','loginPassword'];
+    refresh.forEach(id => { const el = $id(id); if (!el) return; el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('blur',{bubbles:true})); });
+  }
+  window.resetContactForm = resetContactForm;
 
-    /* ---------- Login form ---------- */
-    const loginForm = qs('loginForm');
-    const loginBtn = qs('loginBtn');
-    const loginUser = qs('loginUsername');
-    const loginPass = qs('loginPassword');
+  const requiredFields = ['custFirstname','custLastname','custAddress','custCity','custState','custZip','custEmail','custPhone','custPassword','custConfirmpassword'];
 
-    if (loginForm && loginBtn && loginUser && loginPass) {
-      function validateLogin() {
-        const ok = isValidEmail(loginUser.value) && safeText(loginPass.value).length >= 8;
-        loginBtn.disabled = !ok;
-        loginBtn.classList.toggle('enabled', ok);
-        loginBtn.setAttribute('aria-disabled', String(!ok));
-      }
-      validateLogin();
-      loginUser.addEventListener('input', validateLogin);
-      loginPass.addEventListener('input', validateLogin);
+  window.validateContactForm = function validateContactForm() {
+    try {
+      let ok = requiredFields.every(id => {
+        const el = $id(id); return el && safe(el.value).length > 0;
+      });
+      const pw = $id('custPassword')?.value || '';
+      const conf = $id('custConfirmpassword')?.value || '';
+      if (pw !== conf || pw.length < 8) ok = false;
+      const submit = $id('submitBtn'); if (submit) { submit.disabled = !ok; submit.classList.toggle('enabled', ok); }
+    } catch (e) { /* noop */ }
+  };
 
-      loginForm.addEventListener('submit', async (ev) => {
-        ev.preventDefault();
-        if (loginBtn.disabled) return;
-        loginBtn.disabled = true;
-        loginBtn.classList.add('btn-loading');
-        const original = loginBtn.textContent;
-        loginBtn.textContent = 'Logging in...';
-        startLoading({ resetZoom: true });
-
-        try {
-          const omni = await getOmniTok(loginBtn.dataset.act || 'seclog');
-          if (!omni?.endpoint) throw new Error('Omnitok preflight did not return an endpoint');
-
-          const payload = { jobId: `PPSLOGIN-${crypto.randomUUID()}`, username: loginUser.value.trim(), password: loginPass.value.trim() };
-          const res = await fetch(omni.endpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-auth-token': omni.authToken,
-              'x-omnitok': omni.OmniTok,
-              'x-sid': omni.sid,
-              'x-act': omni.act
-            },
-            body: JSON.stringify(payload)
-          });
-          if (!res.ok) throw new Error('Login failed');
-          const result = await res.json();
-          if (!result || typeof result.jobId !== 'string' || typeof result.email !== 'string') throw new Error('Unexpected response shape (missing jobId/email)');
-
-          alert(`✅ Login successful! Employee: ${payload.username}`);
-          sessionStorage.setItem('loggedIn', 'true');
-          showContactForm();
-          loginBtn.textContent = '✓ Logged In';
-          loginBtn.classList.add('is-success');
-          loginBtn.classList.remove('is-error');
-        } catch (err) {
-          console.error('Login error:', err);
-          alert('❌ Login failed. Please try again.');
-          loginBtn.textContent = 'Retry Login';
-          loginBtn.classList.remove('is-success');
-          loginBtn.classList.add('is-error');
-          loginBtn.disabled = false;
-        } finally {
-          loginBtn.classList.remove('btn-loading');
-          stopLoading();
-        }
+  /* -------------------------
+     Password UI
+     ------------------------- */
+  (function wirePasswordUI() {
+    const pw = $id('custPassword'), cpw = $id('custConfirmpassword'), msg = $id('passwordMessage'), meter = $id('passwordStrength');
+    function updateMatch() {
+      if (!pw || !cpw || !msg) return;
+      if (!pw.value && !cpw.value) { msg.textContent=''; msg.style.color='var(--muted)'; validateContactForm(); return; }
+      if (pw.value !== cpw.value) { msg.style.color='var(--accent-red)'; msg.textContent='Passwords do not match. Please re‑enter.'; }
+      else { msg.style.color='var(--accent-green)'; msg.textContent='Passwords match ✔'; }
+      validateContactForm();
+    }
+    if (cpw) cpw.addEventListener('input', updateMatch);
+    if (pw) {
+      pw.addEventListener('input', () => {
+        const v = pw.value || ''; let score = 0;
+        if (v.length >= 8) score++;
+        if (/[A-Z]/.test(v)) score++;
+        if (/[0-9]/.test(v)) score++;
+        if (/[^A-Za-z0-9]/.test(v)) score++;
+        if (meter) meter.value = score;
+        updateMatch();
       });
     }
+  })();
 
-/* ---------- Contact / Signup form ---------- */
-const submitBtn = qs('submitBtn');
-const required = [
-  'custFirstname','custLastname','custAddress','custCity',
-  'custState','custZip','custEmail','custPhone','custPassword','custConfirmpassword'
-];
-
-window.validateContactForm = function validateContactForm() {
-  try {
-    let all = required.every(id => {
-      const el = qs(id);
-      return el && safeText(el.value).length > 0;
-    });
-    const pass = qs('custPassword')?.value || '';
-    const conf = qs('custConfirmpassword')?.value || '';
-    if (pass !== conf || pass.length < 8) all = false;
-    if (submitBtn) {
-      submitBtn.disabled = !all;
-      submitBtn.classList.toggle('enabled', all);
+  /* -------------------------
+     Login wiring
+     ------------------------- */
+  function wireLogin() {
+    const form = $id('loginForm'), btn = $id('loginBtn'), user = $id('loginUsername'), pass = $id('loginPassword');
+    if (!form || !btn || !user || !pass) return;
+    function validate() {
+      const ok = validators.email(user.value) && safe(pass.value).length >= 8;
+      btn.disabled = !ok;
+      btn.classList.toggle('enabled', ok);
+      btn.setAttribute('aria-disabled', String(!ok));
     }
-  } catch (e) {}
-};
-required.forEach(id => { const el = qs(id); if (el) el.addEventListener('input', validateContactForm); });
+    validate();
+    user.addEventListener('input', validate); pass.addEventListener('input', validate);
 
-// password strength + match UI
-const passwordInput = qs('custPassword');
-const confirmInput = qs('custConfirmpassword');
-const passwordMessage = qs('passwordMessage');
-const passwordMeter = qs('passwordStrength');
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault(); if (btn.disabled) return;
+      btn.disabled = true; btn.classList.add('btn-loading'); const original = btn.textContent; btn.textContent = 'Logging in...'; startLoading();
+      try {
+        const omni = await getOmniTok(btn.dataset.act || 'seclog');
+        if (!omni?.endpoint) throw new Error('Omnitok preflight did not return an endpoint');
+        const payload = { jobId: `PPSLOGIN-${crypto.randomUUID()}`, username: user.value.trim(), password: pass.value.trim() };
+        const res = await fetch(omni.endpoint, { method: 'POST', headers: { 'Content-Type':'application/json', 'x-auth-token': omni.authToken, 'x-omnitok': omni.OmniTok, 'x-sid': omni.sid, 'x-act': omni.act }, body: JSON.stringify(payload) });
+        if (!res.ok) throw new Error('Login failed');
+        const result = await res.json();
+        if (!result || typeof result.jobId !== 'string') throw new Error('Unexpected response shape (missing jobId)');
+        alert(`✅ Login successful! Employee: ${payload.username}`);
+        sessionStorage.setItem('loggedIn','true');
+        showModeSelector();
+        btn.textContent = '✓ Logged In'; btn.classList.add('is-success'); btn.classList.remove('is-error');
+      } catch (err) {
+        console.error('Login error:', err);
+        alert('❌ Login failed. Please try again.');
+        btn.textContent = 'Retry Login'; btn.classList.remove('is-success'); btn.classList.add('is-error'); btn.disabled = false;
+      } finally { btn.classList.remove('btn-loading'); stopLoading(); }
+    });
+  }
 
+  /* -------------------------
+     Rewards lookup wiring
+     ------------------------- */
+function wireRewards() {
+  // idempotent wiring guard
+  if (wireRewards._wired) return;
+  wireRewards._wired = true;
 
-// Helper: update match message (runs when either field changes)
-function updatePasswordMatchMessage() {
-  if (!passwordMessage || !passwordInput || !confirmInput) return;
+  const openBtn = $id('openRewardsModal');
+  const closeBtn = $id('closeRewardsModal');
+  const form = $id('rewardsForm');
+  const lookupBtn = $id('rewardsLookupBtn');
 
-  // Clear message when both empty (keeps resetContactForm tidy)
-  if (!passwordInput.value && !confirmInput.value) {
-    passwordMessage.textContent = '';
-    passwordMessage.style.color = 'var(--muted)';
-    if (typeof validateContactForm === 'function') validateContactForm();
+  if (openBtn) openBtn.addEventListener('click', openRewardsModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeRewardsModal);
+
+  if (!form || !lookupBtn) {
+    console.warn('wireRewards: rewards form or lookup button missing');
     return;
   }
 
-  if (confirmInput.value !== passwordInput.value) {
-    passwordMessage.style.color = 'var(--accent-red)';
-    passwordMessage.textContent = 'Passwords do not match. Please re‑enter.';
-  } else {
-    passwordMessage.style.color = 'var(--accent-green)';
-    passwordMessage.textContent = 'Passwords match ✔';
+ // Replace your onSubmit with this instrumented version
+  async function onSubmit(ev) {
+  ev.preventDefault();
+  lookupBtn.disabled = true;
+  lookupBtn.classList.add('loading');
+  const origText = lookupBtn.textContent;
+  lookupBtn.textContent = lookupBtn.dataset.loadingText || 'Looking up...';
+
+  try {
+    // READ INPUTS FIRST (log them)
+    const emailVal = (document.getElementById('rewardsEmail')?.value || '').trim();
+    const rawPhone = (document.getElementById('rewardsPhone')?.value || '').trim();
+    let phoneDigits = rawPhone.replace(/\D/g,'');
+    if (phoneDigits.length === 11 && phoneDigits[0] === '1') phoneDigits = phoneDigits.slice(1);
+    phoneDigits = phoneDigits.slice(0,10);
+
+    console.info('[dbg] inputs read at submit', { emailVal, rawPhone, phoneDigits });
+
+    if (!emailVal && !phoneDigits) {
+      alert('Please enter an email or a 10-digit phone number.');
+      return;
+    }
+
+    // Preflight
+    console.debug('[dbg] calling getOmniTok with act=', lookupBtn.dataset.act);
+    const omni = await getOmniTok(lookupBtn.dataset.act || 'posrewardsmember', {
+  email: emailVal || undefined,
+  phone: phoneDigits || undefined
+});
+    console.debug('[dbg] omni preflight result:', omni);
+
+    if (!omni || !omni.endpoint) {
+      console.error('[dbg] omni.endpoint missing — preflight response:', omni);
+      throw new Error('OmniTok preflight returned no endpoint.');
+    }
+
+    // Build payload and log it (stringified) right before POST
+    const payload = { jobId: `PPSREWARDS-${crypto.randomUUID()}`, email: emailVal || undefined, phone: phoneDigits || undefined };
+    const payloadText = JSON.stringify(payload);
+    console.info('[dbg] will POST to omni.endpoint:', omni.endpoint);
+    console.info('[dbg] request body (text):', payloadText);
+
+    // For extra visibility: create a Blob so DevTools shows a proper request body in some cases
+    const res = await fetch(omni.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-auth-token': omni.authToken,
+        'x-omnitok': omni.OmniTok,
+        'x-sid': omni.sid,
+        'x-act': omni.act
+      },
+      body: payloadText,
+      // no-cors would hide body — ensure this is not present
+    });
+
+    console.debug('[dbg] fetch returned status', res.status, res.statusText);
+    const text = await res.text().catch(()=>'<no-body>');
+    console.debug('[dbg] fetch response text:', text);
+
+    if (!res.ok) throw new Error(`Rewards lookup failed (${res.status}) ${text}`);
+
+    // parse json if possible
+    let result;
+    try { result = JSON.parse(text); } catch(e) { result = {}; }
+
+    console.debug('[dbg] lookup result parsed', result);
+
+    const centsTenth = result?.balance || 0;
+    const balance = (centsTenth / 1000).toFixed(2);
+
+    window.rewardsMember = { name: result?.name || 'Member', balance, email: result?.email || emailVal, phone: result?.phone || phoneDigits };
+
+    const toast = document.getElementById('rewardsToast');
+    if (toast) { toast.textContent = `Member: ${window.rewardsMember.name}, Balance: $${window.rewardsMember.balance}`; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),4000); }
+
+    closeRewardsModal();
+  } catch (err) {
+    console.error('[dbg] onSubmit error', err);
+    alert('❌ Rewards lookup failed. See console for details.');
+  } finally {
+    lookupBtn.disabled = false;
+    lookupBtn.classList.remove('loading');
+    lookupBtn.textContent = origText;
   }
-
-  if (typeof validateContactForm === 'function') validateContactForm();
 }
 
-// Wire both directions: revalidate as user types in either field
-if (confirmInput && passwordInput && passwordMessage) {
-  // Keep confirm listener (user typing confirm still sees instant feedback)
-  confirmInput.addEventListener('input', updatePasswordMatchMessage);
-  // NEW: also run match update when primary password changes
-  passwordInput.addEventListener('input', updatePasswordMatchMessage);
+  // remove previous listener if present (defensive)
+  form.removeEventListener('submit', form._rewardsHandler || onSubmit);
+  form.addEventListener('submit', onSubmit);
+  form._rewardsHandler = onSubmit;
 }
 
-// Strength meter logic remains but also triggers match update
-if (passwordInput && passwordMeter) {
-  passwordInput.addEventListener('input', () => {
-    const val = passwordInput.value || '';
-    let score = 0;
-    if (val.length >= 8) score++;
-    if (/[A-Z]/.test(val)) score++;
-    if (/[0-9]/.test(val)) score++;
-    if (/[^A-Za-z0-9]/.test(val)) score++;
-    passwordMeter.value = score;
+  /* -------------------------
+     Signup / Contact wiring
+     ------------------------- */
+  function wireSignup() {
+    // Setup field validators
+    setupFieldValidation('custFirstname', validators.notEmpty, 'Please enter your first name');
+    setupFieldValidation('custLastname', validators.notEmpty, 'Please enter your last name');
+    setupFieldValidation('custAddress', validators.street, 'Please enter your street address');
+    setupFieldValidation('custCity', validators.notEmpty, 'Please enter your city');
+    setupFieldValidation('custState', v => safe(v) !== '', 'Please select your state');
+    setupFieldValidation('custZip', validators.zip5, 'Enter a 5-digit ZIP code');
+    setupFieldValidation('custEmail', validators.email, 'Enter a valid email like name@example.com');
+    setupFieldValidation('custPhone', () => validators.phoneFormatted($id('custPhone')?.value || ''), 'Enter a valid 10-digit phone number');
+    setupFieldValidation('loginUsername', validators.email, 'Enter a valid email like name@example.com');
+    setupFieldValidation('loginPassword', v => safe(v).length >= 8, 'Password must be at least 8 characters');
 
-    // Keep form state in sync and refresh match message in case password changed
-    if (typeof updatePasswordMatchMessage === 'function') updatePasswordMatchMessage();
-  });
-}
+    const submit = $id('submitBtn');
+    const required = ['custFirstname','custLastname','custAddress','custCity','custState','custZip','custEmail','custPhone','custPassword','custConfirmpassword'];
 
-    // final submit handler
+    required.forEach(id => { const el = $id(id); if (el) el.addEventListener('input', validateContactForm); });
+
     window.handleFormSubmit = async function handleFormSubmit(e) {
       if (e && e.preventDefault) e.preventDefault();
-      if (!submitBtn || submitBtn.disabled) return;
+      if (!submit || submit.disabled) return;
       const loggedIn = sessionStorage.getItem('loggedIn') === 'true';
       if (!loggedIn) { alert('Please log in before signing up.'); return; }
 
-      const phoneEl = qs('custPhone');
-      const smsConsentEl = qs('smsConsent');
-
+      const phoneEl = $id('custPhone'), smsEl = $id('smsConsent');
       const payload = {
-        firstName: safeText(qs('custFirstname')?.value),
-        lastName: safeText(qs('custLastname')?.value),
-        address: safeText(qs('custAddress')?.value),
-        city: safeText(qs('custCity')?.value),
-        state: safeText(qs('custState')?.value),
-        zip: safeText(qs('custZip')?.value),
-        email: safeText(qs('custEmail')?.value),
-        password: safeText(qs('custPassword')?.value),
-        phone: (phoneEl?.dataset?.raw || (phoneEl?.value || '').replace(/\D/g, '')),
-        smsConsent: Boolean(smsConsentEl?.checked),
+        firstName: safe($id('custFirstname')?.value),
+        lastName: safe($id('custLastname')?.value),
+        address: safe($id('custAddress')?.value),
+        city: safe($id('custCity')?.value),
+        state: safe($id('custState')?.value),
+        zip: safe($id('custZip')?.value),
+        email: safe($id('custEmail')?.value),
+        password: safe($id('custPassword')?.value),
+        phone: (phoneEl?.dataset?.raw || (phoneEl?.value || '').replace(/\D/g,'')),
+        smsConsent: Boolean(smsEl?.checked),
         verificationCode: undefined
       };
-      const confirm = safeText(qs('custConfirmpassword')?.value);
+      const confirm = safe($id('custConfirmpassword')?.value);
       if (payload.password !== confirm) { alert('Passwords do not match.'); return; }
 
-      const originalText = submitBtn.textContent;
-      submitBtn.disabled = true;
-      submitBtn.classList.add('btn-loading');
-      submitBtn.textContent = 'Submitting…';
-      startLoading({ resetZoom: true });
+      const original = submit.textContent;
+      submit.disabled = true; submit.classList.add('btn-loading'); submit.textContent = 'Submitting…'; startLoading();
 
       try {
-        const omni = await getOmniTok(submitBtn.dataset.act || 'ppsc_signup');
+        const omni = await getOmniTok(submit.dataset.act || 'ppsc_signup');
         if (!omni?.endpoint) throw new Error('Omnitok preflight did not return an endpoint');
         payload.verificationCode = omni.verificationCode;
-
-        const res = await fetch(omni.endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-auth-token': omni.authToken,
-            'x-omnitok': omni.OmniTok,
-            'x-sid': omni.sid,
-            'x-act': omni.act
-          },
-          body: JSON.stringify(payload)
-        });
+        const res = await fetch(omni.endpoint, { method: 'POST', headers: { 'Content-Type':'application/json','x-auth-token': omni.authToken,'x-omnitok': omni.OmniTok,'x-sid': omni.sid,'x-act': omni.act }, body: JSON.stringify(payload) });
         if (!res.ok) {
           let detail = '';
           try { const j = await res.json(); detail = j?.error?.message || ''; } catch(_) {}
           throw new Error(detail || `Signup failed (${res.status})`);
         }
-        try { await res.json(); } catch(_) {}
+        await res.json().catch(()=>{});
         alert(`✅ Welcome to the Trading Post, ${payload.firstName || payload.email}!`);
-        submitBtn.textContent = '✓ Account Created';
-        submitBtn.classList.add('is-success');
+        submit.textContent = '✓ Account Created'; submit.classList.add('is-success');
         resetContactForm();
-        setTimeout(() => { submitBtn.disabled = false; submitBtn.textContent = originalText; submitBtn.classList.remove('is-success','btn-loading','enabled'); }, 800);
+        setTimeout(()=>{ submit.disabled=false; submit.textContent = original; submit.classList.remove('is-success','btn-loading','enabled'); }, 800);
       } catch (err) {
         console.error('Signup error:', err);
         alert(`❌ Signup failed. ${err?.message || 'Please try again.'}`);
-        submitBtn.textContent = 'Retry Signup';
-        submitBtn.classList.remove('is-success');
-        submitBtn.classList.add('is-error');
-        submitBtn.disabled = false;
+        submit.textContent = 'Retry Signup'; submit.classList.remove('is-success'); submit.classList.add('is-error'); submit.disabled=false;
       } finally {
-        submitBtn.classList.remove('btn-loading');
-        stopLoading();
+        submit.classList.remove('btn-loading'); stopLoading();
       }
     };
-
-    // initial validation run
-    if (typeof window.validateContactForm === 'function') window.validateContactForm();
-  }); // end DOMContentLoaded
-
-  /* ---------- Password toggle utility (exposed) ---------- */
-// Improved togglePassword (backwards compatible)
-window.togglePassword = function (inputOrId, evtOrBtn) {
-  // resolve input element
-  const input = (inputOrId && inputOrId.tagName) ? inputOrId : qs(inputOrId);
-  if (!input) return;
-
-  // resolve button element: prefer explicit arg, then event target, then nearby .pw-toggle
-  let btn = null;
-  if (evtOrBtn) {
-    // evtOrBtn might be an Event or a button element
-    if (evtOrBtn.currentTarget) btn = evtOrBtn.currentTarget;
-    else if (evtOrBtn.target) btn = evtOrBtn.target;
-    else if (evtOrBtn.tagName) btn = evtOrBtn;
-  }
-  if (!btn) {
-    // try to find a nearby toggle button: same .pw-field container or adjacent sibling
-    try {
-      const container = input.closest ? input.closest('.pw-field') : input.parentElement;
-      if (container) btn = container.querySelector('.pw-toggle') || container.querySelector('[data-pw-toggle]');
-    } catch (_) { /* ignore */ }
   }
 
-  const makeVisible = input.type === 'password';
-  input.type = makeVisible ? 'text' : 'password';
+  /* -------------------------
+     Initial DOM wiring (single block)
+     ------------------------- */
+  document.addEventListener('DOMContentLoaded', once(() => {
+    // Footer year
+    const y = $id('y'); if (y) y.textContent = new Date().getFullYear();
 
-  if (btn && btn.setAttribute) {
-    btn.setAttribute('aria-pressed', String(makeVisible));
-    btn.setAttribute('aria-label', makeVisible ? 'Hide password' : 'Show password');
-    btn.classList.toggle('is-visible', makeVisible);
-  }
+    // Wire primary UI controls (idempotent)
+    $id('choosePOSBtn')?.addEventListener('click', showPOSContainer);
+    $id('chooseSelfBtn')?.addEventListener('click', showSelfCheckout);
+    $id('openRewardsModal')?.addEventListener('click', openRewardsModal);
+    $id('closeRewardsModal')?.addEventListener('click', closeRewardsModal);
 
-  try { input.focus({ preventScroll: true }); const v = input.value; input.setSelectionRange(v.length, v.length); } catch (_) {}
-};
+    // Wire forms & inputs
+    wireLogin();
+    wireRewards();
+    wireSignup();
+
+    // Wire phone handler for signup phone + rewards phone (if present)
+    wirePhone($id('custPhone'));
+    wirePhone($id('rewardsPhone'));
+
+    // Initial validators
+    setupFieldValidation('rewardsEmail', v => true, 'Enter email or phone (optional)');
+    setupFieldValidation('rewardsPhone', v => true, 'Enter email or phone (optional)');
+
+    // Default view: showModeSelector() or login depending on session
+    if (sessionStorage.getItem('loggedIn') === 'true') showModeSelector();
+    else { /* keep login visible by default */ }
+
+    // Run initial validation
+    if (typeof validateContactForm === 'function') validateContactForm();
+  }));
+
+  /* -------------------------
+     Public helpers (expose for debug)
+     ------------------------- */
+  window.showPOSContainer = showPOSContainer;
+  window.showSelfCheckout = showSelfCheckout;
+  window.openRewardsModal = openRewardsModal;
+  window.closeRewardsModal = closeRewardsModal;
+  window.wirePhone = wirePhone;
+
+  // 🔥 Fire emoji markers for quick patch locations:
+  // - Extension point A: inside showPOSContainer() — wire external gallery modules or third-party POS widgets
+  // - Extension point B: inside initPOSCatalog() checkout button — integrate OmniTok / Stripe / order flow
+  // - Extension point C: inside rewards submit success — map reward to checkout/cart UI
+
 })();
 </script>
 </body>
