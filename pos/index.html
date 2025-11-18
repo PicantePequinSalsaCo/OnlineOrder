@@ -1994,6 +1994,2272 @@ function wireRewards() {
     const balance = (centsTenth / 1000).toFixed(2);
 
     window.rewardsMember = { name: result?.name || 'Member', balance, email: result?.email || emailVal, phone: result?.phone || phoneDigits };
+    // --- Insert this after you set window.rewardsMember ===> show UI in POS cart
+(function showRewardsInPOS(result, emailVal, phoneDigits){
+  // canonicalize parsed result into member object if not already set
+  const rawRewards = (result?.rewards ?? result?.balance ?? 0);
+  const rewardsNumber = Number(rawRewards) || 0;
+
+  // Heuristic formatting: treat server rewards as cents if small integer (e.g., 729 -> $7.29).
+  // If you prefer a different scale, adjust scaleDivisor.
+  const scaleDivisor = 100; // change to 1000 if your backend uses tenths-of-cents
+  const formattedBalance = (rewardsNumber / scaleDivisor).toFixed(2);
+
+  const member = window.rewardsMember = {
+    name: result?.firstName || result?.name || 'Member',
+    raw: result,
+    rewardsRaw: rewardsNumber,
+    balanceNumber: rewardsNumber / scaleDivisor,
+    balanceFormatted: formattedBalance,
+    email: result?.email || emailVal || undefined,
+    phone: result?.phone || phoneDigits || undefined
+  };
+
+  // find posCart container and ensure we have a rewards-row
+  const posCart = document.getElementById('posCart');
+  if (!posCart) {
+    console.warn('applyRewards: posCart not present; rewards UI will not be shown');
+    return;
+  }
+
+  // idempotent container
+  let rewardsRow = document.getElementById('rewards-row');
+  if (!rewardsRow) {
+    rewardsRow = document.createElement('div');
+    rewardsRow.id = 'rewards-row';
+    rewardsRow.style.cssText = 'display:flex;gap:8px;align-items:center;padding:10px 0;border-top:1px dashed rgba(255,255,255,0.06);margin-top:10px;';
+    rewardsRow.innerHTML = `
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;color:var(--ink);">Rewards</div>
+        <div id="rewards-member" style="color:var(--muted);font-size:.95rem;">&nbsp;</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="rewards-apply-input" type="number" min="0" step="0.01" style="width:120px;padding:6px;border-radius:8px;border:1px solid var(--surface);background:var(--card);color:var(--ink);" />
+        <button id="rewards-apply-btn" class="btn" style="padding:8px 10px;">Apply</button>
+        <button id="rewards-clear-btn" class="btn" style="padding:8px 10px;background:transparent;border:1px solid var(--surface);">Clear</button>
+      </div>
+    `;
+    posCart.appendChild(rewardsRow);
+  }
+
+  // populate the member text and set default apply value
+  const memberEl = document.getElementById('rewards-member');
+  const applyInput = document.getElementById('rewards-apply-input');
+  const applyBtn = document.getElementById('rewards-apply-btn');
+  const clearBtn = document.getElementById('rewards-clear-btn');
+
+  if (memberEl) memberEl.textContent = `${member.name} · Balance: $${member.balanceFormatted}`;
+  if (applyInput) {
+    applyInput.value = member.balanceNumber ? Number(member.balanceNumber).toFixed(2) : '0.00';
+    applyInput.setAttribute('max', Number(member.balanceNumber || 0).toFixed(2));
+  }
+
+  // helper: read cart total element and update
+  function getCartTotalNumber() {
+    const totalEl = document.getElementById('posCartTotal');
+    if (!totalEl) return 0;
+    return Number((totalEl.textContent || '0').replace(/[^0-9.-]+/g,'')) || 0;
+  }
+  function setCartTotalNumber(n) {
+    const totalEl = document.getElementById('posCartTotal');
+    if (!totalEl) return;
+    totalEl.textContent = Number(n).toFixed(2);
+  }
+
+  // idempotent application: store applied amount on window.rewardsMember.applied
+  function applyRewards(amount) {
+    amount = Number(amount) || 0;
+    if (amount <= 0) { alert('Enter an amount greater than 0 to apply.'); return; }
+    const max = Number(member.balanceNumber || 0);
+    if (amount > max) { alert(`Amount exceeds rewards balance ($${max.toFixed(2)}).`); return; }
+
+    const cartTotal = getCartTotalNumber();
+    if (cartTotal <= 0) { alert('Cart total is zero; nothing to apply rewards against.'); return; }
+
+    const applied = Math.min(amount, cartTotal);
+    // persist applied state
+    member.applied = (member.applied || 0) + applied;
+    member.balanceNumber = Math.max(0, member.balanceNumber - applied);
+
+    // update cart total
+    setCartTotalNumber(Math.max(0, cartTotal - applied));
+
+    // update UI
+    if (memberEl) memberEl.textContent = `${member.name} · Balance: $${Number(member.balanceNumber).toFixed(2)} (Applied $${applied.toFixed(2)})`;
+    if (applyInput) { applyInput.value = Number(member.balanceNumber).toFixed(2); applyInput.setAttribute('max', Number(member.balanceNumber).toFixed(2)); }
+
+    // Extension point: allow other flows to know rewards were applied
+    if (typeof window.onRewardsApplied === 'function') {
+      try { window.onRewardsApplied(member, applied); } catch (e) { console.warn('onRewardsApplied handler failed', e); }
+    }
+  }
+
+  // wire buttons idempotently
+  applyBtn.onclick = () => applyRewards(applyInput?.value || 0);
+  clearBtn.onclick = () => {
+    // revert applied amounts (if you want rollback behavior)
+    if (member.applied) {
+      const cartTotal = getCartTotalNumber();
+      setCartTotalNumber(cartTotal + Number(member.applied));
+      member.balanceNumber = Number(member.balanceNumber || 0) + Number(member.applied);
+      member.applied = 0;
+      if (memberEl) memberEl.textContent = `${member.name} · Balance: $${Number(member.balanceNumber).toFixed(2)}`;
+      if (applyInput) { applyInput.value = Number(member.balanceNumber).toFixed(2); applyInput.setAttribute('max', Number(member.balanceNumber).toFixed(2)); }
+    } else {
+      // just clear input
+      if (applyInput) applyInput.value = Number(member.balanceNumber || 0).toFixed(2);
+    }
+  };
+
+  // small visual affordance: highlight that rewards applied
+  applyBtn.addEventListener('click', () => {
+    applyBtn.classList.add('btn-loading');
+    setTimeout(()=>applyBtn.classList.remove('btn-loading'), 600);
+  });
+
+  // expose apply function globally if needed
+  window.applyRewardsToPOS = (amt) => applyRewards(amt);
+
+})(result, emailVal, phoneDigits);
+
+    const toast = document.getElementById('rewardsToast');
+    if (toast) { toast.textContent = `Member: ${window.rewardsMember.name}, Balance: $${window.rewardsMember.balance}`; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),4000); }
+
+    closeRewardsModal();
+  } catch (err) {
+    console.error('[dbg] onSubmit error', err);
+    alert('❌ Rewards lookup failed. See console for details.');
+  } finally {
+    lookupBtn.disabled = false;
+    lookupBtn.classList.remove('loading');
+    lookupBtn.textContent = origText;
+  }
+}
+
+  // remove previous listener if present (defensive)
+  form.removeEventListener('submit', form._rewardsHandler || onSubmit);
+  form.addEventListener('submit', onSubmit);
+  form._rewardsHandler = onSubmit;
+}
+  /* -------------------------
+     Signup / Contact wiring
+     ------------------------- */
+  function wireSignup() {
+    // Setup field validators
+    setupFieldValidation('custFirstname', validators.notEmpty, 'Please enter your first name');
+    setupFieldValidation('custLastname', validators.notEmpty, 'Please enter your last name');
+    setupFieldValidation('custAddress', validators.street, 'Please enter your street address');
+    setupFieldValidation('custCity', validators.notEmpty, 'Please enter your city');
+    setupFieldValidation('custState', v => safe(v) !== '', 'Please select your state');
+    setupFieldValidation('custZip', validators.zip5, 'Enter a 5-digit ZIP code');
+    setupFieldValidation('custEmail', validators.email, 'Enter a valid email like name@example.com');
+    setupFieldValidation('custPhone', () => validators.phoneFormatted($id('custPhone')?.value || ''), 'Enter a valid 10-digit phone number');
+    setupFieldValidation('loginUsername', validators.email, 'Enter a valid email like name@example.com');
+    setupFieldValidation('loginPassword', v => safe(v).length >= 8, 'Password must be at least 8 characters');
+
+    const submit = $id('submitBtn');
+    const required = ['custFirstname','custLastname','custAddress','custCity','custState','custZip','custEmail','custPhone','custPassword','custConfirmpassword'];
+
+    required.forEach(id => { const el = $id(id); if (el) el.addEventListener('input', validateContactForm); });
+
+    window.handleFormSubmit = async function handleFormSubmit(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      if (!submit || submit.disabled) return;
+      const loggedIn = sessionStorage.getItem('loggedIn') === 'true';
+      if (!loggedIn) { alert('Please log in before signing up.'); return; }
+
+      const phoneEl = $id('custPhone'), smsEl = $id('smsConsent');
+      const payload = {
+        firstName: safe($id('custFirstname')?.value),
+        lastName: safe($id('custLastname')?.value),
+        address: safe($id('custAddress')?.value),
+        city: safe($id('custCity')?.value),
+        state: safe($id('custState')?.value),
+        zip: safe($id('custZip')?.value),
+        email: safe($id('custEmail')?.value),
+        password: safe($id('custPassword')?.value),
+        phone: (phoneEl?.dataset?.raw || (phoneEl?.value || '').replace(/\D/g,'')),
+        smsConsent: Boolean(smsEl?.checked),
+        verificationCode: undefined
+      };
+      const confirm = safe($id('custConfirmpassword')?.value);
+      if (payload.password !== confirm) { alert('Passwords do not match.'); return; }
+
+      const original = submit.textContent;
+      submit.disabled = true; submit.classList.add('btn-loading'); submit.textContent = 'Submitting…'; startLoading();
+
+      try {
+        const omni = await getOmniTok(submit.dataset.act || 'ppsc_signup');
+        if (!omni?.endpoint) throw new Error('Omnitok preflight did not return an endpoint');
+        payload.verificationCode = omni.verificationCode;
+        const res = await fetch(omni.endpoint, { method: 'POST', headers: { 'Content-Type':'application/json','x-auth-token': omni.authToken,'x-omnitok': omni.OmniTok,'x-sid': omni.sid,'x-act': omni.act }, body: JSON.stringify(payload) });
+        if (!res.ok) {
+          let detail = '';
+          try { const j = await res.json(); detail = j?.error?.message || ''; } catch(_) {}
+          throw new Error(detail || `Signup failed (${res.status})`);
+        }
+        await res.json().catch(()=>{});
+        alert(`✅ Welcome to the Trading Post, ${payload.firstName || payload.email}!`);
+        submit.textContent = '✓ Account Created'; submit.classList.add('is-success');
+        resetContactForm();
+        setTimeout(()=>{ submit.disabled=false; submit.textContent = original; submit.classList.remove('is-success','btn-loading','enabled'); }, 800);
+      } catch (err) {
+        console.error('Signup error:', err);
+        alert(`❌ Signup failed. ${err?.message || 'Please try again.'}`);
+        submit.textContent = 'Retry Signup'; submit.classList.remove('is-success'); submit.classList.add('is-error'); submit.disabled=false;
+      } finally {
+        submit.classList.remove('btn-loading'); stopLoading();
+      }
+    };
+  }
+
+  /* -------------------------
+     Initial DOM wiring (single block)
+     ------------------------- */
+  document.addEventListener('DOMContentLoaded', once(() => {
+    // Footer year
+    const y = $id('y'); if (y) y.textContent = new Date().getFullYear();
+
+    // Wire primary UI controls (idempotent)
+    $id('choosePOSBtn')?.addEventListener('click', showPOSContainer);
+    $id('chooseSelfBtn')?.addEventListener('click', showSelfCheckout);
+    $id('openRewardsModal')?.addEventListener('click', openRewardsModal);
+    $id('closeRewardsModal')?.addEventListener('click', closeRewardsModal);
+
+    // Wire forms & inputs
+    wireLogin();
+    wireRewards();
+    wireSignup();
+
+    // Wire phone handler for signup phone + rewards phone (if present)
+    wirePhone($id('custPhone'));
+    wirePhone($id('rewardsPhone'));
+
+    // Initial validators
+    setupFieldValidation('rewardsEmail', v => true, 'Enter email or phone (optional)');
+    setupFieldValidation('rewardsPhone', v => true, 'Enter email or phone (optional)');
+
+    // Default view: showModeSelector() or login depending on session
+    if (sessionStorage.getItem('loggedIn') === 'true') showModeSelector();
+    else { /* keep login visible by default */ }
+
+    // Run initial validation
+    if (typeof validateContactForm === 'function') validateContactForm();
+  }));
+
+  /* -------------------------
+     Public helpers (expose for debug)
+     ------------------------- */
+  window.showPOSContainer = showPOSContainer;
+  window.showSelfCheckout = showSelfCheckout;
+  window.openRewardsModal = openRewardsModal;
+  window.closeRewardsModal = closeRewardsModal;
+  window.wirePhone = wirePhone;
+
+  // 🔥 Fire emoji markers for quick patch locations:
+  // - Extension point A: inside showPOSContainer() — wire external gallery modules or third-party POS widgets
+  // - Extension point B: inside initPOSCatalog() checkout button — integrate OmniTok / Stripe / order flow
+  // - Extension point C: inside rewards submit success — map reward to checkout/cart UI
+
+})();
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Picante Pequin Salsa Co – Smoked Chile Pequin Salsa from Texas</title>
+  <meta name="description" content="Picante Pequin Salsa Co crafts fresh, locally sourced chile pequin salsas in Texas. Order online for delivery or pickup.">
+  <meta name="color-scheme" content="dark light" />
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Picante Pequin Salsa Co">
+  <meta property="og:title" content="Picante Pequin Salsa Co – Fresh Chile Pequin Salsas from Texas">
+  <meta property="og:description" content="Picante Pequin Salsa Co crafts fresh, locally sourced chile pequin salsas in Texas. Order online for delivery or pickup.">
+  <meta property="og:image" content="https://picantepequinsalsaco.com/images/social-preview.png">
+  <meta property="og:url" content="https://picantepequinsalsaco.com">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" type="image/x-icon" href="/images/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" href="/images/favicon.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+
+  <link rel="preload" as="image" href="https://picantepequinsalsaco.com/images/bg.png">
+  
+<style>
+  :root {
+    /* Old site palette preserved */
+    --bg-deep: #1e1e1e00;
+    --ink: #ececec;
+    --muted: #b0b0b0;
+    --banner: #00001b63;
+    --surface: #ffffff0d;
+    --dropdown: #000000;
+
+    --accent-orange: #f57c00;
+    --accent-softorange: #e4872ae0;
+    --accent-green: #558b2f;
+    --accent-red: #d84315;
+    --accent-softred: #df5227cb;
+    --accent-softborder: #4d4c4cb6;
+
+    --card: #00001b63;      /* glass card tint from old table bg */
+    --card-border: #f57c00; /* old table row divider */
+    --input-border: #558b2f;
+    --row-alt: #262626;     /* old alternating row */
+
+    --radius: 16px;
+    --radius-sm: 12px;
+    --shadow: 0 10px 30px #00000066;
+    --accent-glow: 0 0 0 2px #f57c0033, 0 10px 20px #f57c0022;
+
+    --maxw: 1100px;
+
+    /* Subtle dark gradient base with soft red/green light to echo header gradient */
+    --grad: linear-gradient(135deg, #1f1f1f70 0%, #1b1b1b70 40%, #15151570 100%);
+
+    --tile-w: 300px;
+    --tile-h: 300px;
+    --rail-pad: 14px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-deep); /* fallback */
+    scroll-behavior: smooth;
+  }
+
+  a { color: inherit; text-decoration: none; }
+  img { display: block; max-width: 100%; }
+
+  /* Background image + atmospheric overlay (image inside .bg so filter applies) */
+  .bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1; /* push behind all content */
+    background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover no-repeat;
+    filter: blur(0px) saturate(1.05) brightness(.9);
+    transform: translateZ(0) scale(1.02);
+  }
+
+  .bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: none;
+  }
+
+  /* Sticky header */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: saturate(140%) blur(10px);
+    background: #161616cc;
+    border-bottom: 1px solid #ffffff14;
+  }
+
+  .nav {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: .3px;
+  }
+
+  .logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background-image: url('https://picantepequinsalsaco.com/images/bg.png');
+    background-size: cover;
+    background-position: center;
+    box-shadow: var(--accent-glow);
+  }
+
+  .tag { color: var(--muted); font-size: .95rem; }
+
+  nav ul {
+    display: flex;
+    gap: 10px;
+    list-style: none;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+  }
+   /* 1px white outline around orange text */
+.outlined {
+  color: #ffffffdc;                    /* your fill color */
+  
+  /* Chrome, Safari & modern WebKit-based browsers */
+  -webkit-text-stroke: 1px #ffffff10;    /* outline color and width */
+
+  /* fallback for other browsers using multi-layer text-shadow */
+  text-shadow:
+    /* top-left */     -1px -1px 0 #ffffff10,
+    /* top-right */     1px -1px 0 #ffffff10,
+    /* bottom-left */  -1px  1px 0 #ffffff10,
+    /* bottom-right */  1px  1px 0 #ffffff10;
+}
+  
+  .link {
+    padding: 8px 12px;
+    border-radius: 999px;
+    color: var(--muted);
+    border: 1px solid transparent;
+    transition: .2s ease;
+  }
+
+  .link:hover {
+    color: var(--ink);
+    border-color: #ffffff22;
+    background: #ffffff10;
+  }
+   
+  .cta {
+    background: #050f46a9;
+    color: #c06a00b5;
+    backdrop-filter: 6px;
+    font-weight: 700;
+    padding: 9px 14px;
+    border-radius: 999px;
+    box-shadow: var(--accent-glow);
+  }
+
+  .cta:hover { filter: brightness(.95); }
+
+  /* Hero */
+  .hero {
+    max-width: var(--maxw);
+    margin: 36px auto 18px;
+    padding: 0 18px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+  }
+
+  .hero-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+  }
+
+  .hero .hero-gallery { align-self: start; }
+
+  .field-message {
+  font-size: .9rem;
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+  .kicker {
+    color: var(--accent-green);
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-size: .8rem;
+  }
+
+  h1 {
+    font-size: clamp(1.9rem, 3.2vw, 3rem);
+    line-height: 1.1;
+    margin: .4rem 0 .8rem;
+  }
+
+  .sub { color: var(--muted); font-size: 1.05rem; }
+
+  .badges {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pill {
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: .8rem;
+    color: #0d0a05;
+    background: #3d8700ad;
+    border: 1px solid #ffffff22;
+  }
+
+  .pill.alt {
+    color: #0a0f08;
+    background: #cf7c00d8;
+  }
+
+  .hero-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1px solid #ffffff1f;
+    background: #ffffff0f;
+    color: #ffc354;
+    backdrop-filter: blur(6px);
+    transition: transform .15s ease, background .2s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-1px);
+    background: #ffffff1a;
+  }
+
+  .btn.primary {
+    background: linear-gradient(540deg, #ffa600ef, var(--accent-orange));
+    color: var(--dropdown);
+    border: 1px solid var(--banner);
+    box-shadow: var(--accent-glow);
+    font-weight: 800;
+  }
+    .btn.primary:hover {
+    background: var(--accent-glow);
+    color: var(--accent-softorange);
+    border: 1px solid var(--accent-softorange);
+    box-shadow: var(--accent-glow);
+  }
+    .btn.rewards {
+    background: var(--surface);
+    color: var(--muted);
+    border: 1px solid var(--accent-green);
+    box-shadow: var(--card);
+    font-weight: 800;
+  }
+    .btn.rewards:hover {
+    background: var(--accent-green);
+    color: var(--dropdown);
+    border: 1px solid var(--card);
+    box-shadow: var(--accent-green);
+  }
+
+  /* Menu section */
+  .section {
+    max-width: var(--maxw);
+    margin: 20px auto;
+    padding: 0 18px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    padding: 18px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); /* Safari support */
+}
+
+
+.section h2 {
+  font-size: 1.4rem;
+  margin: 0 0 10px;
+  text-align: center;
+  font-weight: 700;              /* make headings bolder */
+  letter-spacing: 0.5px;         /* subtle spacing for readability */
+  color: var(--accent-orange);   /* tie into brand palette */
+  text-transform: uppercase;     /* stylistic choice */
+}
+
+#contactForm {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch; /* centers the button horizontally */
+}
+
+#submitBtn {
+  margin: 12px auto 0;               /* centers horizontally */
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: not-allowed;
+  background: var(--accent-orange);
+  color: var(--ink);
+  opacity: 0.6;
+  transition: all 0.3s ease;
+  max-width: 240px;                  /* optional: keeps it from stretching too wide */
+  width: auto;                       /* shrink to content */
+  display: block;                    /* ensures margin auto works */
+}
+
+#submitBtn.enabled {
+  cursor: pointer;
+  opacity: 1;
+  background: linear-gradient(90deg, var(--accent-orange), var(--accent-green));
+  box-shadow: 0 4px 12px #00000040;
+}
+
+#contactForm input,
+#contactForm select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+  margin: 6px 0;
+  border-radius: 6px;
+  border: 1px solid var(--input-border);
+  background: #ffffff0d; /* subtle tint */
+  color: var(--ink);                      /* text color */
+}
+
+#contactForm input:focus,
+#contactForm select:focus {
+  outline: none;
+  border-color: var(--accent-orange);     /* highlight border on focus */
+  box-shadow: 0 0 0 2px #f57c0033;        /* glow effect */
+}
+/* Wrapper for drowp down */
+#contactForm select.drop-down {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  width: 100%;
+  padding: 8px;
+  margin: 6px 0;
+  border-radius: 6px;
+  border: 1px solid var(--input-border);
+  background-color: var(--surface); /* Use your dark theme variable */
+  color: var(--ink);
+  font-size: 1rem;
+  box-sizing: border-box;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%23f57c00' viewBox='0 0 24 24'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+
+#contactForm select.drop-down:focus {
+  outline: none;
+  border-color: var(--accent-orange);
+  box-shadow: 0 0 0 2px #f57c0033;
+}
+
+#contactForm select.drop-down option {
+  background-color: var(--dropdown); /* dark background */
+  color: var(--ink); /* text color */
+}
+
+#contactForm select.drop-down option.placeholder {
+  background-color: var(--surface);
+  color: var(--ink);
+}
+
+#contactForm select.drop-down option[value=""] {
+  background-color: var(--dropdown);
+  color: var(--muted);
+}
+
+/* Password strength meter */
+meter {
+  width: 100%;
+  height: 10px;
+  border-radius: 6px;
+  background: #333; /* fallback track color */
+}
+
+meter::-webkit-meter-bar {
+  background: #333;
+  border-radius: 6px;
+}
+
+meter::-webkit-meter-optimum-value {
+  background: linear-gradient(90deg, red, orange, green);
+  border-radius: 6px;
+  transition: width 0.3s ease; /* smooth fill */
+}
+
+meter::-moz-meter-bar {
+  background: linear-gradient(90deg, red, orange, green);
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+/* Hide elements when needed */
+.hidden {
+  display: none !important;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute; /* keeps layout stable */
+}
+
+/* Ensure both containers stack correctly */
+#loginContainer,
+#contactForm {
+  position: relative;
+}
+
+#loginContainer { z-index: 2; }
+#contactForm { z-index: 1; }
+
+#loginContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch; /* same as contact form */
+}
+
+#loginContainer input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px;
+  margin: 6px 0;
+  border-radius: 6px;
+  border: 1px solid var(--input-border);
+  background: #ffffff0d;
+  color: var(--ink);
+}
+
+#loginContainer input:focus {
+  outline: none;
+  border-color: var(--accent-orange);
+  box-shadow: 0 0 0 2px #f57c0033;
+}
+
+#loginBtn {
+  margin: 12px auto 0;
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: not-allowed;
+  background: var(--accent-orange);
+  color: var(--ink);
+  opacity: 0.6;
+  transition: all 0.3s ease;
+  max-width: 240px;
+  width: auto;
+  display: block;
+}
+
+#loginBtn.enabled {
+  cursor: pointer;
+  opacity: 1;
+  background: linear-gradient(90deg, var(--accent-orange), var(--accent-green));
+  box-shadow: 0 4px 12px #00000040;
+}
+/* Loading shimmer effect */
+.btn-loading {
+  position: relative;
+  overflow: hidden;
+  color: transparent; /* optional if you want shimmer only */
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.4) 50%, rgba(255,255,255,0) 100%);
+  animation: shimmer 1.5s infinite;
+}
+
+/* Success state */
+.is-success {
+  background: linear-gradient(90deg, #28a745, #218838);
+  color: #fff !important;
+  font-weight: bold;
+}
+
+/* Error state */
+.is-error {
+  background: linear-gradient(90deg, #dc3545, #c82333);
+  color: #fff !important;
+  font-weight: bold;
+}
+
+/* Loading shimmer (already provided) */
+.btn-loading {
+  position: relative;
+  color: transparent;
+}
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.4) 50%, rgba(255,255,255,0) 100%);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* PPS: Mode selector and POS container */
+#modeSelector, #posContainer { position: relative; z-index: 2; }
+
+.vertical-gallery {
+  max-width: var(--maxw);
+  margin: 20px auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.prod-card {
+  background: var(--card);
+  border: 1px solid var(--surface);
+  box-shadow: var(--accent-glow);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  box-shadow: var(--accent-glow);
+  display: flex;
+  flex-direction: column;
+}
+
+.prod-card img {
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+}
+
+.prod-name { margin: 0 0 8px; font-size: 1.2rem; }
+.prod-price { margin: 0 0 12px; color: var(--muted); }
+
+.quantity {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.qty-btn {
+  width: 32px; height: 32px;
+  background: var(--surface); border: 1px solid var(--surface);
+  border-radius: 6px; color: var(--muted); cursor: pointer;
+}
+.qty-btn:hover {
+  background: var(--accent-glow); 
+  color: var(--ink); border: 1px solid var(--accent-orange);
+  transform: translateY(-2%);
+}
+.qty-input {
+  width: 56px; text-align: center;
+  border: 1px solid var(--surface);
+  border-radius: var(--radius-sm);
+  background: #ffffff0d; color: var(--ink);
+}
+.add-to-cart {
+  margin-top: auto;
+  background: var(--surface);
+  color: var(--muted); border: solid 1px var(--accent-orange); padding: 10px;
+  border-radius: var(--radius-sm); font-weight: 700; cursor: pointer;
+}
+.add-to-cart:hover {
+  background: var(--accent-glow);
+  color: var(--ink); border: solid 1px var(--accent-orange);
+  transform: translateY(-2%);
+}
+
+/* POS cart wrap */
+.pos-cart-wrap {
+  margin-top: 16px;
+  background: var(--card);
+  border: 1px solid var(--accent-glow);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+}
+
+#posCartItems {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#posCartItems li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+}
+#posCartItems li:hover {
+  background: var(--card);
+  transform: translateY(-2%);
+}
+.cart-name { flex: 1; margin-right: 8px; color: var(--ink); }
+.cart-controls { display: flex; align-items: center; gap: 6px; }
+.cart-controls .qty-btn { width: 24px; height: 24px; }
+.cart-controls .qty-display { min-width: 24px; text-align: center; }
+.remove-btn {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--accent-red);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.remove-btn:hover {
+  background: var(--accent-softred);
+  color: var(--card);
+  border: 1px solid var(--accent-red);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+/* Inline consent container */
+.consent-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--ink, #fff);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  padding: 0;
+  flex: 0 0 auto;       /* 🔒 Prevent flex/grid stretching */
+  width: auto;          /* 🔒 Shrink to fit content */
+}
+
+/* Checkbox: force square */
+.consent-inline input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--accent-orange, #ff6a00);
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+  appearance: none;
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+  flex: 0 0 18px;       /* 🔒 Explicit fixed size in flex/grid */
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Checked state: orange fill + white checkmark */
+.consent-inline input[type="checkbox"]:checked {
+  background-color: var(--accent-orange, #ff6a00);
+}
+
+.consent-inline input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: white;
+  font-weight: bold;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* Consent text */
+.consent-text {
+  flex: 1 1 auto;
+  color: var(--muted, #ccc);
+}
+
+/* Optional microcopy */
+.consent-optional {
+  color: var(--muted, #888);
+  font-size: 0.88rem;
+  margin-left: 4px;
+}
+
+/* Responsive wrap for mobile */
+@media (max-width: 600px) {
+  .consent-inline {
+    white-space: normal;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .consent-inline input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    flex: 0 0 17px;     /* 🔒 Keep square on mobile */
+  }
+}
+
+  /* Table styles */
+  .table-wrap {
+    overflow: auto;
+    border-radius: 12px;
+    border: 1px solid var(--input-border);
+    background: #1a1a1acc;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 520px;
+  }
+
+  thead {
+    background: linear-gradient(90deg, var(--accent-red), var(--accent-green));
+  }
+
+  thead th {
+    color: #fff;
+    font-weight: 600;
+    padding: .8em 1em;
+    text-align: left;
+  }
+
+  tbody td {
+    padding: .8em 1em;
+    border-top: 1px solid var(--card-border);
+    color: var(--ink);
+  }
+
+  tbody tr:nth-child(even) { background: var(--row-alt); }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1.2fr .8fr;
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  .list { margin: 0; padding-left: 1.2em; }
+  .list li { margin: .4em 0; }
+
+  .order-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .order-cta a {
+    background-color: var(--accent-orange);
+    color: #fff;
+    padding: .9em 1.4em;
+    border-radius: 10px;
+    font-weight: 800;
+    text-align: center;
+    box-shadow: var(--accent-glow);
+  }
+
+  .small { font-size: .9rem; color: var(--muted); margin-top: 10px; }
+
+  /* Highlights gallery */
+  .gallery-wrap {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    border: 1px solid var(--card-border);
+    background: #1e1e1e60;
+    box-shadow: var(--shadow);
+    width: calc(var(--tile-w) + 2 * var(--rail-pad));
+    height: calc(var(--tile-h) + 2 * var(--rail-pad));
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .rail {
+    display: flex;
+    gap: 12px;
+    padding: var(--rail-pad);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .rail::-webkit-scrollbar { display: none; }
+
+  .tile {
+    flex: 0 0 auto;
+    width: var(--tile-w);
+    height: var(--tile-h);
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    scroll-snap-align: center;
+    border: 1px solid #ffffff1a;
+    background: #141414;
+  }
+
+  .tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: .95;
+    transition: .25s;
+  }
+
+  .tile:hover img { transform: scale(1.03); opacity: 1; }
+
+  .tile .label {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #161616cc;
+    border: 1px solid #ffffff22;
+    color: #fff;
+    font-size: .8rem;
+  }
+
+  .gallery-controls {
+    position: absolute;
+    inset: auto 10px 10px auto;
+    display: flex;
+    gap: 8px;
+    z-index: 2;
+  }
+
+  .ctrl {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: #161616cc;
+    border: 1px solid #ffffff2a;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .ctrl:hover { background: #161616e0; }
+
+  /* Footer */
+  footer {
+    margin: 40px 0 28px;
+    color: var(--muted);
+    text-align: center;
+    font-size: .9rem;
+  }
+
+  .links {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .links a { color: var(--accent-orange); font-weight: 700; }
+
+  /* ========================= */
+  /* Responsive Styles         */
+  /* ========================= */
+
+  @media (max-width: 960px) {
+    .hero { grid-template-columns: 1fr; }
+    .info-grid { grid-template-columns: 1fr; }
+
+    /* Keep gallery fixed size & centered */
+    .gallery-wrap {
+      width: calc(var(--tile-w) + 2 * var(--rail-pad));
+      height: calc(var(--tile-h) + 2 * var(--rail-pad));
+      margin: 0 auto;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .nav {
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+    }
+    .brand {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    nav ul {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+    nav ul li {
+      display: flex;
+      justify-content: center;
+    }
+    nav a {
+      width: 100%;
+      text-align: center;
+    }
+  }
+
+  /* Contact modal */
+.contact-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
+.contact-hidden {
+  display: none;
+}
+
+.contact-overlay {
+  position: absolute;
+  inset: 0;
+  background:var(--card);
+  backdrop-filter: blur(2px);
+}
+
+.contact-card {
+  position: relative;
+  margin: 0 auto;
+  top: 50%;
+  transform: translateY(-50%);
+  max-width: 520px;
+  width: calc(100% - 32px);
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  color: var(--ink);
+  padding: 20px 22px;
+}
+
+.contact-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--card);
+  gap: 10px;
+  margin: 10px 0 8px;
+  flex-wrap: nowrap;
+}
+/* Inputs inside Rewards modal */
+.contact-card input[type="text"],
+.contact-card input[type="email"],
+.contact-card input[type="tel"] {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-softborder); /* orange border ties into brand */
+  background: var(--card);             /* semi-transparent frosted background */
+  box-shadow: var(--accent-green);
+  color: var(--ink);
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Focus state */
+.contact-card input:focus {
+  outline: none;
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 2px #558b2f55; /* subtle green glow */
+}
+.contact-card input:hover {
+  background: var(--surface) !important;
+  box-shadow: var(--accent-green);
+  border-color: var(--surface);
+  box-shadow: 0 0 0 2px #558b2f55; /* subtle green glow */
+}
+
+/* Placeholder text */
+.contact-card input::placeholder {
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+.contact-email {
+  flex: 1;
+  color: #fff;
+  font-weight: 700;
+  word-break: break-all;
+  border-bottom: 1px dashed #ffffff22;
+}
+
+.contact-copy {
+  margin-left: 12px;
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--surface);
+  background: #ffffff10;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background .2s ease, transform .15s ease;
+}
+
+.contact-copy:hover { background: #ffffff1a; transform: translateY(-1px); }
+
+.contact-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Inline toast inside modal */
+.contact-toast {
+  margin-top: 10px;
+  background: #333;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 10px;
+  opacity: 0;
+  transition: opacity .25s ease;
+  pointer-events: none;
+}
+
+.contact-toast.show { opacity: 1; }
+
+/* Prevent background scroll when modal is open */
+.body-lock {
+  overflow: hidden;
+}
+/* Rewards modal button */
+.contact-card button {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-softborder) !important;
+  background: var(--card);        /* semi-transparent frosted background */
+  box-shadow: none !important;
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.5s ease, color 0.5s ease, transform 0.25s ease;
+}
+
+/* Hover state */
+.contact-card button:hover {
+  background: var(--accent-green);
+  color: var(--dropdown);
+  transform: translateY(-1px);
+}
+
+/* Disabled state */
+.contact-card button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--muted);
+  border-color: var(--muted);
+}
+
+/* Success / error states (reuse your api-btn conventions) */
+.contact-card button.is-success {
+  background: var(--accent-green);
+  color: #fff;
+}
+.contact-card button.is-error {
+  background: var(--accent-red);
+  color: #fff;
+}
+
+.contact-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 6px;
+}
+
+.close-modal-btn {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--surface);
+  background: var(--card);        /* semi-transparent frosted background */
+  color: var(--muted);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.5s ease, color 0.5s ease, transform 0.25s ease;
+}
+
+.close-modal-btn:hover {
+  background: var(--accent-softred) !important;
+  color: var(--dropdown);
+  transform: scale(1.1);
+}
+  @media (max-width: 420px) {
+  .contact-card { padding: 18px; }
+  .contact-email { font-size: .95rem; }
+}
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg" aria-hidden="true"></div>
+
+  <header>
+    <div class="nav">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <strong>Picante Pequin Salsa Co</strong>
+      </div>
+      <nav aria-label="Primary">
+        <ul>
+          <li><a class="link" href="https://picantepequinsalsaco.com/PrivacyPolicy">Privacy</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+ <main>
+  <!-- HERO -->
+  <section class="hero">
+    
+<div class="card" id="authModal">
+    <!-- Login Container -->
+    <div id="loginContainer">
+      <h2 style="text-align:center; color:var(--ink)">Login Required</h2>
+      <form id="loginForm">
+        <label>
+          Username:<br>
+          <input type="text" id="loginUsername" required>
+        </label><br>
+        <label>
+          Password:<br>
+          <input type="password" id="loginPassword" required>
+        </label><br>
+        <button type="submit" id="loginBtn" class="cta-btn" data-act="seclog" disabled>Login</button>
+      </form>
+    </div>
+
+    <!-- 🔥 PPS: Mode selector (appears after login) -->
+<div class="card hidden" id="modeSelector">
+  <h2 style="text-align:center; margin-top:0; color:var(--ink)">
+    Choose <span style= "color:var(--accent-orange)">Checkout Mode</span>
+  </h2>
+  <div class="hero-actions" style="justify-content:center;">
+    <button id="choosePOSBtn" class="btn primary">POS</button>
+    <button id="chooseSelfBtn" class="btn">Self Checkout</button>
+  </div>
+  <p class="small" style="text-align:center;">
+    POS Mode for Employee's; Self Checkout for Guest.
+  </p>
+</div>
+
+<!-- 🔥 PPS: POS container (will host gallery + cart) -->
+<div class="card hidden" id="posContainer">
+  <h2 style="text-align:center; margin-top:0; color:var(--ink)">
+    Point of <span style="color: var(--accent-orange)";> Sale</span>
+  </h2>
+  <!-- Placeholder rails; we will inject the gallery + cart here next step -->
+  <section id="posGallery" class="vertical-gallery" role="region" aria-label="POS Catalog"></section>
+<aside id="posCart" class="pos-cart-wrap">
+  <ul id="posCartItems"></ul>
+  <div class="cart-total" style="display:flex; justify-content:space-between;">
+    <span>Total:</span>
+    <strong>$<span id="posCartTotal">0.00</span></strong>
+  </div>
+  <div class="hero-actions" style="margin-top:12px;">
+    <button id="posCheckoutBtn" class="btn primary">Checkout</button>
+    <button id="posClearBtn" class="btn">Clear Cart</button>
+    <button id="openRewardsModal" class="btn rewards">Get Rewards Member Info</button>
+  </div>
+</aside>
+</div>
+<!-- Rewards Member Info Modal -->
+<div id="rewardsModal" class="contact-popup contact-hidden" role="dialog" aria-modal="true" aria-label="Rewards Member Lookup">
+  <div class="contact-overlay"></div>
+  <div class="contact-card">
+    <h2 style="text-align:center; margin-top:0; color:var(--ink)">Rewards Member Lookup</h2>
+    <form id="rewardsForm">
+      <label class="contact-row">
+        <span style="flex:0 0 120px;">Email (optional):</span>
+        <input type="email" id="rewardsEmail" name="email" style="flex:1; padding:6px;" />
+      </label>
+      <label class="contact-row">
+        <span style="flex:0 0 120px;">Phone (optional):</span>
+        <input type="tel" id="rewardsPhone" name="phone" style="flex:1; padding:6px;" />
+      </label>
+      <div class="contact-actions">
+        <button type="submit" id="rewardsLookupBtn" class="cta api-btn" data-act="posrewardsmember" data-loading-text="Looking up...">
+          Get Rewards Balance
+        </button></div>
+      <div class="contact-actions" style="margin-top:8px;">
+        <button type="button"id="closeRewardsModal" class="close-modal-btn" aria-label="Close modal">✖</button>
+      </div>
+    </form>
+    <div id="rewardsToast" class="contact-toast">Balance retrieved ✔</div>
+  </div>
+</div>
+
+    <!-- Contact Form -->
+    <div class="card hidden" id="contactForm">
+      <h2 style="text-align:center; margin-top:0; color:var(--ink)">
+        Join Our <span style="color: var(--accent-orange);">Rewards Trading Post!</span>
+      </h2>
+      <form onsubmit="handleFormSubmit(event)" autocomplete="on">
+        
+        <label>
+          First Name:<br>
+          <input type="text" id="custFirstname" name="given-name"
+                 required style="width:100%; padding:8px; margin:6px 0;">
+        </label><br>
+
+        <label>
+          Last Name:<br>
+          <input type="text" id="custLastname" name="family-name"
+                 required style="width:100%; padding:8px; margin:6px 0;">
+        </label><br>
+
+        <label>
+          Address:<br>
+          <input type="text" id="custAddress" name="street-address"
+                 required style="width:100%; padding:8px; margin:6px 0;">
+        </label><br>
+
+        <label>
+          City:<br>
+          <input type="text" id="custCity" name="address-level2"
+                 required style="width:100%; padding:8px; margin:6px 0;">
+        </label><br>
+
+        <label>
+          State:<br>
+          <select class=drop-down id="custState" name="address-level1"
+                  required style="width:100%; padding:8px; margin:6px 0;">
+            <option value="" class="placeholder"></option>
+        <option value="AL">Alabama</option>
+        <option value="AK">Alaska</option>
+        <option value="AZ">Arizona</option>
+        <option value="AR">Arkansas</option>
+        <option value="CA">California</option>
+        <option value="CO">Colorado</option>
+        <option value="CT">Connecticut</option>
+        <option value="DE">Delaware</option>
+        <option value="FL">Florida</option>
+        <option value="GA">Georgia</option>
+        <option value="HI">Hawaii</option>
+        <option value="ID">Idaho</option>
+        <option value="IL">Illinois</option>
+        <option value="IN">Indiana</option>
+        <option value="IA">Iowa</option>
+        <option value="KS">Kansas</option>
+        <option value="KY">Kentucky</option>
+        <option value="LA">Louisiana</option>
+        <option value="ME">Maine</option>
+        <option value="MD">Maryland</option>
+        <option value="MA">Massachusetts</option>
+        <option value="MI">Michigan</option>
+        <option value="MN">Minnesota</option>
+        <option value="MS">Mississippi</option>
+        <option value="MO">Missouri</option>
+        <option value="MT">Montana</option>
+        <option value="NE">Nebraska</option>
+        <option value="NV">Nevada</option>
+        <option value="NH">New Hampshire</option>
+        <option value="NJ">New Jersey</option>
+        <option value="NM">New Mexico</option>
+        <option value="NY">New York</option>
+        <option value="NC">North Carolina</option>
+        <option value="ND">North Dakota</option>
+        <option value="OH">Ohio</option>
+        <option value="OK">Oklahoma</option>
+        <option value="OR">Oregon</option>
+        <option value="PA">Pennsylvania</option>
+        <option value="RI">Rhode Island</option>
+        <option value="SC">South Carolina</option>
+        <option value="SD">South Dakota</option>
+        <option value="TN">Tennessee</option>
+        <option value="TX">Texas</option>
+        <option value="UT">Utah</option>
+        <option value="VT">Vermont</option>
+        <option value="VA">Virginia</option>
+        <option value="WA">Washington</option>
+        <option value="WV">West Virginia</option>
+        <option value="WI">Wisconsin</option>
+        <option value="WY">Wyoming</option>
+         </select>
+        </label><br>
+
+        <label>
+          Zip:<br>
+          <input type="text" id="custZip" name="postal-code"
+                 required pattern="\d{5}" maxlength="5"
+                 style="width:100%; padding:8px; margin:6px 0;">
+        </label><br>
+
+        <label>
+          Email:<br>
+          <input type="email" id="custEmail" name="email"
+                 required style="width:100%; padding:8px; margin:6px 0;">
+        </label><br>
+
+        <label>
+          Phone:<br>
+          <input type="tel" id="custPhone" name="tel" autocomplete="tel"
+                 inputmode="numeric" placeholder="Enter 10 digits"
+                 style="width:100%; padding:8px; margin:6px 0;" >
+        </label><br>
+
+        <label>
+  Password:<br>
+  <div style="position:relative;">
+    <input type="password" id="custPassword" name="password"
+           required style="width:100%; padding:8px; margin:6px 0;">
+    <span onclick="togglePassword('custPassword')" 
+          style="position:absolute; right:10px; top:50%; transform:translateY(-50%);
+                 cursor:pointer; color:var(--muted);">👁</span>
+  </div>
+  <meter id="passwordStrength" min="0" max="4" value="0"
+         style="width:100%; height:8px; margin-top:4px;"></meter>
+</label><br>
+
+<!-- Informative message -->
+<div id="passwordCriteria" style="font-size:.9rem; color:var(--muted); margin-top:12px;">
+  <strong>Your Password Must Be:</strong>
+  <ul style="margin:6px 0 0 18px; padding:0;">
+    <li>At least 8 characters long</li>
+    <li>Include at least one uppercase letter (A–Z)</li>
+    <li>Include at least one number (0–9)</li>
+    <li>Include at least one special character (e.g. !, @, #, $)</li>
+    <li>Match the Confirm Password field exactly</li>
+  </ul>
+</div>
+
+<div id="passwordMessage" style="font-size:.9rem; margin-top:8px;"></div>
+
+<label><br>
+  Confirm Password:<br>
+  <div style="position:relative;">
+    <input type="password" id="custConfirmpassword" name="confirm-password"
+           required style="width:100%; padding:8px; margin:6px 0;">
+    <span onclick="togglePassword('custConfirmpassword')" 
+          style="position:absolute; right:10px; top:50%; transform:translateY(-50%);
+                 cursor:pointer; color:var(--muted);">👁</span>
+  </div>
+</label><br>
+
+<!-- SMS Consent Checkbox -->
+<div id="SMSConsentMessage" style="font-size:.9rem; color:var(--muted); margin-top:12px;">
+  <strong>Optional SMS Notifications</strong>
+</div>
+<!-- Inline consent (place where you want it, e.g., under Phone) -->
+<label class="consent-inline" for="smsConsent">
+  <input type="checkbox" id="smsConsent" name="smsConsent" value="true" />
+  <span class="consent-text">
+    I consent to receiving transactional text messages and phone calls from 
+    <strong>Picante Pequin Salsa Co.</strong>
+    <span class="consent-optional">(optional)</span>
+  </span>
+</label>
+
+<button type="submit" id="submitBtn" class="cta-btn" data-act="ppsc_signup"disabled>Join Now!</button>
+      </form>
+    </div>
+  </div>
+</div>
+     
+  </section>
+</main>
+
+  <footer>
+    © <span id="y"></span> Picante Pequin Salsa Co. All rights reserved.
+  </footer>
+<script>
+// Picante POS — single consolidated script
+
+(function () {
+  'use strict';
+
+  /* -------------------------
+     Small helpers
+     ------------------------- */
+  const $id = id => document.getElementById(id);
+  const safe = v => (v || '').toString().trim();
+
+  function once(fn) {
+    let ran = false;
+    return (...a) => { if (ran) return; ran = true; return fn(...a); };
+  }
+showModeSelector();
+  /* -------------------------
+     Loading / viewport helpers
+     ------------------------- */
+  function _resetViewportScale({ allowPinchAfter = true } = {}) {
+    let meta = document.querySelector('meta[name="viewport"]');
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'viewport'; document.head.appendChild(meta); }
+    const base = 'width=device-width';
+    meta.content = base + ', initial-scale=1.0001';
+    requestAnimationFrame(() => { meta.content = base + ', initial-scale=1.0' + (allowPinchAfter ? ', user-scalable=yes' : ', maximum-scale=1.0'); });
+    if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
+    setTimeout(() => { window.scrollTo(0, Math.max(0, window.pageYOffset || 0)); }, 0);
+  }
+  function startLoading(opts) { _resetViewportScale(opts); document.documentElement.classList.add('is-loading'); }
+  function stopLoading() { document.documentElement.classList.remove('is-loading'); }
+
+  /* -------------------------
+     Validators
+     ------------------------- */
+  const reEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const reZip = /^\d{5}$/;
+  const reStreet = /^\d+\s+[\w\s]+/;
+  const rePhoneFormatted = /^\+1 \(\d{3}\) \d{3}-\d{4}$/;
+
+  const validators = {
+    email: v => reEmail.test(safe(v)),
+    notEmpty: v => safe(v).length > 0,
+    zip5: v => reZip.test(safe(v)),
+    street: v => reStreet.test(safe(v)),
+    phoneFormatted: v => rePhoneFormatted.test(safe(v))
+  };
+
+  /* -------------------------
+     Field-level validation UI helper
+     ------------------------- */
+  function setupFieldValidation(fieldId, validateFn, hint) {
+    const el = $id(fieldId);
+    if (!el) return;
+    if (el.nextElementSibling && el.nextElementSibling.classList?.contains('field-message')) return;
+    const msg = document.createElement('div');
+    msg.className = 'field-message';
+    msg.style.cssText = 'font-size:.9rem;margin-top:4px;color:var(--muted);transition:color .25s ease;';
+    el.insertAdjacentElement('afterend', msg);
+
+    function update() {
+      try {
+        if (validateFn(el.value)) { msg.textContent = '✔ Looks good'; msg.style.color = 'var(--accent-green)'; }
+        else { msg.textContent = hint; msg.style.color = 'var(--muted)'; }
+      } catch (e) { /* noop */ }
+    }
+    el.addEventListener('focus', () => { if (!safe(el.value)) { msg.textContent = hint; msg.style.color = 'var(--muted)'; }});
+    el.addEventListener('input', update);
+    el.addEventListener('blur', update);
+  }
+
+  /* -------------------------
+     Phone handling (authoritative)
+     - dataset.raw stores digits-only (max 10)
+     - visible format: progressive, final +1 (XXX) XXX-XXXX
+     ------------------------- */
+  function _formatFromDigits(d) {
+    if (!d) return '';
+    if (d.length === 10) return `+1 (${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
+    if (d.length >= 6) return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
+    if (d.length >= 3) return `(${d.slice(0,3)}) ${d.slice(3)}`;
+    return d;
+  }
+
+  function setPhoneRawAndRender(input, digits) {
+    if (!input) return;
+    digits = (digits || '').replace(/\D/g, '');
+    if (digits.length > 10 && digits[0] === '1') digits = digits.slice(1);
+    digits = digits.slice(0, 10);
+    input.dataset.raw = digits;
+    input.value = _formatFromDigits(digits);
+  }
+
+  function formatPhoneInternal(input) {
+    if (!input) return;
+    let d = (input.value || '').replace(/\D/g, '');
+    if (d.length === 11 && d[0] === '1') d = d.slice(1);
+    d = d.slice(0, 10);
+    input.dataset.raw = d;
+    input.value = _formatFromDigits(d);
+  }
+
+  // Place caret after Nth digit (1..n)
+  function placeCaretAfterDigits(input, digitIndex) {
+    if (!input) return;
+    const s = input.value || '';
+    if (!digitIndex) { try { input.setSelectionRange(0,0); } catch(_) {} return; }
+    let seen = 0;
+    for (let i=0;i<s.length;i++) {
+      if (/\d/.test(s[i])) seen++;
+      if (seen === digitIndex) { try { input.setSelectionRange(i+1, i+1); } catch(_) {} return; }
+    }
+    try { input.setSelectionRange(s.length, s.length); } catch(_) {}
+  }
+
+  // beforeinput handler to keep canonical digits stable
+  function wirePhone(input) {
+    if (!input || input._fv_wired) return;
+    input.setAttribute('inputmode','numeric');
+    input.setAttribute('autocomplete','tel');
+    input.setAttribute('maxlength','20'); // visible cap
+
+    const digitsFrom = v => (String(v||'').replace(/\D/g,'').slice(0,11)); // allow leading 1 for detection
+
+    function selectionDigitOffsets(el) {
+      const s = el.value || '';
+      const start = (typeof el.selectionStart === 'number') ? el.selectionStart : s.length;
+      const end = (typeof el.selectionEnd === 'number') ? el.selectionEnd : start;
+      const left = s.slice(0, start), right = s.slice(0, end);
+      return { startDigitCount: (left.match(/\d/g)||[]).length, endDigitCount: (right.match(/\d/g)||[]).length };
+    }
+
+    function applyDigitsAndPlace(phoneEl, newDigits, caretDigitIndex) {
+      if (!phoneEl) return;
+      if (newDigits.length > 10 && newDigits[0] === '1') newDigits = newDigits.slice(1);
+      newDigits = (newDigits || '').replace(/\D/g,'').slice(0,10);
+      setPhoneRawAndRender(phoneEl, newDigits);
+      placeCaretAfterDigits(phoneEl, caretDigitIndex);
+    }
+
+    function beforeInput(e) {
+      try {
+        // allow composition
+        if (!e.data && e.inputType === 'insertCompositionText') return;
+
+        const phoneEl = e.target;
+        if (!phoneEl) return;
+        const currentRaw = (phoneEl.dataset.raw||'').replace(/\D/g,'').slice(0,10);
+        const { startDigitCount, endDigitCount } = selectionDigitOffsets(phoneEl);
+        let newDigits = currentRaw;
+        let caretDigitIndex = startDigitCount;
+
+        switch (e.inputType) {
+          case 'insertText': {
+            const ch = (e.data||'').replace(/\D/g,'');
+            if (!ch) { e.preventDefault(); return; }
+            const arr = newDigits.split('');
+            arr.splice(startDigitCount, endDigitCount - startDigitCount, ...ch.split(''));
+            newDigits = arr.join('');
+            caretDigitIndex = startDigitCount + ch.length;
+            e.preventDefault();
+            break;
+          }
+          case 'insertFromPaste': {
+            const pasted = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+            const digits = pasted.replace(/\D/g,'');
+            if (!digits) { e.preventDefault(); return; }
+            const arr = newDigits.split('');
+            arr.splice(startDigitCount, endDigitCount - startDigitCount, ...digits.split(''));
+            newDigits = arr.join('');
+            caretDigitIndex = startDigitCount + digits.length;
+            e.preventDefault();
+            break;
+          }
+          case 'deleteContentBackward': {
+            if (endDigitCount > startDigitCount) {
+              const arr = newDigits.split('');
+              arr.splice(startDigitCount, endDigitCount - startDigitCount);
+              newDigits = arr.join('');
+              caretDigitIndex = startDigitCount;
+            } else if (startDigitCount > 0) {
+              const arr = newDigits.split('');
+              arr.splice(startDigitCount-1, 1);
+              newDigits = arr.join('');
+              caretDigitIndex = startDigitCount - 1;
+            } else { /* nothing */ }
+            e.preventDefault();
+            break;
+          }
+          case 'deleteContentForward': {
+            if (endDigitCount > startDigitCount) {
+              const arr = newDigits.split('');
+              arr.splice(startDigitCount, endDigitCount - startDigitCount);
+              newDigits = arr.join('');
+              caretDigitIndex = startDigitCount;
+            } else {
+              const arr = newDigits.split('');
+              if (startDigitCount < arr.length) arr.splice(startDigitCount, 1);
+              newDigits = arr.join('');
+              caretDigitIndex = startDigitCount;
+            }
+            e.preventDefault();
+            break;
+          }
+          case 'insertFromDrop': {
+            const dragged = (e.dataTransfer || {}).getData?.('text') || '';
+            const digits = dragged.replace(/\D/g,'');
+            if (!digits) { e.preventDefault(); return; }
+            const arr = newDigits.split('');
+            arr.splice(startDigitCount, endDigitCount - startDigitCount, ...digits.split(''));
+            newDigits = arr.join('');
+            caretDigitIndex = startDigitCount + digits.length;
+            e.preventDefault();
+            break;
+          }
+          default:
+            // let browser handle unknown / paragraph / replacements, fallback in input handler
+            return;
+        }
+
+        applyDigitsAndPlace(phoneEl, newDigits, caretDigitIndex);
+      } catch (err) {
+        // don't block user — fallback to native behavior
+        return;
+      }
+    }
+
+    function inputFallback(e) {
+      try {
+        const el = e.target;
+        const digits = digitsFrom(el.value).replace(/^1(?=\d{10}$)/,'').slice(0,10);
+        applyDigitsAndPlace(el, digits, (digits||'').length);
+      } catch (_) {}
+      if (typeof validateContactForm === 'function') validateContactForm();
+    }
+
+    function keydownGuard(e) {
+      const allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','Home','End','Tab'];
+      if (allowed.includes(e.key) || e.ctrlKey || e.metaKey) return;
+      if (!/^\d$/.test(e.key)) e.preventDefault();
+    }
+
+    input.addEventListener('beforeinput', beforeInput, { passive: false });
+    input.addEventListener('input', inputFallback);
+    input.addEventListener('blur', () => { formatPhoneInternal(input); if (typeof validateContactForm === 'function') validateContactForm(); });
+    input.addEventListener('keydown', keydownGuard);
+    input.addEventListener('paste', (e) => { e.preventDefault(); const text = (e.clipboardData || window.clipboardData).getData('text')||''; const digits = text.replace(/\D/g,'').replace(/^1(?=\d{10}$)/,'').slice(0,10); setPhoneRawAndRender(input, digits); if (typeof validateContactForm === 'function') validateContactForm(); });
+
+    input._fv_wired = true;
+  }
+
+  /* -------------------------
+     UI toggles / modals / views
+     ------------------------- */
+  function showModeSelector() {
+    const sel = $id('modeSelector'), login = $id('loginContainer'), contact = $id('contactForm');
+    if (login) login.classList.add('hidden');
+    if (contact) contact.classList.add('hidden');
+    if (sel) sel.classList.remove('hidden');
+  }
+
+  function showPOSContainer() {
+    const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm');
+    if (sel) sel.classList.add('hidden');
+    if (contact) contact.classList.add('hidden');
+    if (pos) pos.classList.remove('hidden');
+    // 🔥 Extension point A (POS init) — place logic here to wire external POS modules
+    initPOSCatalog();
+  }
+
+  function showSelfCheckout() {
+    const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm');
+    if (pos) pos.classList.add('hidden');
+    if (sel) sel.classList.add('hidden');
+    if (contact) contact.classList.remove('hidden');
+  }
+
+  function openRewardsModal() { document.body.classList.add('body-lock'); $id('rewardsModal')?.classList.remove('contact-hidden'); }
+  function closeRewardsModal() { document.body.classList.remove('body-lock'); $id('rewardsModal')?.classList.add('contact-hidden'); }
+
+  /* -------------------------
+     OmniTok helper (unchanged)
+     ------------------------- */
+  const API = { issueOmniTok: 'https://default6eda43f3fbf04e2b9978b543d9dd31.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/e3755ec03d8241c09ddb4d73a1c2bb86/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9t0-qJP8VJW4G9_COUvGJxmFKL6IWjUBeEq4GYZj3kQ' };
+
+// 🔥 getOmniTok: accept optional meta object to include in preflight POST
+async function getOmniTok(act, meta = undefined) {
+  let sid = sessionStorage.getItem('sid');
+  if (!sid) { sid = crypto.randomUUID(); sessionStorage.setItem('sid', sid); }
+
+  const body = { act, sid };
+  if (meta && typeof meta === 'object') {
+    // include only minimal identifiers to keep preflight small
+    body.meta = meta;
+  }
+
+  const res = await fetch(API.issueOmniTok, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  if (!res.ok) throw new Error(`Failed to get OmniTok config for ${act}`);
+  const data = await res.json();
+  return { ...data, sid };
+}
+window.getOmniTok = getOmniTok;
+
+  /* -------------------------
+     POS catalog + cart (minimal, in-memory)
+     ------------------------- */
+  function initPOSCatalog() {
+    const gallery = $id('posGallery');
+    if (!gallery) return;
+
+    const products = [
+      { id: 'house-pequin', name: 'House Pequin Salsa', price: 10, image: 'https://picantepequinsalsaco.com/images/image1.jpg' },
+      { id: 'spicy-green', name: 'Spicy Green Chile Pequin', price: 10, image: 'https://picantepequinsalsaco.com/images/image2.jpg' },
+      { id: 'red-hot', name: 'Red Hot Pepper Pequin', price: 10, image: 'https://picantepequinsalsaco.com/images/image3.jpg' },
+      { id: 'the-crew', name: 'The Crew (3‑Pack)', price: 30, image: 'https://picantepequinsalsaco.com/images/image4.jpg' }
+    ];
+
+    const cart = [];
+
+    function renderCart() {
+      const list = $id('posCartItems'); const totalEl = $id('posCartTotal');
+      if (!list || !totalEl) return;
+      list.innerHTML = '';
+      let total = 0;
+      cart.forEach((item, idx) => {
+        total += item.price * item.qty;
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <span class="cart-name">${item.name}</span>
+          <div class="cart-controls">
+            <button class="qty-btn minus">−</button>
+            <span class="qty-display">${item.qty}</span>
+            <button class="qty-btn plus">+</button>
+            <button class="remove-btn">✖</button>
+          </div>
+        `;
+        li.querySelector('.minus').onclick = () => { if (item.qty > 1) item.qty--; else cart.splice(idx,1); renderCart(); };
+        li.querySelector('.plus').onclick = () => { item.qty++; renderCart(); };
+        li.querySelector('.remove-btn').onclick = () => { cart.splice(idx,1); renderCart(); };
+        list.appendChild(li);
+      });
+      totalEl.textContent = total.toFixed(2);
+    }
+
+    function addToCart(it) {
+      const idx = cart.findIndex(x => x.id === it.id);
+      if (idx > -1) cart[idx].qty += it.qty;
+      else cart.push({ ...it });
+      renderCart();
+    }
+
+    gallery.innerHTML = '';
+    products.forEach(p => {
+      const card = document.createElement('div'); card.className = 'prod-card';
+      card.innerHTML = `
+        <img src="${p.image}" alt="${p.name}">
+        <h3 class="prod-name">${p.name}</h3>
+        <p class="prod-price">$${p.price.toFixed(2)}</p>
+        <div class="quantity">
+          <button class="qty-btn minus">−</button>
+          <input type="number" class="qty-input" value="0" min="0">
+          <button class="qty-btn plus">+</button>
+        </div>
+        <button class="add-to-cart">Add to Cart</button>
+      `;
+      const qtyInput = card.querySelector('.qty-input');
+      card.querySelector('.qty-btn.minus').onclick = () => { qtyInput.value = Math.max(0, +qtyInput.value - 1); };
+      card.querySelector('.qty-btn.plus').onclick = () => { qtyInput.value = +qtyInput.value + 1; };
+      card.querySelector('.add-to-cart').onclick = () => {
+        const q = +qtyInput.value;
+        if (!q) return;
+        addToCart({ id: p.id, name: p.name, price: p.price, qty: q });
+        qtyInput.value = 0;
+      };
+      gallery.appendChild(card);
+    });
+
+    $id('posClearBtn')?.addEventListener('click', () => { cart.length = 0; renderCart(); });
+    $id('posCheckoutBtn')?.addEventListener('click', () => {
+      if (!cart.length) { alert('Cart is empty.'); return; }
+      // 🔥 Extension point B (POS checkout): wire OmniTok/Stripe here
+      alert('Proceeding to POS checkout…');
+    });
+
+    renderCart();
+  }
+
+  /* -------------------------
+     Form reset and validation
+     ------------------------- */
+  function resetContactForm() {
+    const form = document.querySelector('#contactForm form');
+    if (form) form.reset();
+    const meter = $id('passwordStrength'); if (meter) meter.value = 0;
+    const msg = $id('passwordMessage'); if (msg) msg.textContent = '';
+    const phone = $id('custPhone'); if (phone) { phone.dataset.raw = ''; phone.value = ''; }
+    const sms = $id('smsConsent'); if (sms) { sms.checked = false; sms.value = ''; }
+    if (typeof validateContactForm === 'function') validateContactForm();
+    const refresh = ['custFirstname','custLastname','custAddress','custCity','custState','custZip','custEmail','custPhone','custPassword','custConfirmpassword','loginUsername','loginPassword'];
+    refresh.forEach(id => { const el = $id(id); if (!el) return; el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('blur',{bubbles:true})); });
+  }
+  window.resetContactForm = resetContactForm;
+
+  const requiredFields = ['custFirstname','custLastname','custAddress','custCity','custState','custZip','custEmail','custPhone','custPassword','custConfirmpassword'];
+
+  window.validateContactForm = function validateContactForm() {
+    try {
+      let ok = requiredFields.every(id => {
+        const el = $id(id); return el && safe(el.value).length > 0;
+      });
+      const pw = $id('custPassword')?.value || '';
+      const conf = $id('custConfirmpassword')?.value || '';
+      if (pw !== conf || pw.length < 8) ok = false;
+      const submit = $id('submitBtn'); if (submit) { submit.disabled = !ok; submit.classList.toggle('enabled', ok); }
+    } catch (e) { /* noop */ }
+  };
+
+  /* -------------------------
+     Password UI
+     ------------------------- */
+  (function wirePasswordUI() {
+    const pw = $id('custPassword'), cpw = $id('custConfirmpassword'), msg = $id('passwordMessage'), meter = $id('passwordStrength');
+    function updateMatch() {
+      if (!pw || !cpw || !msg) return;
+      if (!pw.value && !cpw.value) { msg.textContent=''; msg.style.color='var(--muted)'; validateContactForm(); return; }
+      if (pw.value !== cpw.value) { msg.style.color='var(--accent-red)'; msg.textContent='Passwords do not match. Please re‑enter.'; }
+      else { msg.style.color='var(--accent-green)'; msg.textContent='Passwords match ✔'; }
+      validateContactForm();
+    }
+    if (cpw) cpw.addEventListener('input', updateMatch);
+    if (pw) {
+      pw.addEventListener('input', () => {
+        const v = pw.value || ''; let score = 0;
+        if (v.length >= 8) score++;
+        if (/[A-Z]/.test(v)) score++;
+        if (/[0-9]/.test(v)) score++;
+        if (/[^A-Za-z0-9]/.test(v)) score++;
+        if (meter) meter.value = score;
+        updateMatch();
+      });
+    }
+  })();
+
+  /* -------------------------
+     Login wiring
+     ------------------------- */
+  function wireLogin() {
+    const form = $id('loginForm'), btn = $id('loginBtn'), user = $id('loginUsername'), pass = $id('loginPassword');
+    if (!form || !btn || !user || !pass) return;
+    function validate() {
+      const ok = validators.email(user.value) && safe(pass.value).length >= 8;
+      btn.disabled = !ok;
+      btn.classList.toggle('enabled', ok);
+      btn.setAttribute('aria-disabled', String(!ok));
+    }
+    validate();
+    user.addEventListener('input', validate); pass.addEventListener('input', validate);
+
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault(); if (btn.disabled) return;
+      btn.disabled = true; btn.classList.add('btn-loading'); const original = btn.textContent; btn.textContent = 'Logging in...'; startLoading();
+      try {
+        const omni = await getOmniTok(btn.dataset.act || 'seclog');
+        if (!omni?.endpoint) throw new Error('Omnitok preflight did not return an endpoint');
+        const payload = { jobId: `PPSLOGIN-${crypto.randomUUID()}`, username: user.value.trim(), password: pass.value.trim() };
+        const res = await fetch(omni.endpoint, { method: 'POST', headers: { 'Content-Type':'application/json', 'x-auth-token': omni.authToken, 'x-omnitok': omni.OmniTok, 'x-sid': omni.sid, 'x-act': omni.act }, body: JSON.stringify(payload) });
+        if (!res.ok) throw new Error('Login failed');
+        const result = await res.json();
+        if (!result || typeof result.jobId !== 'string') throw new Error('Unexpected response shape (missing jobId)');
+        alert(`✅ Login successful! Employee: ${payload.username}`);
+        sessionStorage.setItem('loggedIn','true');
+        showModeSelector();
+        btn.textContent = '✓ Logged In'; btn.classList.add('is-success'); btn.classList.remove('is-error');
+      } catch (err) {
+        console.error('Login error:', err);
+        alert('❌ Login failed. Please try again.');
+        btn.textContent = 'Retry Login'; btn.classList.remove('is-success'); btn.classList.add('is-error'); btn.disabled = false;
+      } finally { btn.classList.remove('btn-loading'); stopLoading(); }
+    });
+  }
+
+  /* -------------------------
+     Rewards lookup wiring
+     ------------------------- */
+function wireRewards() {
+  // idempotent wiring guard
+  if (wireRewards._wired) return;
+  wireRewards._wired = true;
+
+  const openBtn = $id('openRewardsModal');
+  const closeBtn = $id('closeRewardsModal');
+  const form = $id('rewardsForm');
+  const lookupBtn = $id('rewardsLookupBtn');
+
+  if (openBtn) openBtn.addEventListener('click', openRewardsModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeRewardsModal);
+
+  if (!form || !lookupBtn) {
+    console.warn('wireRewards: rewards form or lookup button missing');
+    return;
+  }
+
+ // Replace your onSubmit with this instrumented version
+  async function onSubmit(ev) {
+  ev.preventDefault();
+  lookupBtn.disabled = true;
+  lookupBtn.classList.add('loading');
+  const origText = lookupBtn.textContent;
+  lookupBtn.textContent = lookupBtn.dataset.loadingText || 'Looking up...';
+
+  try {
+    // READ INPUTS FIRST (log them)
+    const emailVal = (document.getElementById('rewardsEmail')?.value || '').trim();
+    const rawPhone = (document.getElementById('rewardsPhone')?.value || '').trim();
+    let phoneDigits = rawPhone.replace(/\D/g,'');
+    if (phoneDigits.length === 11 && phoneDigits[0] === '1') phoneDigits = phoneDigits.slice(1);
+    phoneDigits = phoneDigits.slice(0,10);
+
+    console.info('[dbg] inputs read at submit', { emailVal, rawPhone, phoneDigits });
+
+    if (!emailVal && !phoneDigits) {
+      alert('Please enter an email or a 10-digit phone number.');
+      return;
+    }
+
+    // Preflight
+    console.debug('[dbg] calling getOmniTok with act=', lookupBtn.dataset.act);
+    const omni = await getOmniTok(lookupBtn.dataset.act || 'posrewardsmember', {
+  email: emailVal || undefined,
+  phone: phoneDigits || undefined
+});
+    console.debug('[dbg] omni preflight result:', omni);
+
+    if (!omni || !omni.endpoint) {
+      console.error('[dbg] omni.endpoint missing — preflight response:', omni);
+      throw new Error('OmniTok preflight returned no endpoint.');
+    }
+
+    // Build payload and log it (stringified) right before POST
+    const payload = { jobId: `PPSREWARDS-${crypto.randomUUID()}`, email: emailVal || undefined, phone: phoneDigits || undefined };
+    const payloadText = JSON.stringify(payload);
+    console.info('[dbg] will POST to omni.endpoint:', omni.endpoint);
+    console.info('[dbg] request body (text):', payloadText);
+
+    // For extra visibility: create a Blob so DevTools shows a proper request body in some cases
+    const res = await fetch(omni.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-auth-token': omni.authToken,
+        'x-omnitok': omni.OmniTok,
+        'x-sid': omni.sid,
+        'x-act': omni.act
+      },
+      body: payloadText,
+      // no-cors would hide body — ensure this is not present
+    });
+
+    console.debug('[dbg] fetch returned status', res.status, res.statusText);
+    const text = await res.text().catch(()=>'<no-body>');
+    console.debug('[dbg] fetch response text:', text);
+
+    if (!res.ok) throw new Error(`Rewards lookup failed (${res.status}) ${text}`);
+
+    // parse json if possible
+    let result;
+    try { result = JSON.parse(text); } catch(e) { result = {}; }
+
+    console.debug('[dbg] lookup result parsed', result);
+
+    const centsTenth = result?.balance || 0;
+    const balance = (centsTenth / 1000).toFixed(2);
+
+    window.rewardsMember = { name: result?.name || 'Member', balance, email: result?.email || emailVal, phone: result?.phone || phoneDigits };
 
     const toast = document.getElementById('rewardsToast');
     if (toast) { toast.textContent = `Member: ${window.rewardsMember.name}, Balance: $${window.rewardsMember.balance}`; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),4000); }
