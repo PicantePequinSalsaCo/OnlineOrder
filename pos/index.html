@@ -22,6 +22,21 @@
         regs.forEach(r => r.unregister().then(()=>console.info('SW unregistered')));
       }).catch(e => console.warn('SW unregister failed', e));
     }
+      function forceLogout() {
+  const authKey = `pps_loggedIn@${location.origin}`;
+  sessionStorage.removeItem(authKey);
+  sessionStorage.removeItem('sid');
+
+  // Show login, hide post-login UI
+  document.getElementById('authModal')?.classList.remove('hidden');
+  document.getElementById('modeSelector')?.classList.add('hidden');
+  document.getElementById('posContainer')?.classList.add('hidden');
+
+  // Optional: clear any in-memory state
+  window.rewardsMember = undefined;
+  console.info('PPS: forced logout — session cleared');
+}
+window.forceLogout = forceLogout;
       forceLogout();
 </script>
   <meta charset="utf-8" />
