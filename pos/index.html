@@ -2,7 +2,27 @@
 <html lang="en">
 <head>
     <!-- put this at the very top of <head> -->
-  <script>document.documentElement.classList.add('pps-auth-pending');</script>
+  <script>document.documentElement.classList.add('pps-auth-pending');
+      const APP_VERSION = '2025-11-18-v3'; // bump this on each deploy
+    const verKey = `pps_app_version@${location.origin}`;
+    const authKey = `pps_loggedIn@${location.origin}`;
+
+    // If version changed, clear auth and session identifiers
+    if (sessionStorage.getItem(verKey) !== APP_VERSION) {
+      sessionStorage.removeItem(authKey);
+      sessionStorage.removeItem('sid');
+      sessionStorage.removeItem('loggedIn');
+      sessionStorage.setItem(verKey, APP_VERSION);
+      console.info('App version changed — cleared auth state');
+    }
+
+    // Optional: unregister service workers during rollout
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        regs.forEach(r => r.unregister().then(()=>console.info('SW unregistered')));
+      }).catch(e => console.warn('SW unregister failed', e));
+    }
+</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Picante Pequin Salsa Co – Smoked Chile Pequin Salsa from Texas</title>
