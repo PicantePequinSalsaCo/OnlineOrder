@@ -1436,8 +1436,6 @@ meter::-moz-meter-bar {
   /* -------------------------
      AUTH GATE
      ------------------------- */
-// AUTH GATE — robust, DOM-safe version
-// AUTH GATE — robust, periodic enforcement and modal cleanup
 (function enforceAuthGate() {
   const authKey = `pps_loggedIn@${location.origin}`;
   // Prevent UI flash until we decide
@@ -1519,6 +1517,14 @@ meter::-moz-meter-bar {
     document.documentElement.classList.remove('pps-auth-pending');
     console.info('Auth gate: logged in — POS UI revealed.');
   }
+
+  // expose the internal applyGate so other modules can call the same logic
+    window._internalApplyGate = applyGate;
+    window._ppsApplyAuthGate = function () {
+      try { window._internalApplyGate?.(); } catch (e) { console.warn('ppsApplyAuthGate failed', e); }
+    };
+
+
 
   // Run once when DOM ready (or immediately if already ready)
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
@@ -2051,15 +2057,32 @@ function wireLogin() {
       const result = await res.json();
       if (!result || typeof result.jobId !== 'string') throw new Error('Unexpected response shape (missing jobId)');
 
-      // --- SUCCESS: set namespaced auth key and sid, reveal UI
+      // --- SUCCESS: set namespaced auth key and sid, then call central gate
       const authKey = `pps_loggedIn@${location.origin}`;
       sessionStorage.setItem(authKey, 'true');
-      // ensure a session id exists for OmniTok flows
       if (!sessionStorage.getItem('sid')) sessionStorage.setItem('sid', crypto.randomUUID());
 
-      // show mode selector and hide login modal (matches enforceAuthGate)
-      document.getElementById('authModal')?.classList.add('hidden');
-      document.getElementById('modeSelector')?.classList.remove('hidden');
+      // Remove the paint-blocking guard so the page can render the final state
+      document.documentElement.classList.remove('pps-auth-pending');
+
+      // Call the central gate to reveal/hide UI consistently
+      if (typeof window._ppsApplyAuthGate === 'function') {
+        window._ppsApplyAuthGate();
+      } else {
+      // fallback: minimal manual reveal
+        const mode = document.getElementById('modeSelector');
+        const authModal = document.getElementById('authModal');
+        const loginContainer = document.getElementById('loginContainer');
+        const posContainer = document.getElementById('posContainer');
+        const contactForm = document.getElementById('contactForm');
+
+        if (loginContainer) loginContainer.classList.add('hidden');
+        if (authModal) authModal.classList.add('hidden');
+
+        if (mode) { mode.classList.remove('hidden'); mode.removeAttribute('style'); mode.style.display = ''; }
+        if (posContainer) { posContainer.classList.remove('hidden'); posContainer.removeAttribute('style'); }
+        if (contactForm) contactForm.classList.add('hidden');
+      }
 
       alert(`✅ Login successful! Employee: ${payload.username}`);
       btn.textContent = '✓ Logged In'; btn.classList.add('is-success'); btn.classList.remove('is-error');
