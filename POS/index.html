@@ -1478,28 +1478,26 @@ meter::-moz-meter-bar {
       return;
     }
 
-    if (!isLogged()) {
-      // Clear stale session id
-      sessionStorage.removeItem('sid');
+if (!isLogged()) {
+  sessionStorage.removeItem('sid');
 
-      // Show login container explicitly
-      authModal.classList.remove('hidden');
-      if (loginContainer) loginContainer.classList.remove('hidden');
+  authModal.classList.remove('hidden');
+  loginContainer?.classList.remove('hidden');
 
-      // Hide post-login UI
-      modeSelector?.classList.add('hidden');
-      posContainer?.classList.add('hidden');
-      contactForm?.classList.add('hidden');
+  modeSelector?.classList.add('hidden');
+  posContainer?.classList.add('hidden');
+  contactForm?.classList.add('hidden');
 
-      // Ensure contact form and any other modals are hidden while unauthenticated
-      if (contactForm) contactForm.classList.add('hidden');
-      otherModals.forEach(m => m.classList.add('contact-hidden', 'hidden'));
+  otherModals.forEach(m => m.classList.add('contact-hidden', 'hidden'));
 
-      document.documentElement.classList.remove('pps-auth-pending');
+  //  instead of removing immediately, defer so login paints first
+  setTimeout(() => {
+    document.documentElement.classList.remove('pps-auth-pending');
+  }, 0);
 
-      console.info('Auth gate: not logged in — login shown, post-login UI hidden.');
-      return;
-    }
+  console.info('Auth gate: not logged in — login shown, post-login UI hidden.');
+  return;
+}
 
     // Logged in: hide login and reveal post-login UI
     if (loginContainer) loginContainer.classList.add('hidden');
@@ -1580,6 +1578,9 @@ function forceLogout() {
   // Optional: clear any in-memory state
   window.rewardsMember = undefined;
   console.info('PPS: forced logout — session cleared');
+
+      // 🔥 re-run gate to enforce state
+  window._internalApplyGate?.();
 }
 window.forceLogout = forceLogout;
   /* -------------------------
