@@ -1473,6 +1473,20 @@ meter::-moz-meter-bar {
      AUTH GATE
      ------------------------- */
 (function enforceAuthGate() {
+  if (window._ppsAuthGateInitialized) return;
+  window._ppsAuthGateInitialized = true;
+
+  // internal guards
+  let _ppsAuthGateStopping = false;
+  let _ppsAuthGateLastRun = 0;
+
+  function _stopEnforcementOnce() {
+    if (_ppsAuthGateStopping) return;
+    _ppsAuthGateStopping = true;
+    try { clearInterval(window._ppsAuthGateIntervalId); } catch(e) {}
+    try { window._ppsAuthGateObserver?.disconnect(); } catch(e) {}
+    console.info('Auth gate: stopped periodic enforcement after login.');
+  }
   const authKey = `pps_loggedIn@${location.origin}`;
   // Prevent UI flash until we decide
   document.documentElement.classList.add('pps-auth-pending');
@@ -1498,6 +1512,10 @@ meter::-moz-meter-bar {
 
   // Centralized UI enforcement (idempotent)
   function applyGate() {
+        // coalesce rapid calls (avoid duplicate side effects/logs)
+  const now = Date.now();
+  if (now - _ppsAuthGateLastRun < 200) return;
+  _ppsAuthGateLastRun = now;
     const authModal = document.getElementById('authModal');
     const loginContainer = document.getElementById('loginContainer');
     const modeSelector = document.getElementById('modeSelector');
@@ -1535,16 +1553,19 @@ if (!authModal) {
       return;
     }
 
-    // Logged in: hide login and reveal post-login UI
-// stop enforcement once logged in
-try { clearInterval(window._ppsAuthGateIntervalId); } catch(e) {}
-try { window._ppsAuthGateObserver?.disconnect(); } catch(e) {}
-console.info('Auth gate: stopped periodic enforcement after login.');
 
-// Logged in: hide login and reveal post-login UI
+// Logged in: stop enforcement once and reveal post-login UI
+_stopEnforcementOnce();
+
+// hide login, reveal POS
 if (loginContainer) loginContainer.classList.add('hidden');
 authModal.classList.add('hidden');
-posContainer?.classList.remove('hidden');
+
+if (posContainer) {
+  posContainer.classList.remove('hidden');
+  posContainer.removeAttribute('style');
+  posContainer.style.setProperty('display', 'block', 'important');
+}
 
 const mode = document.getElementById('modeSelector');
 if (mode) {
@@ -1553,12 +1574,11 @@ if (mode) {
   mode.style.setProperty('display', 'block', 'important'); // force visible
 }
 
-    // Ensure contact form is hidden by default; it can be opened intentionally after login
-    if (contactForm) contactForm.classList.add('hidden');
+// Ensure contact form is hidden by default; it can be opened intentionally after login
+if (contactForm) contactForm.classList.add('hidden');
 
-    document.documentElement.classList.remove('pps-auth-pending');
-    console.info('Auth gate: logged in — POS UI revealed.');
-  }
+document.documentElement.classList.remove('pps-auth-pending');
+console.info('Auth gate: logged in — POS UI revealed.');
 
   // expose the internal applyGate so other modules can call the same logic
 window._internalApplyGate = applyGate;
