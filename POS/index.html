@@ -1459,27 +1459,60 @@ meter::-moz-meter-bar {
   function isLogged() {
     return sessionStorage.getItem(authKey) === 'true';
   }
+// 🔥 Helpers to hide and hard-collapse layout
+function hideModeSelector() {
+  const mode = document.getElementById('modeSelector');
+  if (!mode) return;
 
-  // 🔥 Helpers to hide and clear inline styles
-  function hideModeSelector() {
-    const mode = document.getElementById('modeSelector');
-    if (mode) {
-      mode.classList.add('hidden');
-      mode.style.removeProperty('display');
-      mode.style.setProperty('display','none','important');
+  // 🔥 collapse the element itself
+  mode.classList.add('hidden');
+  mode.style.setProperty('display','none','important');
+  mode.style.setProperty('margin','0','important');          // 🔥 remove leftover margins
+  mode.style.setProperty('padding','0','important');         // 🔥 remove leftover padding
 
+  // 🔥 also collapse the layout slot (flex/grid item) if present
+  const slot = mode.parentElement;
+  if (slot && slot !== document.getElementById('authModal')) {
+    const cs = getComputedStyle(slot);
+    const isLayoutItem = cs.display.includes('flex') || cs.display.includes('grid') || cs.display === 'block';
+
+    if (isLayoutItem) {
+      slot.classList.add('hidden');
+      slot.style.setProperty('display','none','important');  // 🔥 collapse parent slot
+      slot.style.setProperty('margin','0','important');
+      slot.style.setProperty('padding','0','important');
+      slot.style.setProperty('min-height','0','important');  // 🔥 kill reserved height
+      slot.style.setProperty('height','auto','important');   // 🔥 avoid fixed heights
     }
   }
+}
 
-  function hidePosContainer() {
-    const pos = document.getElementById('posContainer');
-    if (pos) {
-      pos.classList.add('hidden');
-      pos.style.removeProperty('display');
-      pos.style.setProperty('display','none','important');
+function hidePosContainer() {
+  const pos = document.getElementById('posContainer');
+  if (!pos) return;
 
+  // 🔥 collapse the element itself
+  pos.classList.add('hidden');
+  pos.style.setProperty('display','none','important');
+  pos.style.setProperty('margin','0','important');           // 🔥 remove leftover margins
+  pos.style.setProperty('padding','0','important');          // 🔥 remove leftover padding
+
+  // 🔥 also collapse the layout slot (flex/grid item) if present
+  const slot = pos.parentElement;
+  if (slot && slot !== document.getElementById('authModal')) {
+    const cs = getComputedStyle(slot);
+    const isLayoutItem = cs.display.includes('flex') || cs.display.includes('grid') || cs.display === 'block';
+
+    if (isLayoutItem) {
+      slot.classList.add('hidden');
+      slot.style.setProperty('display','none','important');  // 🔥 collapse parent slot
+      slot.style.setProperty('margin','0','important');
+      slot.style.setProperty('padding','0','important');
+      slot.style.setProperty('min-height','0','important');  // 🔥 kill reserved height
+      slot.style.setProperty('height','auto','important');   // 🔥 avoid fixed heights
     }
   }
+} 
 
   // Centralized UI enforcement (idempotent)
   function applyGate() {
