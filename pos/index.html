@@ -2,43 +2,7 @@
 <html lang="en">
 <head>
     <!-- put this at the very top of <head> -->
-  <script>document.documentElement.classList.add('pps-auth-pending');
-    const APP_VERSION = '2025-11-18-v3'; // bump this on each deploy
-    const verKey = `pps_app_version@${location.origin}`;
-    const authKey = `pps_loggedIn@${location.origin}`;
-
-    // If version changed, clear auth and session identifiers
-    if (sessionStorage.getItem(verKey) !== APP_VERSION) {
-      sessionStorage.removeItem(authKey);
-      sessionStorage.removeItem('sid');
-      sessionStorage.removeItem('loggedIn');
-      sessionStorage.setItem(verKey, APP_VERSION);
-      console.info('App version changed — cleared auth state');
-    }
-
-    // Optional: unregister service workers during rollout
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(regs => {
-        regs.forEach(r => r.unregister().then(()=>console.info('SW unregistered')));
-      }).catch(e => console.warn('SW unregister failed', e));
-    }
-      function forceLogout() {
-  const authKey = `pps_loggedIn@${location.origin}`;
-  sessionStorage.removeItem(authKey);
-  sessionStorage.removeItem('sid');
-
-  // Show login, hide post-login UI
-  document.getElementById('authModal')?.classList.remove('hidden');
-  document.getElementById('modeSelector')?.classList.add('hidden');
-  document.getElementById('posContainer')?.classList.add('hidden');
-
-  // Optional: clear any in-memory state
-  window.rewardsMember = undefined;
-  console.info('PPS: forced logout — session cleared');
-}
-window.forceLogout = forceLogout;
-      forceLogout();
-</script>
+  <script>document.documentElement.classList.add('pps-auth-pending');</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Picante Pequin Salsa Co – Smoked Chile Pequin Salsa from Texas</title>
@@ -1506,15 +1470,15 @@ meter::-moz-meter-bar {
     const otherModals = document.querySelectorAll('.contact-popup, .contact-hidden, .modal, .dialog');
 
     // If DOM not ready, bail and let DOMContentLoaded handler call applyGate
-    if (!authModal) {
-      console.warn('Auth gate: authModal not found yet.');
-      document.documentElement.classList.remove('pps-auth-pending');
-      return;
-    }
+if (!authModal) {
+  console.warn('Auth gate: authModal not found yet; will retry.');
+  return;
+}
 
     if (!isLogged()) {
       // Clear stale session id
       sessionStorage.removeItem('sid');
+
 
       // Show login container explicitly
       authModal.classList.remove('hidden');
@@ -1536,16 +1500,22 @@ meter::-moz-meter-bar {
     }
 
     // Logged in: hide login and reveal post-login UI
-    if (loginContainer) loginContainer.classList.add('hidden');
-    authModal.classList.add('hidden');
-    posContainer?.classList.remove('hidden');
-    const mode = document.getElementById('modeSelector');
-    if (mode) {
-      mode.classList.remove('hidden');
-      mode.removeAttribute('style'); // allow CSS to control layout again
-    }
+// stop enforcement once logged in
+try { clearInterval(window._ppsAuthGateIntervalId); } catch(e) {}
+try { window._ppsAuthGateObserver?.disconnect(); } catch(e) {}
+console.info('Auth gate: stopped periodic enforcement after login.');
 
+// Logged in: hide login and reveal post-login UI
+if (loginContainer) loginContainer.classList.add('hidden');
+authModal.classList.add('hidden');
+posContainer?.classList.remove('hidden');
 
+const mode = document.getElementById('modeSelector');
+if (mode) {
+  mode.classList.remove('hidden');
+  mode.removeAttribute('style');                       // clear inline display rules
+  mode.style.setProperty('display', 'block', 'important'); // force visible
+}
 
     // Ensure contact form is hidden by default; it can be opened intentionally after login
     if (contactForm) contactForm.classList.add('hidden');
@@ -1555,10 +1525,19 @@ meter::-moz-meter-bar {
   }
 
   // expose the internal applyGate so other modules can call the same logic
-    window._internalApplyGate = applyGate;
-    window._ppsApplyAuthGate = function () {
-      try { window._internalApplyGate?.(); } catch (e) { console.warn('ppsApplyAuthGate failed', e); }
-    };
+window._internalApplyGate = applyGate;
+window._ppsApplyAuthGate = function () { try { window._internalApplyGate(); } catch(e){ console.warn('ppsApplyAuthGate failed', e); } };
+
+// applyGateFor(action, opts) lets callers set a short-lived context (e.g., open a specific container)
+window._ppsApplyGateFor = function(action, opts = {}) {
+  try {
+    // store a transient context the gate can use (optional)
+    window._ppsGateContext = { action, opts, ts: Date.now() };
+    window._internalApplyGate();
+    // clear context after a tick so it doesn't persist
+    setTimeout(() => { window._ppsGateContext = undefined; }, 50);
+  } catch(e) { console.warn('ppsApplyGateFor failed', e); }
+};
 
 
 
@@ -1571,36 +1550,38 @@ meter::-moz-meter-bar {
     setTimeout(applyGate, 1500);
   }
 
-  // Periodic enforcement to catch late UI changes (e.g., user opens contact form before gate runs)
-  const intervalMs = 2000; // adjust as needed; low frequency to avoid perf issues
-  const intervalId = setInterval(() => {
-    // If page is unloaded or user is navigating away, stop interval
-    if (document.hidden) return;
-    applyGate();
-  }, intervalMs);
+// Periodic enforcement
+const intervalMs = 2000;
+const intervalId = setInterval(() => {
+  if (document.hidden) return;
+  applyGate();
+}, intervalMs);
+// expose handle so other code can stop it
+window._ppsAuthGateIntervalId = intervalId;
 
-  // MutationObserver to hide any modal-like nodes that appear while unauthenticated
-  const observer = new MutationObserver((mutations) => {
-    if (isLogged()) return; // only enforce when not logged in
-    for (const m of mutations) {
-      for (const node of m.addedNodes) {
-        if (!(node instanceof HTMLElement)) continue;
-        // If a modal or contact form is added, hide it
-        if (node.id === 'contactForm' || node.classList.contains('contact-popup') || node.classList.contains('modal')) {
-          node.classList.add('hidden', 'contact-hidden');
-          console.info('Auth gate: hid newly added modal while unauthenticated', node.id || node.className);
-        }
+// MutationObserver to hide modal-like nodes while unauthenticated
+const observer = new MutationObserver((mutations) => {
+  if (isLogged()) return;
+  for (const m of mutations) {
+    for (const node of m.addedNodes) {
+      if (!(node instanceof HTMLElement)) continue;
+      if (node.id === 'contactForm' || node.classList.contains('contact-popup') || node.classList.contains('modal')) {
+        node.classList.add('hidden', 'contact-hidden');
+        console.info('Auth gate: hid newly added modal while unauthenticated', node.id || node.className);
       }
     }
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  }
+});
+observer.observe(document.documentElement, { childList: true, subtree: true });
+// expose observer handle
+window._ppsAuthGateObserver = observer;
 
   // Expose a cleanup function for tests or teardown
-  window._ppsAuthGateStop = function () {
-    clearInterval(intervalId);
-    observer.disconnect();
-    console.info('Auth gate stopped.');
-  };
+window._ppsAuthGateStop = function () {
+  try { clearInterval(window._ppsAuthGateIntervalId); } catch(e) {}
+  try { window._ppsAuthGateObserver?.disconnect(); } catch(e) {}
+  console.info('Auth gate stopped.');
+};
 })();
 
   /* -------------------------
@@ -1624,9 +1605,11 @@ function forceLogout() {
   console.info('PPS: forced logout — session cleared');
 }
 window.forceLogout = forceLogout;
+
   /* -------------------------
      Small helpers
      ------------------------- */
+
   const $id = id => document.getElementById(id);
   const safe = v => (v || '').toString().trim();
 
@@ -1634,6 +1617,7 @@ window.forceLogout = forceLogout;
     let ran = false;
     return (...a) => { if (ran) return; ran = true; return fn(...a); };
   }
+
 
   /* -------------------------
      Loading / viewport helpers
@@ -2101,24 +2085,48 @@ function wireLogin() {
       // Remove the paint-blocking guard so the page can render the final state
       document.documentElement.classList.remove('pps-auth-pending');
 
-      // Call the central gate to reveal/hide UI consistently
-      if (typeof window._ppsApplyAuthGate === 'function') {
-        window._ppsApplyAuthGate();
-      } else {
-      // fallback: minimal manual reveal
-        const mode = document.getElementById('modeSelector');
-        const authModal = document.getElementById('authModal');
-        const loginContainer = document.getElementById('loginContainer');
-        const posContainer = document.getElementById('posContainer');
-        const contactForm = document.getElementById('contactForm');
+// Prefer the central gate if exposed
+if (typeof window._ppsApplyAuthGate === 'function') {
+  try {
+    // call the canonical gate which should stop enforcement internally
+    window._ppsApplyAuthGate();
+  } catch (e) {
+    console.warn('ppsApplyAuthGate threw', e);
+    // fall through to robust manual reveal below
+    doManualReveal();
+  }
+} else {
+  // gate not exposed, do a robust manual reveal
+  doManualReveal();
+}
 
-        if (loginContainer) loginContainer.classList.add('hidden');
-        if (authModal) authModal.classList.add('hidden');
+function doManualReveal() {
+  // stop periodic enforcement and observer if stored on window
+  try { clearInterval(window._ppsAuthGateIntervalId); } catch(e) {}
+  try { window._ppsAuthGateObserver?.disconnect(); } catch(e) {}
 
-        if (mode) { mode.classList.remove('hidden'); mode.removeAttribute('style'); mode.style.display = ''; }
-        if (posContainer) { posContainer.classList.remove('hidden'); posContainer.removeAttribute('style'); }
-        if (contactForm) contactForm.classList.add('hidden');
-      }
+  const authModal = document.getElementById('authModal');
+  const loginContainer = document.getElementById('loginContainer');
+  const mode = document.getElementById('modeSelector');
+  const posContainer = document.getElementById('posContainer');
+  const contactForm = document.getElementById('contactForm');
+
+  if (loginContainer) loginContainer.classList.add('hidden');
+  if (authModal) authModal.classList.add('hidden');
+
+  if (mode) {
+    mode.classList.remove('hidden');
+    mode.removeAttribute('style');                       // clear inline display rules
+    mode.style.setProperty('display', 'block', 'important'); // force visible
+  }
+  if (posContainer) {
+    posContainer.classList.remove('hidden');
+    posContainer.removeAttribute('style');
+  }
+  if (contactForm) contactForm.classList.add('hidden');
+
+  console.info('Auth gate: login success — forced reveal and stopped enforcement.');
+}
 
       alert(`✅ Login successful! Employee: ${payload.username}`);
       btn.textContent = '✓ Logged In'; btn.classList.add('is-success'); btn.classList.remove('is-error');
@@ -2265,7 +2273,7 @@ function wireRewards() {
 
     required.forEach(id => { const el = $id(id); if (el) el.addEventListener('input', validateContactForm); });
 
-    window.handleFormSubmit = async function handleFormSubmit(e) {
+    window.handleFormSubmit = async function handleFormSubmit(e) {    
       if (e && e.preventDefault) e.preventDefault();
       if (!submit || submit.disabled) return;
       const loggedIn = sessionStorage.getItem('loggedIn') === 'true';
