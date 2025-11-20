@@ -1637,7 +1637,6 @@ window._ppsAuthGateStop = function () {
   try { clearInterval(window._ppsAuthGateIntervalId); } catch(e) {}
   try { window._ppsAuthGateObserver?.disconnect(); } catch(e) {}
   console.info('Auth gate stopped.');
-};
 })();
 
   /* -------------------------
