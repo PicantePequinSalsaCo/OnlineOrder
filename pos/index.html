@@ -734,149 +734,85 @@
     /* -------------------------
        AUTH GATE — sibling cards
        ------------------------- */
-    (function enforceAuthGate() {
-      if (window._ppsAuthGateInitialized) return;
-      window._ppsAuthGateInitialized = true;
+(function enforceAuthGate() {
+  if (window._ppsAuthGateInitialized) return;
+  window._ppsAuthGateInitialized = true;
 
-      let _ppsAuthGateLastRun = 0;
+  let _ppsAuthGateLastRun = 0;
+  const authKey = `pps_loggedIn@${location.origin}`;
+  document.documentElement.classList.add('pps-auth-pending');
 
-      const authKey = `pps_loggedIn@${location.origin}`;
-      document.documentElement.classList.add('pps-auth-pending');
+  // Dev override...
+  // Legacy migration...
 
-      // Dev override
-      if (location.search.includes('forceLogout=1')) {
-        sessionStorage.removeItem(authKey);
-        sessionStorage.removeItem('sid');
-        sessionStorage.removeItem('loggedIn');
-        console.info('Dev: forced logout via ?forceLogout=1');
-      }
+  function isLogged() {
+    return sessionStorage.getItem(authKey) === 'true';
+  }
 
-      // Legacy migration
-      if (sessionStorage.getItem('loggedIn') === 'true' && !sessionStorage.getItem(authKey)) {
-        sessionStorage.removeItem('loggedIn');
-        console.info('Cleared legacy loggedIn key to avoid auth confusion.');
-      }
+  // 🔥 Track current view globally
+  let currentView = 'login'; // 'login' | 'mode' | 'pos' | 'contact'
 
-      function isLogged() {
-        return sessionStorage.getItem(authKey) === 'true';
-      }
+  // Show functions (only once!)
+  function showLogin() {
+    currentView = 'login';
+    document.getElementById('loginContainer')?.classList.remove('hidden');
+    document.getElementById('modeSelector')?.classList.add('hidden');
+    document.getElementById('posContainer')?.classList.add('hidden');
+    document.getElementById('contactForm')?.classList.add('hidden');
+    document.getElementById('authOverlay')?.classList.remove('hidden');
+  }
 
-      function showLogin() {
-        document.getElementById('loginContainer')?.classList.remove('hidden');
-        document.getElementById('modeSelector')?.classList.add('hidden');
-        document.getElementById('posContainer')?.classList.add('hidden');
-        document.getElementById('contactForm')?.classList.add('hidden');
-        document.getElementById('authOverlay')?.classList.remove('hidden'); // focus overlay optional
-      }
-      function showModeSelector() {
-        document.getElementById('loginContainer')?.classList.add('hidden');
-        document.getElementById('modeSelector')?.classList.remove('hidden');
-        document.getElementById('posContainer')?.classList.add('hidden');
-        document.getElementById('contactForm')?.classList.add('hidden');
-        document.getElementById('authOverlay')?.classList.add('hidden');
-      }
+  function showModeSelector() {
+    currentView = 'mode';
+    document.getElementById('loginContainer')?.classList.add('hidden');
+    document.getElementById('modeSelector')?.classList.remove('hidden');
+    document.getElementById('posContainer')?.classList.add('hidden');
+    document.getElementById('contactForm')?.classList.add('hidden');
+    document.getElementById('authOverlay')?.classList.add('hidden');
+  }
 
-      // 🔥 Track current view globally
-      let currentView = 'login'; // 'login' | 'mode' | 'pos' | 'contact'
+  function showPOSContainer() {
+    currentView = 'pos';
+    document.getElementById('posContainer')?.classList.remove('hidden');
+    document.getElementById('modeSelector')?.classList.add('hidden');
+    document.getElementById('contactForm')?.classList.add('hidden');
+    document.getElementById('authOverlay')?.classList.add('hidden');
+    initPOSCatalog();
+  }
 
-    // Update each show function to set currentView
-      function showLogin() {
-      currentView = 'login';
-      document.getElementById('loginContainer')?.classList.remove('hidden');
-      document.getElementById('modeSelector')?.classList.add('hidden');
-      document.getElementById('posContainer')?.classList.add('hidden');
-      document.getElementById('contactForm')?.classList.add('hidden');
-      document.getElementById('authOverlay')?.classList.remove('hidden');
+  function showSelfCheckout() {
+    currentView = 'contact';
+    document.getElementById('contactForm')?.classList.remove('hidden');
+    document.getElementById('modeSelector')?.classList.add('hidden');
+    document.getElementById('posContainer')?.classList.add('hidden');
+    document.getElementById('authOverlay')?.classList.add('hidden');
+  }
+
+  // Gate respects currentView
+  function applyGate() {
+    const now = Date.now();
+    if (now - _ppsAuthGateLastRun < 150) return;
+    _ppsAuthGateLastRun = now;
+
+    if (!isLogged()) {
+      sessionStorage.removeItem('sid');
+      showLogin();
+      setTimeout(() => { document.documentElement.classList.remove('pps-auth-pending'); }, 0);
+      console.info('Gate: unauthenticated — login visible, others hidden.');
+      return;
     }
 
-      function showModeSelector() {
-      currentView = 'mode';
-      document.getElementById('loginContainer')?.classList.add('hidden');
-      document.getElementById('modeSelector')?.classList.remove('hidden');
-      document.getElementById('posContainer')?.classList.add('hidden');
-      document.getElementById('contactForm')?.classList.add('hidden');
-      document.getElementById('authOverlay')?.classList.add('hidden');
-    }
+    if (currentView === 'pos') { showPOSContainer(); }
+    else if (currentView === 'contact') { showSelfCheckout(); }
+    else { showModeSelector(); }
 
-      function showPOSContainer() {
-      currentView = 'pos';
-      document.getElementById('posContainer')?.classList.remove('hidden');
-      document.getElementById('modeSelector')?.classList.add('hidden');
-      document.getElementById('contactForm')?.classList.add('hidden');
-      document.getElementById('authOverlay')?.classList.add('hidden');
-      initPOSCatalog();
-    }
+    document.documentElement.classList.remove('pps-auth-pending');
+    console.info(`Gate: authenticated — ${currentView} visible.`);
+  }
 
-      function showSelfCheckout() {
-      currentView = 'contact';
-      document.getElementById('contactForm')?.classList.remove('hidden');
-      document.getElementById('modeSelector')?.classList.add('hidden');
-      document.getElementById('posContainer')?.classList.add('hidden');
-      document.getElementById('authOverlay')?.classList.add('hidden');
-    }
-
-    // 🔥 Gate respects currentView
-    function applyGate() {
-      const now = Date.now();
-      if (now - _ppsAuthGateLastRun < 150) return;
-      _ppsAuthGateLastRun = now;
-
-      if (!isLogged()) {
-        sessionStorage.removeItem('sid');
-        showLogin();
-        setTimeout(() => { document.documentElement.classList.remove('pps-auth-pending'); }, 0);
-        console.info('Gate: unauthenticated — login visible, others hidden.');
-        return;
-      }
-
-      // Authenticated: respect currentView
-      if (currentView === 'pos') { showPOSContainer(); }
-      else if (currentView === 'contact') { showSelfCheckout(); }
-      else { showModeSelector(); }
-
-      document.documentElement.classList.remove('pps-auth-pending');
-      console.info(`Gate: authenticated — ${currentView} visible.`);
-    }
-
-      window._internalApplyGate = applyGate;
-      window._ppsApplyAuthGate = function () { try { window._internalApplyGate(); } catch(e){ console.warn('ppsApplyAuthGate failed', e); } };
-
-      if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        applyGate();
-      } else {
-        document.addEventListener('DOMContentLoaded', applyGate, { once: true });
-        setTimeout(applyGate, 1500);
-      }
-
-      // Periodic enforcement
-      const intervalId = setInterval(() => {
-        if (document.hidden) return;
-        applyGate();
-      }, 2000);
-      window._ppsAuthGateIntervalId = intervalId;
-
-      // MutationObserver: hide modals while unauthenticated
-      const observer = new MutationObserver((mutations) => {
-        if (isLogged()) return;
-        for (const m of mutations) {
-          for (const node of m.addedNodes) {
-            if (!(node instanceof HTMLElement)) continue;
-            if (node.id === 'contactForm' || node.classList.contains('contact-popup') || node.classList.contains('modal')) {
-              node.classList.add('hidden','contact-hidden');
-              console.info('Auth gate: hid newly added modal while unauthenticated', node.id || node.className);
-            }
-          }
-        }
-      });
-      observer.observe(document.documentElement, { childList: true, subtree: true });
-      window._ppsAuthGateObserver = observer;
-
-      window._ppsAuthGateStop = function () {
-        try { clearInterval(window._ppsAuthGateIntervalId); } catch(e) {}
-        try { window._ppsAuthGateObserver?.disconnect(); } catch(e) {}
-        console.info('Auth gate stopped.');
-      };
-    })();
+  window._internalApplyGate = applyGate;
+  // ... rest of your interval/observer code ...
+})();
 
     /* -------------------------
        Small helpers
