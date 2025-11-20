@@ -1466,6 +1466,8 @@ meter::-moz-meter-bar {
     if (mode) {
       mode.classList.add('hidden');
       mode.style.removeProperty('display');
+      mode.style.setProperty('display','none','important');
+
     }
   }
 
@@ -1474,6 +1476,8 @@ meter::-moz-meter-bar {
     if (pos) {
       pos.classList.add('hidden');
       pos.style.removeProperty('display');
+      pos.style.setProperty('display','none','important');
+
     }
   }
 
@@ -1580,18 +1584,33 @@ function forceLogout() {
 
   document.getElementById('authModal')?.classList.remove('hidden');
   document.getElementById('loginContainer')?.classList.remove('hidden');   // 🔥 show login
-  document.getElementById('modeSelector')?.classList.add('hidden');
-  document.getElementById('modeSelector')?.style.removeProperty('display'); // 🔥 clear inline
-  document.getElementById('posContainer')?.classList.add('hidden');
-  document.getElementById('posContainer')?.style.removeProperty('display'); // 🔥 clear inline
+
+
+  // 🔥 collapse mode selector fully, no gap
+  const mode = document.getElementById('modeSelector');
+  if (mode) {
+    mode.classList.add('hidden');
+    mode.style.removeProperty('display');
+    mode.style.setProperty('display','none','important'); // 🔥 force collapse
+  }
+
+  // 🔥 collapse POS fully, no gap
+  const pos = document.getElementById('posContainer');
+  if (pos) {
+    pos.classList.add('hidden');
+    pos.style.removeProperty('display');
+    pos.style.setProperty('display','none','important'); // 🔥 force collapse
+  }
 
   window.rewardsMember = undefined;
   console.info('PPS: forced logout — session cleared');
 
-  // 🔥 re-run gate to enforce state
-  window._internalApplyGate?.();
+  // 🔥 IMPORTANT: temporarily disable auto re-run if gate overrides visibility
+  // window._internalApplyGate?.(); // 🔥 comment out if login doesn't appear; re-enable once verified
 }
 window.forceLogout = forceLogout;
+
+
   /* -------------------------
      Small helpers
      ------------------------- */
