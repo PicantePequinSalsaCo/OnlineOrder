@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
   <!-- =========================
@@ -776,35 +776,67 @@
         document.getElementById('authOverlay')?.classList.add('hidden');
       }
 
-      function applyGate() {
-        const now = Date.now();
-        if (now - _ppsAuthGateLastRun < 150) return;
-        _ppsAuthGateLastRun = now;
+      // 🔥 Track current view globally
+      let currentView = 'login'; // 'login' | 'mode' | 'pos' | 'contact'
 
-        const login = document.getElementById('loginContainer');
-        const mode  = document.getElementById('modeSelector');
-        const pos   = document.getElementById('posContainer');
-        const contact = document.getElementById('contactForm');
+    // Update each show function to set currentView
+      function showLogin() {
+      currentView = 'login';
+      document.getElementById('loginContainer')?.classList.remove('hidden');
+      document.getElementById('modeSelector')?.classList.add('hidden');
+      document.getElementById('posContainer')?.classList.add('hidden');
+      document.getElementById('contactForm')?.classList.add('hidden');
+      document.getElementById('authOverlay')?.classList.remove('hidden');
+    }
 
-        if (!login || !mode || !pos || !contact) {
-          console.warn('Gate: required cards not found yet.');
-          document.documentElement.classList.remove('pps-auth-pending');
-          return;
-        }
+      function showModeSelector() {
+      currentView = 'mode';
+      document.getElementById('loginContainer')?.classList.add('hidden');
+      document.getElementById('modeSelector')?.classList.remove('hidden');
+      document.getElementById('posContainer')?.classList.add('hidden');
+      document.getElementById('contactForm')?.classList.add('hidden');
+      document.getElementById('authOverlay')?.classList.add('hidden');
+    }
 
-        if (!isLogged()) {
-          sessionStorage.removeItem('sid');
-          showLogin();
-          setTimeout(() => { document.documentElement.classList.remove('pps-auth-pending'); }, 0);
-          console.info('Gate: unauthenticated — login visible, others hidden.');
-          return;
-        }
+      function showPOSContainer() {
+      currentView = 'pos';
+      document.getElementById('posContainer')?.classList.remove('hidden');
+      document.getElementById('modeSelector')?.classList.add('hidden');
+      document.getElementById('contactForm')?.classList.add('hidden');
+      document.getElementById('authOverlay')?.classList.add('hidden');
+      initPOSCatalog();
+    }
 
-        // Authenticated
-        showModeSelector();
-        document.documentElement.classList.remove('pps-auth-pending');
-        console.info('Gate: authenticated — mode selector visible.');
+      function showSelfCheckout() {
+      currentView = 'contact';
+      document.getElementById('contactForm')?.classList.remove('hidden');
+      document.getElementById('modeSelector')?.classList.add('hidden');
+      document.getElementById('posContainer')?.classList.add('hidden');
+      document.getElementById('authOverlay')?.classList.add('hidden');
+    }
+
+    // 🔥 Gate respects currentView
+    function applyGate() {
+      const now = Date.now();
+      if (now - _ppsAuthGateLastRun < 150) return;
+      _ppsAuthGateLastRun = now;
+
+      if (!isLogged()) {
+        sessionStorage.removeItem('sid');
+        showLogin();
+        setTimeout(() => { document.documentElement.classList.remove('pps-auth-pending'); }, 0);
+        console.info('Gate: unauthenticated — login visible, others hidden.');
+        return;
       }
+
+      // Authenticated: respect currentView
+      if (currentView === 'pos') { showPOSContainer(); }
+      else if (currentView === 'contact') { showSelfCheckout(); }
+      else { showModeSelector(); }
+
+      document.documentElement.classList.remove('pps-auth-pending');
+      console.info(`Gate: authenticated — ${currentView} visible.`);
+    }
 
       window._internalApplyGate = applyGate;
       window._ppsApplyAuthGate = function () { try { window._internalApplyGate(); } catch(e){ console.warn('ppsApplyAuthGate failed', e); } };
