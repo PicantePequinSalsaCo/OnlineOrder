@@ -259,6 +259,58 @@
       font-size: 1.4rem; margin: 0 0 10px; text-align: center; font-weight: 700; letter-spacing: 0.5px;
       color: var(--accent-orange); text-transform: uppercase;
     }
+      .rewards-wrap {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--accent-softborder);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: var(--accent-glow);
+}
+
+.rewards-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 6px 0;
+}
+
+.rewards-label {
+  font-weight: 600;
+  color: var(--muted);
+  flex: 0 0 80px;
+}
+
+.rewards-value {
+  color: var(--ink);
+  font-weight: 700;
+  flex: 1;
+  text-align: right;
+}
+
+.rewards-input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--input-border);
+  background: #ffffff0d;
+  color: var(--ink);
+  text-align: right;
+}
+
+.rewards-input:focus {
+  outline: none;
+  border-color: var(--accent-orange);
+  box-shadow: 0 0 0 2px #f57c0033;
+}
+
+.apply-rewards {
+  width: 100%;
+  margin-top: 6px;
+  background: var(--accent-green);
+  color: var(--dropdown);
+  font-weight: 800;
+}
 
     /* Contact form styles */
     #contactForm { display: flex; flex-direction: column; align-items: stretch; }
@@ -548,6 +600,24 @@
             <button id="posClearBtn" class="btn">Clear Cart</button>
             <button id="openRewardsModal" class="btn rewards">Get Rewards Member Info</button>
           </div>
+            <!-- 🔥 Rewards summary + redemption -->
+<div id="rewardsSummary" class="rewards-wrap hidden">
+  <div class="rewards-row">
+    <label class="rewards-label">Member:</label>
+    <span id="rewardsMemberName" class="rewards-value">—</span>
+  </div>
+  <div class="rewards-row">
+    <label class="rewards-label">Balance:</label>
+    <span id="rewardsMemberBalance" class="rewards-value">$0.00</span>
+  </div>
+  <div class="rewards-row">
+    <label class="rewards-label" for="rewardsRedeemInput">Redeem:</label>
+    <input type="number" id="rewardsRedeemInput" class="rewards-input" min="0" step="0.01" />
+  </div>
+  <div class="rewards-row">
+    <button id="applyRewardsBtn" class="btn apply-rewards">Apply Rewards</button>
+  </div>
+</div>
         </aside>
       </div>
 
