@@ -233,7 +233,7 @@
     .pill { padding: 6px 10px; border-radius: 999px; font-weight: 700; font-size: .8rem; color: #0d0a05; background: #3d8700ad; border: 1px solid #ffffff22; }
     .pill.alt { color: #0a0f08; background: #cf7c00d8; }
 
-    .hero-actions { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .hero-actions { margin-top: 16px; display: flex; align-items:center; flex-wrap: wrap; gap: 10px; }
 
     .btn {
       font-family: inherit; font-size: 1rem; font-weight: 600; letter-spacing: 0.3px;
@@ -273,12 +273,12 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  margin-left: 6px;
-  padding: 12px;
+  padding: 8px 12px;
   border: 1px solid var(--accent-softborder);
   border-radius: var(--radius-sm);
   background: var(--surface);
   box-shadow: var(--accent-glow);
+  flex: 0 0 auto;
 }
 
 .rewards-label {
@@ -618,7 +618,7 @@
             <button id="openRewardsModal" class="btn rewards">Get Rewards Member Info</button>
           
               <!-- Rewards summary inline -->
-            <span class="rewards-row">
+            <div class="rewards-row">
   <span class="rewards-label">Member:</span>
   <span id="rewardsMemberName" class="rewards-box">—</span>
 
@@ -627,7 +627,7 @@
 
   <input type="number" id="rewardsRedeemInput" class="rewards-input" min="0" step="0.01" disabled />
   <button id="applyRewardsBtn" class="btn apply-rewards" disabled>Apply</button>
-</span>
+</div>
           </div>
         </aside>
       </div>
