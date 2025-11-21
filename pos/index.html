@@ -609,24 +609,15 @@
             <button id="posCheckoutBtn" class="btn primary">Checkout</button>
             <button id="posClearBtn" class="btn">Clear Cart</button>
             <button id="openRewardsModal" class="btn rewards">Get Rewards Member Info</button>
-          </div>
-            <!-- 🔥 Rewards summary + redemption -->
-<div id="rewardsSummary" class="rewards-wrap">
-  <div class="rewards-row">
-    <label class="rewards-label">Member:</label>
-    <span id="rewardsMemberName" class="rewards-value">—</span>
-  </div>
-  <div class="rewards-row">
-    <label class="rewards-label">Balance:</label>
-    <span id="rewardsMemberBalance" class="rewards-value">$0.00</span>
-  </div>
-  <div class="rewards-row">
-    <label class="rewards-label" for="rewardsRedeemInput">Redeem:</label>
-    <input type="number" id="rewardsRedeemInput" class="rewards-input" min="0" step="0.01" />
-  </div>
-  <div class="rewards-row">
-    <button id="applyRewardsBtn" class="btn apply-rewards">Apply Rewards</button>
-  </div>
+              <!-- Rewards summary inline -->
+  <span class="rewards-label">Member:</span>
+  <span id="rewardsMemberName" class="rewards-box">—</span>
+
+  <span class="rewards-label">Balance:</span>
+  <span id="rewardsMemberBalance" class="rewards-box">$0.00</span>
+
+  <input type="number" id="rewardsRedeemInput" class="rewards-input" min="0" step="0.01" disabled />
+  <button id="applyRewardsBtn" class="btn apply-rewards" disabled>Apply</button>
 </div>
         </aside>
       </div>
