@@ -1416,38 +1416,51 @@
           if (!res.ok) throw new Error(`Rewards lookup failed (${res.status}) ${text}`);
 
           let result; try { result = JSON.parse(text); } catch(e) { result = {}; }
-          const centsTenth = result?.balance || 0;
-          const balance = (centsTenth / 1000).toFixed(2);
+              
+        if (result.status !== "OK") {
+          throw new Error(`Rewards lookup returned status ${result.status}`);
+       }
+            const balance = parseFloat(result.rewards) || 0;
+            
+            window.rewardsMember = { 
+    name: result.firstName || 'Member', 
+    balance, 
+    email: result.email || emailVal, 
+    phone: result.phone || phoneDigits 
+  };
 
-          window.rewardsMember = { name: result?.name || 'Member', balance, email: result?.email || emailVal, phone: result?.phone || phoneDigits };
-
-              // 🔥 Step 1: Populate inline rewards UI
+  // 🔥 Populate inline rewards UI
   const nameEl = document.getElementById('rewardsMemberName');
   const balEl = document.getElementById('rewardsMemberBalance');
   const inputEl = document.getElementById('rewardsRedeemInput');
   const applyBtn = document.getElementById('applyRewardsBtn');
 
   if (nameEl) nameEl.textContent = window.rewardsMember.name;
-  if (balEl) balEl.textContent = `$${window.rewardsMember.balance}`;
+  if (balEl) balEl.textContent = balance.toString(); // or `$${balance}` if you want currency
   if (inputEl) {
-    inputEl.value = window.rewardsMember.balance;
-    inputEl.max = window.rewardsMember.balance;
-    inputEl.disabled = false; // unlock input
+    inputEl.value = balance;
+    inputEl.max = balance;
+    inputEl.disabled = false;
   }
-  if (applyBtn) applyBtn.disabled = false; // unlock button
-            
-          const toast = document.getElementById('rewardsToast');
-          if (toast) { toast.textContent = `Member: ${window.rewardsMember.name}, Balance: $${window.rewardsMember.balance}`; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),4000); }
+  if (applyBtn) applyBtn.disabled = false;
 
-          closeRewardsModal();
-        } catch (err) {
-          console.error('[dbg] onSubmit error', err);
-          alert('❌ Rewards lookup failed. See console for details.');
-        } finally {
-          lookupBtn.disabled = false;
-          lookupBtn.classList.remove('loading');
-          lookupBtn.textContent = origText;
-        }
+  const toast = document.getElementById('rewardsToast');
+  if (toast) { 
+    toast.textContent = `Member: ${window.rewardsMember.name}, Balance: ${balance}`; 
+    toast.classList.add('show'); 
+    setTimeout(()=>toast.classList.remove('show'),4000); 
+  }
+
+  closeRewardsModal();
+} catch (err) {
+  console.error('[dbg] onSubmit error', err);
+  alert('❌ Rewards lookup failed. See console for details.');
+} finally {
+  lookupBtn.disabled = false;
+  lookupBtn.classList.remove('loading');
+  lookupBtn.textContent = origText;
+}
+
       }
 
       form.removeEventListener('submit', form._rewardsHandler || onSubmit);
