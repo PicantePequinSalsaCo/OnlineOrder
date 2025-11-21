@@ -271,8 +271,14 @@
 .rewards-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
   margin: 6px 0;
+  padding: 12px;
+  border: 1px solid var(--accent-softborder);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: var(--accent-glow);
 }
 
 .rewards-label {
@@ -305,8 +311,9 @@
 }
 
 .apply-rewards {
-  width: 100%;
-  margin-top: 6px;
+  flex: 0 0 auto;
+  padding: 8px 14px;
+  margin-left: 8px;
   background: var(--accent-green);
   color: var(--dropdown);
   font-weight: 800;
@@ -609,9 +616,9 @@
             <button id="posCheckoutBtn" class="btn primary">Checkout</button>
             <button id="posClearBtn" class="btn">Clear Cart</button>
             <button id="openRewardsModal" class="btn rewards">Get Rewards Member Info</button>
-          </div>
+          </div><br>
               <!-- Rewards summary inline -->
-            <div>
+            <div class="rewards-row">
   <span class="rewards-label">Member:</span>
   <span id="rewardsMemberName" class="rewards-box">—</span>
 
