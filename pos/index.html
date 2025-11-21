@@ -1420,7 +1420,9 @@
         if (result.status !== "OK") {
           throw new Error(`Rewards lookup returned status ${result.status}`);
        }
-            const balance = parseFloat(result.rewards) || 0;
+                  // 🔧 Normalize rewards: divide by 1000 and round to 2 decimals
+      const rawRewards = parseInt(result.rewards, 10) || 0;
+      const balance = (rawRewards / 1000).toFixed(2);
             
             window.rewardsMember = { 
     name: result.firstName || 'Member', 
