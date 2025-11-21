@@ -1421,6 +1421,21 @@
 
           window.rewardsMember = { name: result?.name || 'Member', balance, email: result?.email || emailVal, phone: result?.phone || phoneDigits };
 
+              // 🔥 Step 1: Populate inline rewards UI
+  const nameEl = document.getElementById('rewardsMemberName');
+  const balEl = document.getElementById('rewardsMemberBalance');
+  const inputEl = document.getElementById('rewardsRedeemInput');
+  const applyBtn = document.getElementById('applyRewardsBtn');
+
+  if (nameEl) nameEl.textContent = window.rewardsMember.name;
+  if (balEl) balEl.textContent = `$${window.rewardsMember.balance}`;
+  if (inputEl) {
+    inputEl.value = window.rewardsMember.balance;
+    inputEl.max = window.rewardsMember.balance;
+    inputEl.disabled = false; // unlock input
+  }
+  if (applyBtn) applyBtn.disabled = false; // unlock button
+            
           const toast = document.getElementById('rewardsToast');
           if (toast) { toast.textContent = `Member: ${window.rewardsMember.name}, Balance: $${window.rewardsMember.balance}`; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),4000); }
 
