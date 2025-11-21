@@ -311,6 +311,16 @@
   color: var(--dropdown);
   font-weight: 800;
 }
+.rewards-input:disabled {
+  background: #333;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+.apply-rewards:disabled {
+  background: var(--muted);
+  color: #666;
+  cursor: not-allowed;
+}
 
     /* Contact form styles */
     #contactForm { display: flex; flex-direction: column; align-items: stretch; }
@@ -601,7 +611,7 @@
             <button id="openRewardsModal" class="btn rewards">Get Rewards Member Info</button>
           </div>
             <!-- 🔥 Rewards summary + redemption -->
-<div id="rewardsSummary" class="rewards-wrap hidden">
+<div id="rewardsSummary" class="rewards-wrap">
   <div class="rewards-row">
     <label class="rewards-label">Member:</label>
     <span id="rewardsMemberName" class="rewards-value">—</span>
