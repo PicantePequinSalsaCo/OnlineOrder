@@ -372,6 +372,20 @@
   max-width: 100%;       /* never exceed screen width */
   box-sizing: border-box; /* include padding/border in width */
 }
+      /* Gallery grid baseline */
+#posGallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+/* Product card baseline */
+#posGallery .card {
+  width: 100%;          /* card fills its grid cell */
+  box-sizing: border-box;
+}
+
+
     .pos-cart-wrap { margin-top: 16px; background: var(--card); border: 1px solid var(--accent-glow); border-radius: var(--radius-sm); padding: 14px; }
     #posCartItems { list-style: none; margin: 0; padding: 0; }
     #posCartItems li {
@@ -386,9 +400,12 @@
     .remove-btn { background: var(--surface); color: var(--ink); border: 1px solid var(--accent-red); border-radius: 6px; padding: 4px 8px; cursor: pointer; }
     .remove-btn:hover { background: var(--accent-softred); color: var(--card); border: 1px solid var(--accent-red); border-radius: 6px; padding: 4px 8px; cursor: pointer; }
     /* --- Responsive tweaks for POS cart --- */
-@media (max-width: 768px) {
+@media (max-width: 768px) {    
       #posContainer {
     padding: 8px;
+  }
+      #posGallery {
+    grid-template-columns: repeat(2, 1fr); /* 2 cards per row on tablets */
   }
 
   .hero-actions {
@@ -442,6 +459,9 @@
 @media (max-width: 480px) {
       #posContainer {
     padding: 8px;
+  }
+      #posGallery {
+    grid-template-columns: 1fr; /* 1 card per row on phones */
   }
 
   .hero-actions {
