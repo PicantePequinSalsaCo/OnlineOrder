@@ -1521,6 +1521,7 @@
           window.rewardsMember = { 
             name: result.firstName || 'Member', 
             balance, 
+            points: rawRewards,
             email: result.email || emailVal, 
             phone: result.phone || phoneDigits
           };
@@ -1534,23 +1535,25 @@
           if (nameEl) nameEl.textContent = window.rewardsMember.name;
           if (balEl) balEl.textContent = `$${balance}`; // or  balance.toString() if you want string
           if (inputEl) {
-            inputEl.value = balance;
-            inputEl.max = balance;
-            inputEl.disabled = false;
-          }
-                // 🔒 Safeguard: clamp free typing to cart total and rewards balance
+              inputEl.value = rawRewards;   // input holds points
+              inputEl.max = rawRewards;     // cap at balance in points
+              inputEl.disabled = false;
+
+                   // 🔒 Clamp free typing to cart total (points) and rewards balance (points)
               inputEl.addEventListener('input', () => {
                 const cartTotal = typeof window.cartTotal === 'number' ? window.cartTotal : Infinity;
-                const rewardsBalance = parseFloat(window.rewardsMember?.balance || '0');
-                let val = parseFloat(inputEl.value || '0');
+                const cartPoints = Math.floor(cartTotal * 1000); // convert dollars → points
+                const rewardsPoints = window.rewardsMember?.points || 0;
 
+                let val = parseInt(inputEl.value || '0', 10);
+    
                 if (isNaN(val) || val < 0) val = 0;
-                if (val > cartTotal) val = cartTotal;
-                if (val > rewardsBalance) val = rewardsBalance;
+                if (val > cartPoints) val = cartPoints;
+                if (val > rewardsPoints) val = rewardsPoints;
 
-                inputEl.value = val.toFixed(2);
+                inputEl.value = val; // always raw points
               });
-            
+          }          
 
 
           if (applyBtn) applyBtn.disabled = false;
