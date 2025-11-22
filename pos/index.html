@@ -259,82 +259,24 @@
       font-size: 1.4rem; margin: 0 0 10px; text-align: center; font-weight: 700; letter-spacing: 0.5px;
       color: var(--accent-orange); text-transform: uppercase;
     }
+     
+   .rewards-row { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--accent-softborder); border-radius: var(--radius-sm); background: var(--surface); box-shadow: var(--accent-glow); flex: 0 0 auto;}
 
-.rewards-row {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border: 1px solid var(--accent-softborder);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  box-shadow: var(--accent-glow);
-  flex: 0 0 auto;
-}
+   .rewards-label { font-weight: 600; color: var(--muted); margin-right: 6px; flex: 0 0 auto;}
 
-.rewards-label {
-  font-weight: 600;
-  color: var(--muted);
-  margin-right: 6px;
-  flex: 0 0 auto;
-}
-
-.rewards-value {
-  border-radius: 6px;
-  color: var(--muted);
-  font-weight: 700;
-  flex: 0 0 auto;
-  text-align: right;
-  padding: 6px;
-}
+   .rewards-value { border-radius: 6px; color: var(--muted); font-weight: 700; flex: 0 0 auto; text-align: right; padding: 6px;}
       
-.rewards-box {
-  flex: 0 0 auto;
-  width: 120px;
-  border-radius: 6px;
-  padding: 8px;
-  border: 1px solid var(--banner);
-  background: var(--surface);
-  color: var(--muted);
-  font-weight: 700;
-  text-align: right;
-}
+   .rewards-box { flex: 0 0 auto; width: 120px; border-radius: 6px; padding: 8px; border: 1px solid var(--banner); background: var(--surface); color: var(--muted); font-weight: 700; text-align: right;}
 
-.rewards-input {
-  flex: 0 0 auto;
-  width: 100px;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid var(--input-border);
-  background: var(--banner);
-  color: var(--ink);
-  text-align: right;
-}
+   .rewards-input { flex: 0 0 auto; width: 100px; padding: 8px; border-radius: 6px; border: 1px solid var(--input-border); background: var(--banner); color: var(--ink); text-align: right;}
 
-.rewards-input:focus {
-  outline: none;
-  border-color: var(--accent-orange);
-  box-shadow: 0 0 0 2px #f57c0033;
-}
-
-.apply-rewards {
-  flex: 0 0 auto;
-  padding: 8px 14px;
-  margin-left: 8px;
-  background: var(--accent-green);
-  color: var(--dropdown);
-  font-weight: 800;
-}
-.rewards-input:disabled {
-  background: #333;
-  color: var(--muted);
-  cursor: not-allowed;
-}
-.apply-rewards:disabled {
-  background: var(--muted);
-  color: #666;
-  cursor: not-allowed;
-}
+   .rewards-input:focus { outline: none; border-color: var(--accent-orange); box-shadow: 0 0 0 2px #f57c0033;}
+      
+   .apply-rewards { flex: 0 0 auto; padding: 8px 14px; margin-left: 8px; background: var(--accent-green); color: var(--dropdown); font-weight: 800;}
+  
+   .rewards-input:disabled { background: #333; color: var(--muted); cursor: not-allowed;}
+      
+   .apply-rewards:disabled { background: var(--muted); color: var(--muted); cursor: not-allowed;}
 
     /* Contact form styles */
     #contactForm { display: flex; flex-direction: column; align-items: stretch; }
@@ -622,20 +564,15 @@
           <div class="hero-actions" style="margin-top:12px;">
             <button id="posCheckoutBtn" class="btn primary">Checkout</button>
             <button id="posClearBtn" class="btn">Clear Cart</button>
-            <button id="openRewardsModal" class="btn rewards">Get Rewards Member Info</button>
-          
-              <!-- Rewards summary inline -->
-        <div class="rewards-row">
-  <span class="rewards-label">Member:</span>
-  <span id="rewardsMemberName" class="rewards-box">—</span>
-
-  <span class="rewards-label">Balance:</span>
-  <span id="rewardsMemberBalance" class="rewards-box">$0.00</span>
-
-  <input type="number" id="rewardsRedeemInput" class="rewards-input" min="0" step="0.01" disabled />
-  <button id="applyRewardsBtn" class="btn apply-rewards" disabled>Apply</button>
+            <button id="openRewardsModal" class="btn rewards">Get Rewards Member Info</button>                        <!-- Rewards summary inline -->
+            <div class="rewards-row">
+             <span class="rewards-label">Member:</span>
+             <span id="rewardsMemberName" class="rewards-box">—</span>
+             <span class="rewards-label">Balance:</span>
+             <span id="rewardsMemberBalance" class="rewards-box">$0.00</span>
+             <input type="number" id="rewardsRedeemInput" class="rewards-input" min="0" step="0.01" disabled />
+             <button id="applyRewardsBtn" class="btn apply-rewards" disabled>Apply</button>
             </div>
-
           </div>
         </aside>
       </div>
@@ -1417,51 +1354,66 @@
 
           let result; try { result = JSON.parse(text); } catch(e) { result = {}; }
               
-        if (result.status !== "OK") {
-          throw new Error(`Rewards lookup returned status ${result.status}`);
-       }
+          if (result.status !== "OK") {
+            throw new Error(`Rewards lookup returned status ${result.status}`);
+         }
                   // 🔧 Normalize rewards: divide by 1000 and round to 2 decimals
-      const rawRewards = parseInt(result.rewards, 10) || 0;
-      const balance = (rawRewards / 1000).toFixed(2);
+          const rawRewards = parseInt(result.rewards, 10) || 0;
+          const balance = (rawRewards / 1000).toFixed(2);
             
-            window.rewardsMember = { 
-    name: result.firstName || 'Member', 
-    balance, 
-    email: result.email || emailVal, 
-    phone: result.phone || phoneDigits 
-  };
+          window.rewardsMember = { 
+            name: result.firstName || 'Member', 
+            balance, 
+            email: result.email || emailVal, 
+            phone: result.phone || phoneDigits
+          };
 
-  // 🔥 Populate inline rewards UI
-  const nameEl = document.getElementById('rewardsMemberName');
-  const balEl = document.getElementById('rewardsMemberBalance');
-  const inputEl = document.getElementById('rewardsRedeemInput');
-  const applyBtn = document.getElementById('applyRewardsBtn');
+          // 🔥 Populate inline rewards UI
+          const nameEl = document.getElementById('rewardsMemberName');
+          const balEl = document.getElementById('rewardsMemberBalance');
+          const inputEl = document.getElementById('rewardsRedeemInput');
+          const applyBtn = document.getElementById('applyRewardsBtn');
 
-  if (nameEl) nameEl.textContent = window.rewardsMember.name;
-  if (balEl) balEl.textContent = balance.toString(); // or `$${balance}` if you want currency
-  if (inputEl) {
-    inputEl.value = balance;
-    inputEl.max = balance;
-    inputEl.disabled = false;
-  }
-  if (applyBtn) applyBtn.disabled = false;
+          if (nameEl) nameEl.textContent = window.rewardsMember.name;
+          if (balEl) balEl.textContent = `$${balance}`; // or  balance.toString() if you want string
+          if (inputEl) {
+            inputEl.value = balance;
+            inputEl.max = balance;
+            inputEl.disabled = false;
+          }
+                // 🔒 Safeguard: clamp free typing to cart total and rewards balance
+              inputEl.addEventListener('input', () => {
+                const cartTotal = typeof window.cartTotal === 'number' ? window.cartTotal : Infinity;
+                const rewardsBalance = parseFloat(window.rewardsMember?.balance || '0');
+                let val = parseFloat(inputEl.value || '0');
 
-  const toast = document.getElementById('rewardsToast');
-  if (toast) { 
-    toast.textContent = `Member: ${window.rewardsMember.name}, Balance: ${balance}`; 
-    toast.classList.add('show'); 
-    setTimeout(()=>toast.classList.remove('show'),4000); 
-  }
+                if (isNaN(val) || val < 0) val = 0;
+                if (val > cartTotal) val = cartTotal;
+                if (val > rewardsBalance) val = rewardsBalance;
 
-  closeRewardsModal();
-} catch (err) {
-  console.error('[dbg] onSubmit error', err);
-  alert('❌ Rewards lookup failed. See console for details.');
-} finally {
-  lookupBtn.disabled = false;
-  lookupBtn.classList.remove('loading');
-  lookupBtn.textContent = origText;
-}
+                inputEl.value = val.toFixed(2);
+              });
+            }
+
+
+          if (applyBtn) applyBtn.disabled = false;
+
+          const toast = document.getElementById('rewardsToast');
+          if (toast) { 
+            toast.textContent = `Member: ${window.rewardsMember.name}, Balance: ${balance}`; 
+            toast.classList.add('show'); 
+            setTimeout(()=>toast.classList.remove('show'),4000); 
+          }
+
+          closeRewardsModal();
+        } catch (err) {
+          console.error('[dbg] onSubmit error', err);
+          alert('❌ Rewards lookup failed. See console for details.');
+        } finally {
+          lookupBtn.disabled = false;
+          lookupBtn.classList.remove('loading');
+          lookupBtn.textContent = origText;
+        }
 
       }
 
