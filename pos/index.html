@@ -460,17 +460,24 @@
 }
 
 @media (max-width: 480px) {
-      .field-message {
-    position: relative;   /* cancel any absolute positioning */
-    display: block;       /* full width under the input */
-    margin-top: 4px;      /* spacing below input */
-    margin-left: 0;       /* reset any left offset */
-    text-align: left;     /* align with input text */
-    max-width: 100%;      /* prevent overflow */
-    white-space: normal;  /* wrap text if needed */
+  #rewardsModal .contact-row {
+    flex-direction: column;   /* stack label + input + message vertically */
+    align-items: stretch;
   }
-      .rewards-modal .field-message {
-    flex: 0 0 100%; /* force message to take full row */
+
+  #rewardsModal .contact-row input {
+    width: 100%;              /* input fills modal width */
+  }
+
+  #rewardsModal .field-message {
+    flex: 0 0 100%;            /* force message to take full row */
+    position: relative;        /* cancel any absolute positioning */
+    display: block;            /* block element under input */
+    margin-top: 4px;
+    margin-left: 0;
+    text-align: left;
+    max-width: 100%;
+    white-space: normal;       /* wrap text if needed */
   }
 
       #posContainer {
