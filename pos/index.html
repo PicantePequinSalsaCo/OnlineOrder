@@ -1552,8 +1552,21 @@
                 if (val > rewardsPoints) val = rewardsPoints;
 
                 inputEl.value = val; // always raw points
+                window.rewardsConsumedPoints = val; // live backend variable
               });
-          }          
+
+              // 🔄 Switch to points view when focused
+              inputEl.addEventListener('focus', () => {
+                inputEl.value = window.rewardsConsumedPoints || rawRewards;
+              });
+
+              // 🔄 Switch back to dollars view when blurred
+              inputEl.addEventListener('blur', () => {
+                const valPoints = parseInt(inputEl.value || '0', 10);
+                const valDollars = (valPoints / 1000).toFixed(2);
+                inputEl.value = valDollars; // show dollars for UX when not editing
+              });
+            }      
 
 
           if (applyBtn) applyBtn.disabled = false;
