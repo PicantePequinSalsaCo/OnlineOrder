@@ -460,6 +460,16 @@
 }
 
 @media (max-width: 480px) {
+      .field-message {
+    position: relative;   /* cancel any absolute positioning */
+    display: block;       /* full width under the input */
+    margin-top: 4px;      /* spacing below input */
+    margin-left: 0;       /* reset any left offset */
+    text-align: left;     /* align with input text */
+    max-width: 100%;      /* prevent overflow */
+    white-space: normal;  /* wrap text if needed */
+  }
+
       #posContainer {
     padding: 8px;
   }
