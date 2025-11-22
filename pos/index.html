@@ -379,7 +379,69 @@
     .cart-controls .qty-display { min-width: 24px; text-align: center; }
     .remove-btn { background: var(--surface); color: var(--ink); border: 1px solid var(--accent-red); border-radius: 6px; padding: 4px 8px; cursor: pointer; }
     .remove-btn:hover { background: var(--accent-softred); color: var(--card); border: 1px solid var(--accent-red); border-radius: 6px; padding: 4px 8px; cursor: pointer; }
+    /* --- Responsive tweaks for POS cart --- */
+@media (max-width: 768px) {
+  .pos-cart-wrap {
+    padding: 10px;
+    margin-top: 12px;
+  }
 
+  #posCartItems li {
+    flex-direction: column;       /* stack name + controls vertically */
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .cart-name {
+    margin-right: 0;
+    width: 100%;
+  }
+
+  .cart-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .cart-controls .qty-btn,
+  .cart-controls .qty-display {
+    flex: 0 0 auto;
+  }
+
+  .remove-btn {
+    width: 100%;                  /* full width remove button */
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .pos-cart-wrap {
+    padding: 8px;
+  }
+
+  #posCartItems li {
+    padding: 4px 6px;
+    margin-bottom: 4px;
+  }
+
+  .cart-name {
+    font-size: 0.9rem;
+  }
+
+  .cart-controls .qty-btn {
+    width: 20px;
+    height: 20px;
+  }
+
+  .cart-controls .qty-display {
+    min-width: 20px;
+    font-size: 0.85rem;
+  }
+
+  .remove-btn {
+    font-size: 0.85rem;
+    padding: 3px 6px;
+  }
+}
     /* Consent checkbox */
     .consent-inline { display: inline-flex; align-items: center; gap: 6px; font-size: 0.95rem; line-height: 1.4; color: var(--ink, #fff); cursor: pointer; user-select: none; white-space: nowrap; padding: 0; flex: 0 0 auto; width: auto; }
     .consent-inline input[type="checkbox"] {
