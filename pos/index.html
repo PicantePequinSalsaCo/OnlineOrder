@@ -1611,33 +1611,21 @@ function initPOSCatalog() {
                 const rewardsPoints = window.rewardsMember?.points || 0;
 
                 let val = parseInt(inputEl.value || '0', 10);
-    
-                  if (isNaN(val) || val < 0) {
-                    // If blank or invalid, reset to rawRewards so Apply has a usable value
-                    val = window.rewardsMember?.points || 0;
-                  }
-                  if (val > cartPoints) val = cartPoints;
-                  if (val > rewardsPoints) val = rewardsPoints;
-                  
-                inputEl.value = val; // always raw points
-              });
+                if (isNaN(val) || val < 0) val = 0;
+                if (val > cartPoints) val = cartPoints;
+                if (val > rewardsPoints) val = rewardsPoints;
 
-                  // 🔄 Switch to points view when focused
-                inputEl.addEventListener('focus', () => {
-                  // If empty, restore rawRewards; otherwise leave whatever is typed
-                  const current = parseInt(inputEl.value || '0', 10);
-                  inputEl.value = current > 0 ? current : rawRewards;
-                });
+                      // Show dollars when blurred
+    const valDollars = (val / 1000).toFixed(2);
+    inputEl.value = valDollars;
+  });
 
-
-
-              // 🔄 Switch back to dollars view when blurred
-              inputEl.addEventListener('blur', () => {
-                const valPoints = parseInt(inputEl.value || '0', 10);
-                const valDollars = (valPoints / 1000).toFixed(2);
-                inputEl.value = valDollars; // show dollars for UX when not editing
-              });
-            }      
+  // 🔄 Switch back to points view when focused
+  inputEl.addEventListener('focus', () => {
+    const valPoints = parseInt(inputEl.value || '0', 10);
+    inputEl.value = isNaN(valPoints) ? rawRewards : valPoints;
+  });
+}  
 
 
           // … inside try { … after wiring inputEl …
@@ -1648,9 +1636,9 @@ if (applyBtn) {
     const cartTotal = typeof window.cartTotal === 'number' ? window.cartTotal : 0;
     const rewardsPoints = window.rewardsMember?.points || 0;
 
-        // Always parse directly from the input field
-    const valPoints = parseInt((document.getElementById('rewardsRedeemInput')?.value || '0'), 10) || 0;
-
+          // Always parse directly from the input field
+  let valPoints = parseInt((document.getElementById('rewardsRedeemInput')?.value || '0'), 10);
+  if (isNaN(valPoints)) valPoints = 0;
 
     const cartPoints = Math.floor(cartTotal * 1000);
     if (valPoints <= 0) { alert('Enter a valid amount to redeem.'); return; }
