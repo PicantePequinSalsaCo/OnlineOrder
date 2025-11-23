@@ -1612,10 +1612,13 @@ function initPOSCatalog() {
 
                 let val = parseInt(inputEl.value || '0', 10);
     
-                if (isNaN(val) || val < 0) val = 0;
-                if (val > cartPoints) val = cartPoints;
-                if (val > rewardsPoints) val = rewardsPoints;
-
+                  if (isNaN(val) || val < 0) {
+                    // If blank or invalid, reset to rawRewards so Apply has a usable value
+                    val = window.rewardsMember?.points || 0;
+                  }
+                  if (val > cartPoints) val = cartPoints;
+                  if (val > rewardsPoints) val = rewardsPoints;
+                  
                 inputEl.value = val; // always raw points
               });
 
