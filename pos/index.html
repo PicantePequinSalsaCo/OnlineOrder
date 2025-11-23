@@ -1479,6 +1479,7 @@ function initPOSCatalog() {
       form.addEventListener('submit', async (ev) => {
         ev.preventDefault(); if (btn.disabled) return;
         btn.disabled = true; btn.classList.add('btn-loading'); const original = btn.textContent; btn.textContent = 'Logging in...'; startLoading();
+        resetZoom();
         try {
           const omni = await getOmniTok(btn.dataset.act || 'seclog');
           if (!omni?.endpoint) throw new Error('Omnitok preflight did not return an endpoint');
