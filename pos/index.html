@@ -1599,12 +1599,11 @@ function initPOSCatalog() {
                 if (val > rewardsPoints) val = rewardsPoints;
 
                 inputEl.value = val; // always raw points
-                window.rewardsConsumedPoints = val; // live backend variable
               });
 
               // 🔄 Switch to points view when focused
               inputEl.addEventListener('focus', () => {
-                inputEl.value = window.rewardsConsumedPoints || rawRewards;
+                inputEl.value = parseInt(inputEl.value || '0', 10) || rawRewards;
               });
 
               // 🔄 Switch back to dollars view when blurred
@@ -1624,12 +1623,9 @@ if (applyBtn) {
     const cartTotal = typeof window.cartTotal === 'number' ? window.cartTotal : 0;
     const rewardsPoints = window.rewardsMember?.points || 0;
 
-    let valPoints = Number.isInteger(window.rewardsConsumedPoints)
-      ? window.rewardsConsumedPoints
-      : (() => {
-          const raw = parseInt((document.getElementById('rewardsRedeemInput')?.value || '0'), 10);
-          return isNaN(raw) ? 0 : raw;
-        })();
+        // Always parse directly from the input field
+    const valPoints = parseInt((document.getElementById('rewardsRedeemInput')?.value || '0'), 10) || 0;
+
 
     const cartPoints = Math.floor(cartTotal * 1000);
     if (valPoints <= 0) { alert('Enter a valid amount to redeem.'); return; }
