@@ -1267,15 +1267,22 @@
     /* -------------------------
        POS catalog + cart (minimal)
        ------------------------- */
-    function initPOSCatalog() {
+function initPOSCatalog() {
   const gallery = $id('posGallery');
   if (!gallery) return;
 
-  const products = [ /* … */ ];
+  const products = [
+    { id: 'house-pequin', name: 'House Pequin Salsa', price: 10, image: 'https://picantepequinsalsaco.com/images/image1.jpg' },
+    { id: 'spicy-green', name: 'Spicy Green Chile Pequin', price: 10, image: 'https://picantepequinsalsaco.com/images/image2.jpg' },
+    { id: 'red-hot', name: 'Red Hot Pepper Pequin', price: 10, image: 'https://picantepequinsalsaco.com/images/image3.jpg' },
+    { id: 'the-crew', name: 'The Crew (3‑Pack)', price: 30, image: 'https://picantepequinsalsaco.com/images/image4.jpg' }
+  ];
+
   const cart = [];
 
   function renderCart() {
-    const list = $id('posCartItems'); const totalEl = $id('posCartTotal');
+    const list = $id('posCartItems');
+    const totalEl = $id('posCartTotal');
     if (!list || !totalEl) return;
     list.innerHTML = '';
     let total = 0;
@@ -1314,9 +1321,33 @@
   window.addToCart = addToCart;
   window.renderCart = renderCart;
 
-  // … gallery setup and button wiring …
+  // 🔥 restore gallery rendering
   gallery.innerHTML = '';
-  products.forEach(p => { /* … */ });
+  products.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'prod-card';
+    card.innerHTML = `
+      <img src="${p.image}" alt="${p.name}">
+      <h3 class="prod-name">${p.name}</h3>
+      <p class="prod-price">$${p.price.toFixed(2)}</p>
+      <div class="quantity">
+        <button class="qty-btn minus">−</button>
+        <input type="number" class="qty-input" value="0" min="0">
+        <button class="qty-btn plus">+</button>
+      </div>
+      <button class="add-to-cart">Add to Cart</button>
+    `;
+    const qtyInput = card.querySelector('.qty-input');
+    card.querySelector('.qty-btn.minus').onclick = () => { qtyInput.value = Math.max(0, +qtyInput.value - 1); };
+    card.querySelector('.qty-btn.plus').onclick = () => { qtyInput.value = +qtyInput.value + 1; };
+    card.querySelector('.add-to-cart').onclick = () => {
+      const q = +qtyInput.value;
+      if (!q) return;
+      addToCart({ id: p.id, name: p.name, price: p.price, qty: q });
+      qtyInput.value = 0;
+    };
+    gallery.appendChild(card);
+  });
 
   $id('posClearBtn')?.addEventListener('click', () => {
     cart.length = 0;
