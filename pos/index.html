@@ -1267,86 +1267,77 @@
     /* -------------------------
        POS catalog + cart (minimal)
        ------------------------- */
-    function initPOSCatalog() {
-      const gallery = $id('posGallery');
-      if (!gallery) return;
+function initPOSCatalog() {
+  const gallery = $id('posGallery');
+  if (!gallery) return;
 
-      const products = [
-        { id: 'house-pequin', name: 'House Pequin Salsa', price: 10, image: 'https://picantepequinsalsaco.com/images/image1.jpg' },
-        { id: 'spicy-green', name: 'Spicy Green Chile Pequin', price: 10, image: 'https://picantepequinsalsaco.com/images/image2.jpg' },
-        { id: 'red-hot', name: 'Red Hot Pepper Pequin', price: 10, image: 'https://picantepequinsalsaco.com/images/image3.jpg' },
-        { id: 'the-crew', name: 'The Crew (3‑Pack)', price: 30, image: 'https://picantepequinsalsaco.com/images/image4.jpg' }
-      ];
+  const products = [ /* … */ ];
+  const cart = [];
 
-      const cart = [];
+  function renderCart() {
+    const list = $id('posCartItems'); const totalEl = $id('posCartTotal');
+    if (!list || !totalEl) return;
+    list.innerHTML = '';
+    let total = 0;
+    cart.forEach((item, idx) => {
+      total += item.price * item.qty;
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <span class="cart-name">${item.name}</span>
+        <div class="cart-controls">
+          <button class="qty-btn minus">−</button>
+          <span class="qty-display">${item.qty}</span>
+          <button class="qty-btn plus">+</button>
+          <button class="remove-btn">✖</button>
+        </div>
+      `;
+      li.querySelector('.minus').onclick = () => { if (item.qty > 1) item.qty--; else cart.splice(idx,1); renderCart(); };
+      li.querySelector('.plus').onclick = () => { item.qty++; renderCart(); };
+      li.querySelector('.remove-btn').onclick = () => { cart.splice(idx,1); renderCart(); };
+      list.appendChild(li);
+    });
+    totalEl.textContent = total.toFixed(2);
 
-      function renderCart() {
-        const list = $id('posCartItems'); const totalEl = $id('posCartTotal');
-        if (!list || !totalEl) return;
-        list.innerHTML = '';
-        let total = 0;
-        cart.forEach((item, idx) => {
-          total += item.price * item.qty;
-          const li = document.createElement('li');
-          li.innerHTML = `
-            <span class="cart-name">${item.name}</span>
-            <div class="cart-controls">
-              <button class="qty-btn minus">−</button>
-              <span class="qty-display">${item.qty}</span>
-              <button class="qty-btn plus">+</button>
-              <button class="remove-btn">✖</button>
-            </div>
-          `;
-          li.querySelector('.minus').onclick = () => { if (item.qty > 1) item.qty--; else cart.splice(idx,1); renderCart(); };
-          li.querySelector('.plus').onclick = () => { item.qty++; renderCart(); };
-          li.querySelector('.remove-btn').onclick = () => { cart.splice(idx,1); renderCart(); };
-          list.appendChild(li);
-        });
-        totalEl.textContent = total.toFixed(2);
-      }
+    // 🔥 keep window.cartTotal updated for rewards clamp logic
+    window.cartTotal = total;
+  }
 
-      function addToCart(it) {
-        const idx = cart.findIndex(x => x.id === it.id);
-        if (idx > -1) cart[idx].qty += it.qty;
-        else cart.push({ ...it });
-        renderCart();
-      }
+  function addToCart(it) {
+    const idx = cart.findIndex(x => x.id === it.id);
+    if (idx > -1) cart[idx].qty += it.qty;
+    else cart.push({ ...it });
+    renderCart();
+  }
 
-      gallery.innerHTML = '';
-      products.forEach(p => {
-        const card = document.createElement('div'); card.className = 'prod-card';
-        card.innerHTML = `
-          <img src="${p.image}" alt="${p.name}">
-          <h3 class="prod-name">${p.name}</h3>
-          <p class="prod-price">$${p.price.toFixed(2)}</p>
-          <div class="quantity">
-            <button class="qty-btn minus">−</button>
-            <input type="number" class="qty-input" value="0" min="0">
-            <button class="qty-btn plus">+</button>
-          </div>
-          <button class="add-to-cart">Add to Cart</button>
-        `;
-        const qtyInput = card.querySelector('.qty-input');
-        card.querySelector('.qty-btn.minus').onclick = () => { qtyInput.value = Math.max(0, +qtyInput.value - 1); };
-        card.querySelector('.qty-btn.plus').onclick = () => { qtyInput.value = +qtyInput.value + 1; };
-        card.querySelector('.add-to-cart').onclick = () => {
-          const q = +qtyInput.value;
-          if (!q) return;
-          addToCart({ id: p.id, name: p.name, price: p.price, qty: q });
-          qtyInput.value = 0;
-        };
-        gallery.appendChild(card);
-      });
+  // 🔥 expose helpers globally so wireRewards can use them
+  window.posCart = cart;
+  window.addToCart = addToCart;
+  window.renderCart = renderCart;
 
-      $id('posClearBtn')?.addEventListener('click', () => { cart.length = 0; renderCart(); });
-      $id('posCheckoutBtn')?.addEventListener('click', () => {
-        if (!cart.length) { alert('Cart is empty.'); return; }
-        // 🔥 Extension point B (POS checkout): integrate OmniTok / Stripe
-        alert('Proceeding to POS checkout…');
-      });
+  // … gallery setup and button wiring …
+  gallery.innerHTML = '';
+  products.forEach(p => { /* … */ });
 
-      renderCart();
-    }
+  $id('posClearBtn')?.addEventListener('click', () => {
+    cart.length = 0;
+    renderCart();
+
+    // 🔥 also reset rewards state when cart is cleared
+    window.rewardsConsumedPoints = 0;
+    const openBtn = $id('openRewardsModal');
+    const inputEl = $id('rewardsRedeemInput');
+    if (openBtn) { openBtn.disabled = false; openBtn.classList.remove('disabled'); }
+    if (inputEl) { inputEl.value = ''; inputEl.disabled = true; inputEl.readOnly = false; inputEl.classList.remove('locked'); }
+  });
+
+  $id('posCheckoutBtn')?.addEventListener('click', () => {
+    if (!cart.length) { alert('Cart is empty.'); return; }
+    // 🔥 Extension point B (POS checkout): integrate OmniTok / Stripe
+    alert('Proceeding to POS checkout…');
+  });
+
+  renderCart();
+}
 
     /* -------------------------
        Form reset + validation
@@ -1569,31 +1560,88 @@
             }      
 
 
-          if (applyBtn) applyBtn.disabled = false;
+          // 🔥 After wiring inputEl focus/blur + clamp logic
+            // 🔥 Apply button handler
+      if (applyBtn) {
+        applyBtn.disabled = false;
+        applyBtn.onclick = () => {
+          const openBtn = document.getElementById('openRewardsModal'); // Get Rewards Member Info
+          const cartTotal = typeof window.cartTotal === 'number' ? window.cartTotal : 0;
+          const rewardsPoints = window.rewardsMember?.points || 0;
+
+          let valPoints = Number.isInteger(window.rewardsConsumedPoints)
+            ? window.rewardsConsumedPoints
+            : (() => {
+                const raw = parseInt((document.getElementById('rewardsRedeemInput')?.value || '0'), 10);
+                return isNaN(raw) ? 0 : raw;
+              })();
+
+          const cartPoints = Math.floor(cartTotal * 1000);
+          if (valPoints <= 0) { alert('Enter a valid amount to redeem.'); return; }
+          if (valPoints > cartPoints) { alert('You cannot redeem more than the cart total.'); return; }
+          if (valPoints > rewardsPoints) { alert('You cannot redeem more than your rewards balance.'); return; }
+
+          const valDollars = (valPoints / 1000).toFixed(2);
+
+          // 🔥 Disable further member lookups once applied
+          if (openBtn) {
+            openBtn.disabled = true;
+            openBtn.classList.add('disabled');
+            openBtn.setAttribute('aria-disabled', 'true');
+          }
+
+          // 🔥 Lock the input field
+          if (inputEl) {
+            inputEl.value = valDollars;
+            inputEl.readOnly = true;
+            inputEl.disabled = true;
+            inputEl.classList.add('locked');
+          }
+
+          // 🔥 Ensure a single rewards line item
+          if (Array.isArray(window.posCart)) {
+            const existingIdx = window.posCart.findIndex(x => x.id === 'rewards-credit');
+            if (existingIdx > -1) window.posCart.splice(existingIdx, 1);
+          }
+          
+          // 🔥 Add negative line item
+          if (typeof window.addToCart === 'function') {
+            window.addToCart({
+              id: 'rewards-credit',
+              name: 'Rewards Applied',
+              price: -parseFloat(valDollars),
+              qty: 1
+            });
+          } else {
+            console.warn('applyRewards: addToCart not available');
+          }
+
+          // 🔥 Backend alignment
+          window.rewardsConsumedPoints = valPoints;
 
           const toast = document.getElementById('rewardsToast');
-          if (toast) { 
-            toast.textContent = `Member: ${window.rewardsMember.name}, Balance: ${balance}`; 
-            toast.classList.add('show'); 
-            setTimeout(()=>toast.classList.remove('show'),4000); 
+          if (toast) {
+            toast.textContent = `Member: ${window.rewardsMember.name}, Balance: ${balance}`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 4000);
           }
 
           closeRewardsModal();
-        } catch (err) {
-          console.error('[dbg] onSubmit error', err);
-          alert('❌ Rewards lookup failed. See console for details.');
-        } finally {
-          lookupBtn.disabled = false;
-          lookupBtn.classList.remove('loading');
-          lookupBtn.textContent = origText;
-        }
-
+        };
       }
 
-      form.removeEventListener('submit', form._rewardsHandler || onSubmit);
-      form.addEventListener('submit', onSubmit);
-      form._rewardsHandler = onSubmit;
+    } catch (err) {
+      console.error('[dbg] onSubmit error', err);
+      alert('❌ Rewards lookup failed. See console for details.');
+    } finally {
+      lookupBtn.disabled = false;
+      lookupBtn.classList.remove('loading');
+      lookupBtn.textContent = origText;
     }
+  }
+
+  form.addEventListener('submit', onSubmit);
+}
 
     /* -------------------------
        Signup wiring
