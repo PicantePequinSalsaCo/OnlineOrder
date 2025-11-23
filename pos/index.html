@@ -1603,6 +1603,7 @@ function initPOSCatalog() {
               inputEl.value = rawRewards;   // input holds points
               inputEl.max = rawRewards;     // cap at balance in points
               inputEl.disabled = false;
+              inputEl.readOnly = false;
 
                    // 🔒 Clamp free typing to cart total (points) and rewards balance (points)
               inputEl.addEventListener('input', () => {
@@ -1615,18 +1616,16 @@ function initPOSCatalog() {
                 if (val > cartPoints) val = cartPoints;
                 if (val > rewardsPoints) val = rewardsPoints;
 
-                      // Show dollars when blurred
-    const valDollars = (val / 1000).toFixed(2);
-    inputEl.value = valDollars;
-  });
+                      // Show clamped points back in the field (not dollars yet!)
+                inputEl.value = val;
+              });
 
-  // 🔄 Switch back to points view when focused
-  inputEl.addEventListener('focus', () => {
-    const valPoints = parseInt(inputEl.value || '0', 10);
-    inputEl.value = isNaN(valPoints) ? rawRewards : valPoints;
-  });
-}  
-
+                  // On focus, just leave the field editable in points
+              inputEl.addEventListener('focus', () => {
+                inputEl.readOnly = false;
+                inputEl.disabled = false;
+              });
+            }
 
           // … inside try { … after wiring inputEl …
 if (applyBtn) {
