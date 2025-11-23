@@ -1019,6 +1019,16 @@
     function startLoading(opts) { _resetViewportScale(opts); document.documentElement.classList.add('is-loading'); }
     function stopLoading() { document.documentElement.classList.remove('is-loading'); }
 
+      function resetZoom() {
+  const meta = document.querySelector('meta[name="viewport"]');
+  if (meta) {
+    // Force scale back to normal
+    meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1');
+  }
+  // Optional: scroll back to top or a safe container
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
     /* -------------------------
        Validators
        ------------------------- */
@@ -1229,6 +1239,7 @@
       contact?.classList.add('hidden');
       sel?.classList.remove('hidden');
       $id('authOverlay')?.classList.add('hidden');
+      resetZoom();
     }
     function showPOSContainer() {
       const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm');
@@ -1237,6 +1248,7 @@
       pos?.classList.remove('hidden');
       $id('authOverlay')?.classList.add('hidden');
       initPOSCatalog(); // 🔥 Extension point A (POS init)
+      resetZoom();
     }
     function showSelfCheckout() {
       const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm');
@@ -1244,6 +1256,7 @@
       sel?.classList.add('hidden');
       contact?.classList.remove('hidden');
       $id('authOverlay')?.classList.add('hidden');
+      resetZoom();
     }
     function openRewardsModal() { document.body.classList.add('body-lock'); $id('rewardsModal')?.classList.remove('contact-hidden'); }
     function closeRewardsModal() { document.body.classList.remove('body-lock'); $id('rewardsModal')?.classList.add('contact-hidden'); }
