@@ -1289,25 +1289,49 @@ function initPOSCatalog() {
     cart.forEach((item, idx) => {
       total += item.price * item.qty;
       const li = document.createElement('li');
+
+      if (item.id === 'rewards-credit') {
       li.innerHTML = `
         <span class="cart-name">${item.name}</span>
         <div class="cart-controls">
-          <button class="qty-btn minus">−</button>
           <span class="qty-display">${item.qty}</span>
-          <button class="qty-btn plus">+</button>
           <button class="remove-btn">✖</button>
         </div>
       `;
+      li.querySelector('.remove-btn').onclick = () => {
+      cart.splice(idx, 1);
+      renderCart();
+
+      // 🔥 Unlock rewards input if rewards line removed
+      const inputEl = $id('rewardsRedeemInput');
+      if (inputEl) {
+        inputEl.disabled = false;
+        inputEl.readOnly = false;
+        inputEl.classList.remove('locked');
+       }
+        window.rewardsConsumedPoints = 0;
+     };
+    } else {
+       li.innerHTML = `
+       <span class="cart-name">${item.name}</span>
+       <div class="cart-controls">
+        <button class="qty-btn minus">−</button>
+        <span class="qty-display">${item.qty}</span>
+        <button class="qty-btn plus">+</button>
+        <button class="remove-btn">✖</button>
+      </div>
+     `;
       li.querySelector('.minus').onclick = () => { if (item.qty > 1) item.qty--; else cart.splice(idx,1); renderCart(); };
       li.querySelector('.plus').onclick = () => { item.qty++; renderCart(); };
       li.querySelector('.remove-btn').onclick = () => { cart.splice(idx,1); renderCart(); };
+    }
       list.appendChild(li);
     });
     totalEl.textContent = total.toFixed(2);
 
     // 🔥 keep window.cartTotal updated for rewards clamp logic
     window.cartTotal = total;
-  }
+    }
 
   function addToCart(it) {
     const idx = cart.findIndex(x => x.id === it.id);
@@ -1358,7 +1382,7 @@ function initPOSCatalog() {
     const openBtn = $id('openRewardsModal');
     const inputEl = $id('rewardsRedeemInput');
     if (openBtn) { openBtn.disabled = false; openBtn.classList.remove('disabled'); }
-    if (inputEl) { inputEl.value = ''; inputEl.disabled = true; inputEl.readOnly = false; inputEl.classList.remove('locked'); }
+    if (inputEl) { inputEl.value = ''; inputEl.disabled = false; inputEl.readOnly = false; inputEl.classList.remove('locked'); }
   });
 
   $id('posCheckoutBtn')?.addEventListener('click', () => {
