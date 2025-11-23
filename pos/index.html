@@ -1328,6 +1328,12 @@ function initPOSCatalog() {
         inputEl.value = window.rewardsMember?.points || 0;
        }
         window.rewardsConsumedPoints = 0;
+          // 🔥 Re-enable Apply button
+  const applyBtn = document.getElementById('applyRewardsBtn');
+  if (applyBtn) {
+    applyBtn.disabled = false;
+    applyBtn.classList.remove('disabled');
+  }
      };
     } else {
        li.innerHTML = `
@@ -1401,6 +1407,12 @@ function initPOSCatalog() {
     const inputEl = $id('rewardsRedeemInput');
     if (openBtn) { openBtn.disabled = false; openBtn.classList.remove('disabled'); }
     if (inputEl) { inputEl.value = ''; inputEl.disabled = false; inputEl.readOnly = false; inputEl.classList.remove('locked'); inputEl.value = window.rewardsMember?.points || 0; }
+      // 🔥 Re-enable Apply button
+  const applyBtn = document.getElementById('applyRewardsBtn');
+  if (applyBtn) {
+    applyBtn.disabled = false;
+    applyBtn.classList.remove('disabled');
+  }
   });
 
   $id('posCheckoutBtn')?.addEventListener('click', () => {
@@ -1674,6 +1686,9 @@ if (applyBtn) {
     }
 
     window.rewardsConsumedPoints = valPoints;
+        // 🔥 Disable Apply button once rewards are applied
+  applyBtn.disabled = true;
+  applyBtn.classList.add('disabled');
   }; // <-- CLOSE the onclick function here
 }
           // 🔥 Show toast notification
