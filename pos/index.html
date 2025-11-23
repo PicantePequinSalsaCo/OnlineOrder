@@ -1619,10 +1619,14 @@ function initPOSCatalog() {
                 inputEl.value = val; // always raw points
               });
 
-              // 🔄 Switch to points view when focused
-              inputEl.addEventListener('focus', () => {
-                inputEl.value = parseInt(inputEl.value || '0', 10) || rawRewards;
-              });
+                  // 🔄 Switch to points view when focused
+                inputEl.addEventListener('focus', () => {
+                  // If empty, restore rawRewards; otherwise leave whatever is typed
+                  const current = parseInt(inputEl.value || '0', 10);
+                  inputEl.value = current > 0 ? current : rawRewards;
+                });
+
+
 
               // 🔄 Switch back to dollars view when blurred
               inputEl.addEventListener('blur', () => {
