@@ -1022,11 +1022,12 @@
       function resetZoom() {
   const meta = document.querySelector('meta[name="viewport"]');
   if (meta) {
-    // Force scale back to normal
-    meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1');
+    // Temporarily disable user scaling, then restore
+    meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no');
+    setTimeout(() => {
+      meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=yes');
+    }, 500);
   }
-  // Optional: scroll back to top or a safe container
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
     /* -------------------------
