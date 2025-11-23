@@ -1267,7 +1267,7 @@
     /* -------------------------
        POS catalog + cart (minimal)
        ------------------------- */
-function initPOSCatalog() {
+    function initPOSCatalog() {
   const gallery = $id('posGallery');
   if (!gallery) return;
 
@@ -1557,91 +1557,85 @@ function initPOSCatalog() {
                 const valDollars = (valPoints / 1000).toFixed(2);
                 inputEl.value = valDollars; // show dollars for UX when not editing
               });
-                  
+            }      
 
 
-          // 🔥 After wiring inputEl focus/blur + clamp logic
-            // 🔥 Apply button handler
-      if (applyBtn) {
-        applyBtn.disabled = false;
-        applyBtn.onclick = () => {
-          const openBtn = document.getElementById('openRewardsModal'); // Get Rewards Member Info
-          const cartTotal = typeof window.cartTotal === 'number' ? window.cartTotal : 0;
-          const rewardsPoints = window.rewardsMember?.points || 0;
+          // … inside try { … after wiring inputEl …
+if (applyBtn) {
+  applyBtn.disabled = false;
+  applyBtn.onclick = () => {
+    const openBtn = document.getElementById('openRewardsModal');
+    const cartTotal = typeof window.cartTotal === 'number' ? window.cartTotal : 0;
+    const rewardsPoints = window.rewardsMember?.points || 0;
 
-          let valPoints = Number.isInteger(window.rewardsConsumedPoints)
-            ? window.rewardsConsumedPoints
-            : (() => {
-                const raw = parseInt((document.getElementById('rewardsRedeemInput')?.value || '0'), 10);
-                return isNaN(raw) ? 0 : raw;
-              })();
+    let valPoints = Number.isInteger(window.rewardsConsumedPoints)
+      ? window.rewardsConsumedPoints
+      : (() => {
+          const raw = parseInt((document.getElementById('rewardsRedeemInput')?.value || '0'), 10);
+          return isNaN(raw) ? 0 : raw;
+        })();
 
-          const cartPoints = Math.floor(cartTotal * 1000);
-          if (valPoints <= 0) { alert('Enter a valid amount to redeem.'); return; }
-          if (valPoints > cartPoints) { alert('You cannot redeem more than the cart total.'); return; }
-          if (valPoints > rewardsPoints) { alert('You cannot redeem more than your rewards balance.'); return; }
+    const cartPoints = Math.floor(cartTotal * 1000);
+    if (valPoints <= 0) { alert('Enter a valid amount to redeem.'); return; }
+    if (valPoints > cartPoints) { alert('You cannot redeem more than the cart total.'); return; }
+    if (valPoints > rewardsPoints) { alert('You cannot redeem more than your rewards balance.'); return; }
 
-          const valDollars = (valPoints / 1000).toFixed(2);
+    const valDollars = (valPoints / 1000).toFixed(2);
 
-          // 🔥 Disable further member lookups once applied
-          if (openBtn) {
-            openBtn.disabled = true;
-            openBtn.classList.add('disabled');
-            openBtn.setAttribute('aria-disabled', 'true');
-          }
+    if (openBtn) {
+      openBtn.disabled = true;
+      openBtn.classList.add('disabled');
+      openBtn.setAttribute('aria-disabled', 'true');
+    }
 
-          // 🔥 Lock the input field
-          if (inputEl) {
-            inputEl.value = valDollars;
-            inputEl.readOnly = true;
-            inputEl.disabled = true;
-            inputEl.classList.add('locked');
-          }
+    if (inputEl) {
+      inputEl.value = valDollars;
+      inputEl.readOnly = true;
+      inputEl.disabled = true;
+      inputEl.classList.add('locked');
+    }
 
-          // 🔥 Ensure a single rewards line item
-          if (Array.isArray(window.posCart)) {
-            const existingIdx = window.posCart.findIndex(x => x.id === 'rewards-credit');
-            if (existingIdx > -1) window.posCart.splice(existingIdx, 1);
-          }
-          
-          // 🔥 Add negative line item
-          if (typeof window.addToCart === 'function') {
-            window.addToCart({
-              id: 'rewards-credit',
-              name: 'Rewards Applied',
-              price: -parseFloat(valDollars),
-              qty: 1
-            });
-          } else {
-            console.warn('applyRewards: addToCart not available');
-          }
+    if (Array.isArray(window.posCart)) {
+      const existingIdx = window.posCart.findIndex(x => x.id === 'rewards-credit');
+      if (existingIdx > -1) window.posCart.splice(existingIdx, 1);
+    }
 
-          // 🔥 Backend alignment
-          window.rewardsConsumedPoints = valPoints;
+    if (typeof window.addToCart === 'function') {
+      window.addToCart({
+        id: 'rewards-credit',
+        name: 'Rewards Applied',
+        price: -parseFloat(valDollars),
+        qty: 1
+      });
+    }
 
+    window.rewardsConsumedPoints = valPoints;
+  }; // <-- CLOSE the onclick function here
+}
+          // 🔥 Show toast notification
           const toast = document.getElementById('rewardsToast');
-          if (toast) {
-            toast.textContent = `Member: ${window.rewardsMember.name}, Balance: ${balance}`;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 4000);
+          if (toast) { 
+            toast.textContent = `Member: ${window.rewardsMember.name}, Balance: ${balance}`; 
+            toast.classList.add('show'); 
+            setTimeout(()=>toast.classList.remove('show'),4000); 
           }
 
           closeRewardsModal();
-        };
+        } catch (err) {
+          console.error('[dbg] onSubmit error', err);
+          alert('❌ Rewards lookup failed. See console for details.');
+        } finally {
+          lookupBtn.disabled = false;
+          lookupBtn.classList.remove('loading');
+          lookupBtn.textContent = origText;
+        }
+
       }
 
-    } catch (err) {
-      console.error('[dbg] onSubmit error', err);
-      alert('❌ Rewards lookup failed. See console for details.');
-    } finally {
-      lookupBtn.disabled = false;
-      lookupBtn.classList.remove('loading');
-      lookupBtn.textContent = origText;
+      form.removeEventListener('submit', form._rewardsHandler || onSubmit);
+      form.addEventListener('submit', onSubmit);
+      form._rewardsHandler = onSubmit;
     }
-  }
-
-  form.addEventListener('submit', onSubmit);
-}}
 
     /* -------------------------
        Signup wiring
