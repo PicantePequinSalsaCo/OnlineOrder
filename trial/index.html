@@ -37,6 +37,14 @@
       sessionStorage.removeItem(authKey);
       sessionStorage.removeItem('sid');
 
+              // Reset login button state
+      const btn = document.getElementById('loginBtn');
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Login';
+        btn.classList.remove('is-success', 'is-error', 'btn-loading');
+  }
+
       // Show login; hide all post-login cards (sibling model)
       document.getElementById('loginContainer')?.classList.remove('hidden');
       document.getElementById('modeSelector')?.classList.add('hidden');
@@ -64,12 +72,15 @@ let _horusTimer = null;
 async function sendHorusPulse() {
   const sid = sessionStorage.getItem('sid');
   const username = sessionStorage.getItem('username');
-  if (!sid || !username) return;
-
+  if (!sid || !username) {
+      console.warn('Horus pulse aborted - missing sid or username');
+      window.forceLogout?.();
+      return;
+      
   const payload = { sid, username, ts: new Date().toISOString() };
 
   try {
-    const res = await fetch('https://default6eda43f3fbf04e2b9978b543d9dd31.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9aa26c1296ee4694b10d7287acf604d5/triggers/manual/paths/invoke?api-version=1', {
+    const res = await fetch('https://default6eda43f3fbf04e2b9978b543d9dd31.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9aa26c1296ee4694b10d7287acf604d5/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=hsuEfswj0_Ly1J3pWXLM7PVwwpOGIYs7KEB2MLhaggI', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
