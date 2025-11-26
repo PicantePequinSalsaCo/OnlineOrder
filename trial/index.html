@@ -1571,6 +1571,8 @@ function initPOSCatalog() {
           sessionStorage.setItem(authKey, 'true');
           if (!sessionStorage.getItem('sid')) sessionStorage.setItem('sid', crypto.randomUUID());
 
+          sessionStorage.setItem('username', payload.username);
+
           document.documentElement.classList.remove('pps-auth-pending');
 
           // Prefer the central gate
