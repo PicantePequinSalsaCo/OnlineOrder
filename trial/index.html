@@ -76,7 +76,8 @@ async function sendHorusPulse() {
       console.warn('Horus pulse aborted - missing sid or username');
       window.forceLogout?.();
       return;
-      
+  }
+    
   const payload = { sid, username, ts: new Date().toISOString() };
 
   try {
