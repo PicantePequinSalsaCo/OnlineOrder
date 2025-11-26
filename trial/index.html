@@ -86,14 +86,24 @@ async function sendHorusPulse() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+      
+    if (res.status === 401) {
+      console.error('Horus pulse unauthorized (401)');
+      alert('Session expired — Horus closed the gate.');
+      window.forceLogout?.();
+      return;
+    }
+
     if (!res.ok) throw new Error(`Horus failed (${res.status})`);
+
     console.info('Horus pulse success');
   } catch (err) {
     console.error('Horus pulse error', err);
-    showToast('Session expired — Horus closed the gate.', { kind: 'error' });
+    alert('Session expired — Horus closed the gate.');
     window.forceLogout?.();
   }
 }
+
 
 // 🔥 Named function: starts Horus pulse loop
 function startHorus() {
