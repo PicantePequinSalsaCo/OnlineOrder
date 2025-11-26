@@ -87,12 +87,12 @@ async function sendHorusPulse() {
       body: JSON.stringify(payload)
     });
       
-    if (res.status === 401) {
-      console.error('Horus pulse unauthorized (401)');
-      alert('Session expired — Horus closed the gate.');
-      window.forceLogout?.();
-      return;
-    }
+      if (!res.ok) {
+    console.error(`Horus pulse failed (${res.status})`);
+    alert('Session expired — Horus closed the gate.');
+    window.forceLogout?.();
+    return;
+  }
 
     if (!res.ok) throw new Error(`Horus failed (${res.status})`);
 
