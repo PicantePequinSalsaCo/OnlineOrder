@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <!-- =========================
@@ -139,7 +139,6 @@ function flashEye(id, rate = 600) {
     console.warn(`Eye ${id} not found`);
     return;
   }
-  // set a data-rate attribute so CSS can adjust speed
   if (rate < 600) el.dataset.rate = "fast";
   else if (rate > 600) el.dataset.rate = "slow";
   else el.dataset.rate = "";
@@ -157,17 +156,40 @@ function stopFlash(id) {
   el.removeAttribute("data-rate");
 }
 
+// 🔥 Unified eye controller
+function setEyes(configs) {
+  configs.forEach(cfg => {
+    const { id, state, flash, rate } = cfg;
+    setEyeState(id, state);
+
+    if (flash) {
+      flashEye(id, rate);
+    } else {
+      stopFlash(id);
+    }
+  });
+}
+
 // --- Default scenario before backend pulse ---
 document.addEventListener("DOMContentLoaded", () => {
-  // Right eye: green and flashing fast
-  setEyeState("RightEye", "idle");
-  flashEye("RightEye", 1200);
+  // Default state
+  setEyes([
+    { id: "LeftEye",  state: "idle", flash: true,  rate: 1200 },
+    { id: "RightEye", state: "idle", flash: true,  rate: 1200 }
+  ]);
 
-  // Left eye: amber and flashing slow
-  setEyeState("LeftEye", "idle");
-  flashEye("LeftEye", 1200);
+  // Username focus
+  const usernameInput = document.getElementById("loginUsername");
+  if (usernameInput) {
+    usernameInput.addEventListener("focus", () => {
+      console.info("Username focus → HORUS eyes update");
+      setEyes([
+        { id: "LeftEye",  state: "ok",   flash: false },
+        { id: "RightEye", state: "idle", flash: true, rate: 1200 }
+      ]);
+    });
+  }
 });
-
   </script>
 
   <!-- =========================
@@ -1753,22 +1775,63 @@ function initPOSCatalog() {
         btn.disabled = !ok;
         btn.classList.toggle('enabled', ok);
         btn.setAttribute('aria-disabled', String(!ok));
-      }
+
+          // HORUS feedback
+  if (validators.email(user.value)) {
+    setEyes([
+      { id: "LeftEye",  state: "ok", flash: false },
+      { id: "RightEye", state: "idle", flash: true, rate: 1200 }
+    ]);
+  } 
+}
       validate();
       user.addEventListener('input', validate); pass.addEventListener('input', validate);
 
       form.addEventListener('submit', async (ev) => {
         ev.preventDefault(); if (btn.disabled) return;
         btn.disabled = true; btn.classList.add('btn-loading'); const original = btn.textContent; btn.textContent = 'Logging in...'; startLoading();
+        // HORUS preflight feedback
+          setEyes([
+           { id: "LeftEye",  state: "ok", flash: true, rate: 900 },
+           { id: "RightEye", state: "warn", flash: true, rate: 350 }
+           ]);
         resetZoom();
         try {
           const omni = await getOmniTok(btn.dataset.act || 'seclog');
-          if (!omni?.endpoint) throw new Error('Omnitok preflight did not return an endpoint');
+            if (!omni?.endpoint) {
+           // HORUS feedback: OmniTok preflight failed
+           setEyes([
+           { id: "LeftEye",  state: "error", flash: true, rate: 800 },
+           { id: "RightEye", state: "error", flash: true, rate: 800 }
+           ]);
+          if (!omni?.endpoint) throw new Error('Omnitok preflight did not return an endpoint');}
+
+          setEyes([
+          { id: "LeftEye",  state: "ok",   flash: true, rate: 900 },
+          { id: "RightEye", state: "ok",   flash: true, rate: 350 }
+          ]);
           const payload = { jobId: `PPSLOGIN-${crypto.randomUUID()}`, username: user.value.trim(), password: pass.value.trim() };
           const res = await fetch(omni.endpoint, { method: 'POST', headers: { 'Content-Type':'application/json', 'x-auth-token': omni.authToken, 'x-omnitok': omni.OmniTok, 'x-sid': omni.sid, 'x-act': omni.act }, body: JSON.stringify(payload) });
-          if (!res.ok) throw new Error('Login failed');
+          if (!res.ok) {
+            setEyes([
+             { id: "LeftEye",  state: "error", flash: true, rate: 800 },
+             { id: "RightEye", state: "error", flash: true, rate: 800 }
+             ]);
+            throw new Error('Login failed');}
+
           const result = await res.json();
-          if (!result || typeof result.jobId !== 'string') throw new Error('Unexpected response shape (missing jobId)');
+          if (!result || typeof result.jobId !== 'string') {
+            setEyes([
+             { id: "LeftEye",  state: "error", flash: true, rate: 800 },
+             { id: "RightEye", state: "error", flash: true, rate: 800 }
+             ]);
+          throw new Error('Unexpected response shape (missing jobId)');}
+            
+           // HORUS feedback: login success
+          setEyes([
+             { id: "LeftEye",  state: "ok", flash: true, rate: 1200 },
+             { id: "RightEye", state: "ok", flash: true, rate: 1200 }
+             ]);
 
           // Success: set namespaced auth key
           const authKey = `pps_loggedIn@${location.origin}`;
