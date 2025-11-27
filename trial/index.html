@@ -1815,6 +1815,14 @@ function initPOSCatalog() {
             if (!omni?.endpoint) {
            // HORUS feedback: OmniTok preflight failed
            setEyes([
+           { id: "LeftEye",  state: "warn", flash: false, },
+           { id: "RightEye", state: "warn", flash: false, }
+           ]);
+           setEyes([
+           { id: "LeftEye",  state: "off", flash: false, },
+           { id: "RightEye", state: "off", flash: false, }
+           ]);
+           setEyes([
            { id: "LeftEye",  state: "error", flash: true, rate: 800 },
            { id: "RightEye", state: "error", flash: true, rate: 800 }
            ]);
@@ -1827,6 +1835,17 @@ function initPOSCatalog() {
           const payload = { jobId: `PPSLOGIN-${crypto.randomUUID()}`, username: user.value.trim(), password: pass.value.trim() };
           const res = await fetch(omni.endpoint, { method: 'POST', headers: { 'Content-Type':'application/json', 'x-auth-token': omni.authToken, 'x-omnitok': omni.OmniTok, 'x-sid': omni.sid, 'x-act': omni.act }, body: JSON.stringify(payload) });
           if (!res.ok) {
+
+            setEyes([
+           { id: "LeftEye",  state: "warn", flash: false, },
+           { id: "RightEye", state: "warn", flash: false, }
+           ]);
+
+           setEyes([
+           { id: "LeftEye",  state: "off", flash: false, },
+           { id: "RightEye", state: "off", flash: false, }
+           ]);
+
             setEyes([
              { id: "LeftEye",  state: "error", flash: true, rate: 800 },
              { id: "RightEye", state: "error", flash: true, rate: 800 }
@@ -1835,6 +1854,17 @@ function initPOSCatalog() {
 
           const result = await res.json();
           if (!result || typeof result.jobId !== 'string') {
+
+            setEyes([
+           { id: "LeftEye",  state: "warn", flash: false, },
+           { id: "RightEye", state: "warn", flash: false, }
+           ]);
+
+            setEyes([
+           { id: "LeftEye",  state: "off", flash: false, },
+           { id: "RightEye", state: "off", flash: false, }
+           ]);
+
             setEyes([
              { id: "LeftEye",  state: "error", flash: true, rate: 800 },
              { id: "RightEye", state: "error", flash: true, rate: 800 }
@@ -1842,6 +1872,15 @@ function initPOSCatalog() {
           throw new Error('Unexpected response shape (missing jobId)');}
             
            // HORUS feedback: login success
+           setEyes([
+           { id: "LeftEye",  state: "ok", flash: false, },
+           { id: "RightEye", state: "ok", flash: false, }
+           ]);
+
+            setEyes([
+           { id: "LeftEye",  state: "off", flash: false, },
+           { id: "RightEye", state: "off", flash: false, }
+           ]);
           setEyes([
              { id: "LeftEye",  state: "ok", flash: true, rate: 1200 },
              { id: "RightEye", state: "ok", flash: true, rate: 1200 }
