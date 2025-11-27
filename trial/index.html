@@ -91,6 +91,14 @@ async function sendHorusPulse() {
     console.error(`Horus pulse failed (${res.status})`);
     alert('Session expired — Horus closed the gate.');
     window.forceLogout?.();
+        setEyes([
+        { id: "LeftEye",  state: "error",   flash: false},
+        { id: "RightEye", state: "error", flash: false}
+      ]);
+        setEyes([
+        { id: "LeftEye",  state: "error",   flash: true, rate: 1200 },
+        { id: "RightEye", state: "error", flash: true, rate: 1200 }
+      ]);
     return;
   }
 
