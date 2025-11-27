@@ -882,34 +882,40 @@ document.addEventListener("DOMContentLoaded", () => {
   stroke-width: 10;     
 }
 
+
 /* Eye base class */
 .eye {
-  transition: fill 160ms ease; /* smooth color transitions */
+  transition: fill 160ms ease;
+  animation: none; /* no animation by default */
 }
 
 /* Eye state colors */
-.eye--idle  { fill: #053f107e; }   /* neutral gray */
-.eye--ok    { fill: #00D4557e; }   /* green */
-.eye--warn  { fill: #ffd7237e; }   /* amber */
-.eye--error { fill: #ef44447e; }   /* red */
-.eye--off   { fill: #6b7280; opacity: 0.6; } /* dimmed gray */
+.eye--idle  { fill: #053f107e; }
+.eye--ok    { fill: #00D4557e; }
+.eye--warn  { fill: #ffd7237e; }
+.eye--error { fill: #ef44447e; }
+.eye--off   { fill: #6b7280; opacity: 0.6; }
 
-/* Flash animation */
+/* Flash animations */
+@keyframes horusFlashFast {
+  0%, 100% { filter: none; }
+  50%      { filter: brightness(0.0) saturate(0.0); }
+}
+
+@keyframes horusFlashSlow {
+  0%, 100% { filter: none; }
+  50%      { filter: brightness(0.0) saturate(0.0); }
+}
+
 @keyframes horusFlash {
   0%, 100% { filter: none; }
   50%      { filter: brightness(0.0) saturate(0.0); }
 }
-.eye--flash {
-  animation: horusFlash 600ms infinite;
-}
 
-/* Optional: independent flash rates */
-.eye[data-rate="fast"].eye--flash {
-  animation-duration: 25ms;
-}
-.eye[data-rate="slow"].eye--flash {
-  animation-duration: 2500ms;
-}
+/* Apply based on data-rate */
+.eye--flash[data-rate="fast"] { animation: horusFlashFast 600ms infinite; }
+.eye--flash[data-rate="slow"] { animation: horusFlashSlow 2400ms infinite; }
+.eye--flash:not([data-rate])  { animation: horusFlash 1200ms infinite; }
   </style>
 </head>
 <body>
