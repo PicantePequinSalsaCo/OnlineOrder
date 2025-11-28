@@ -72,13 +72,16 @@ let _horusTimer = null;
 async function sendHorusPulse() {
   const sid = sessionStorage.getItem('sid');
   const username = sessionStorage.getItem('username');
+  const MasterTok = sessionStorage.getItem('masterTok');
+  const OmniTok = sessionStorage.getItem('omniTok');
+  const ts = new Date().toISOString();
   if (!sid || !username) {
       console.warn('Horus pulse aborted - missing sid or username');
       window.forceLogout?.();
       return;
   }
     
-  const payload = { sid, username, ts: new Date().toISOString() };
+  const payload = { sid, username, MasterTok, OmniTok, ts };
 
   try {
     const res = await fetch('https://default6eda43f3fbf04e2b9978b543d9dd31.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9aa26c1296ee4694b10d7287acf604d5/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=hsuEfswj0_Ly1J3pWXLM7PVwwpOGIYs7KEB2MLhaggI', {
@@ -1892,6 +1895,9 @@ function initPOSCatalog() {
           if (!sessionStorage.getItem('sid')) sessionStorage.setItem('sid', crypto.randomUUID());
 
           sessionStorage.setItem('username', payload.username);
+
+          sessionStorage.setItem('masterTok', response.body.MasterTok);
+          sessionStorage.setItem('omniTok', response.body.OmniTok);
 
           document.documentElement.classList.remove('pps-auth-pending');
 
