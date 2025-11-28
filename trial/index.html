@@ -1896,8 +1896,8 @@ function initPOSCatalog() {
 
           sessionStorage.setItem('username', payload.username);
 
-          sessionStorage.setItem('masterTok', payload.MasterTok);
-          sessionStorage.setItem('omniTok', payload.OmniTok);
+          sessionStorage.setItem('masterTok', result.MasterTok);
+          sessionStorage.setItem('omniTok', result.OmniTok);
 
           document.documentElement.classList.remove('pps-auth-pending');
 
