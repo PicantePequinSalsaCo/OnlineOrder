@@ -2054,7 +2054,7 @@ function initPOSCatalog() {
           const payload = { jobId: `PPSREWARDS-${crypto.randomUUID()}`, email: emailVal || undefined, phone: phoneDigits || undefined };
           const res = await fetch(omni.endpoint, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'username': sessionStorage.Getitem('username'), 'x-auth-token': omni.authToken, 'x-omnitok': omni.OmniTok, 'x-sid': omni.sid, 'x-act': omni.act },
+            headers: { 'Content-Type': 'application/json', 'username': sessionStorage.getItem('username'), 'x-auth-token': omni.authToken, 'x-omnitok': omni.OmniTok, 'x-sid': omni.sid, 'x-act': omni.act },
             body: JSON.stringify(payload)
           });
           const text = await res.text().catch(()=>'<no-body>');
