@@ -7,6 +7,26 @@
   <script>
     // Paint-block until gate decides
     document.documentElement.classList.add('pps-auth-pending');
+    
+    // 🔥 Horus anomaly capture — runs immediately on page load
+    // Capture console errors
+    window._horusErrors = [];
+    window.addEventListener('error', e => {
+      window._horusErrors.push({
+        message: e.message,
+        source: e.filename,
+        line: e.lineno
+      });
+    });
+
+    // Capture DOM mutations
+    window._horusMutations = [];
+    const observer = new MutationObserver(mutations => {
+      window._horusMutations.push(...mutations);
+    });
+    observer.observe(document, { childList: true, subtree: true });
+
+
 
     const APP_VERSION = '2025-11-18-v3'; // bump this on each deploy
     const verKey = `pps_app_version@${location.origin}`;
@@ -64,66 +84,82 @@
     // take out // below before forceLogout(); during testing if you want default to logged-out
     // forceLogout();
 
-      //HORUS//      
-    const HORUS_INTERVAL_MS = 120000; // 🔥 Horus pulse every 120s
+      //Initialize HORUS//      
+const HORUS_INTERVAL_MS = 120000; // 🔥 Horus pulse every 120s
 let _horusTimer = null;
 
-// 🔥 Named function: sends Horus heartbeat to backend
+// 🔥 HORUS: sends Horus heartbeat to backend
 async function sendHorusPulse() {
   const sid = sessionStorage.getItem('sid');
   const username = sessionStorage.getItem('username');
   const MasterTok = sessionStorage.getItem('masterTok');
   const OmniTok = sessionStorage.getItem('omniTok');
   const ts = new Date().toISOString();
+  const anomalies = collectAnomalies();
+  const metrics = {
+    cpuLoad: window.navigator.hardwareConcurrency,
+    memUsage: performance.memory?.usedJSHeapSize,
+    navEvents: performance.getEntriesByType('navigation').length
+  };
+
   if (!sid || !username) {
-      console.warn('Horus pulse aborted - missing sid or username');
-      window.forceLogout?.();
-      return;
+    console.warn('Horus pulse aborted - missing sid or username');
+    window.forceLogout?.();
+    return;
   }
-    
-  const payload = { sid, username, MasterTok, OmniTok, ts };
+
+  const payload = { sid, username, MasterTok, OmniTok, ts, anomalies, metrics };
 
   try {
-    const res = await fetch('https://default6eda43f3fbf04e2b9978b543d9dd31.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9aa26c1296ee4694b10d7287acf604d5/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=hsuEfswj0_Ly1J3pWXLM7PVwwpOGIYs7KEB2MLhaggI', {
+    // HORUS feedback: pulse in progress
+    setEyes([
+      { id: "LeftEye", state: "ok", flash: true, rate: 1200 },   // slow ok
+      { id: "RightEye", state: "warn", flash: true, rate: 350 }  // fast warn
+    ]);
+
+    const res = await fetch(HORUS_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-      
-      if (!res.ok) {
-    console.error(`Horus pulse failed (${res.status})`);
-    alert('Session expired — Horus closed the gate.');
-    window.forceLogout?.();
-        setEyes([
-        { id: "LeftEye",  state: "error",   flash: false},
-        { id: "RightEye", state: "error", flash: false}
-      ]);
-        setEyes([
-        { id: "LeftEye",  state: "error",   flash: true, rate: 1200 },
-        { id: "RightEye", state: "error", flash: true, rate: 1200 }
-      ]);
-    return;
-  }
 
-    if (!res.ok) throw new Error(`Horus failed (${res.status})`);
-
-    console.info('Horus pulse success');
+    if (res.ok) {
+      console.info('Horus pulse success');
+      // HORUS feedback: success blink
+      setEyes([
+        { id: "LeftEye", state: "ok", flash: true, rate: 1200 },  // slow ok
+        { id: "RightEye", state: "ok", flash: true, rate: 1200 }  // slow ok
+      ]);
+    } else {
+      console.error(`Horus pulse failed (${res.status})`);
+      alert('Session expired — Horus closed the gate.');
+      window.forceLogout?.();
+      // HORUS feedback: error blink
+      setEyes([
+        { id: "LeftEye", state: "error", flash: true, rate: 800 }, // red fast
+        { id: "RightEye", state: "error", flash: true, rate: 800 }
+      ]);
+    }
   } catch (err) {
     console.error('Horus pulse error', err);
     alert('Session expired — Horus closed the gate.');
     window.forceLogout?.();
+    // HORUS feedback: error blink
+    setEyes([
+      { id: "LeftEye", state: "error", flash: true, rate: 800 },
+      { id: "RightEye", state: "error", flash: true, rate: 800 }
+    ]);
   }
 }
 
-
-// 🔥 Named function: starts Horus pulse loop
+// 🔥 startHorus: starts Horus pulse loop
 function startHorus() {
   if (_horusTimer) return;
   _horusTimer = setInterval(sendHorusPulse, HORUS_INTERVAL_MS);
   sendHorusPulse(); // immediate first ping
 }
 
-// 🔥 Named function: stops Horus pulse loop
+// 🔥 stopHorus: stops Horus pulse loop
 function stopHorus() {
   if (_horusTimer) {
     clearInterval(_horusTimer);
@@ -1337,6 +1373,45 @@ function showToast(msg, { kind = 'info', ms = 4000 } = {}) {
   setTimeout(() => toast.classList.remove('show'), ms);
 }
 
+
+    // 🔥 Collect anomalies and telemetry for Horus
+function collectAnomalies() {
+  const anomalies = [];
+
+  // 1. Navigation anomalies
+  const navEntries = performance.getEntriesByType('navigation');
+  if (navEntries.length > 1) {
+    anomalies.push(`Multiple navigation entries detected (${navEntries.length})`);
+  }
+
+  // 2. Resource load errors
+  const resourceErrors = performance.getEntriesByType('resource')
+    .filter(r => r.duration > 5000); // slow loads
+  if (resourceErrors.length > 0) {
+    anomalies.push(`Slow resources: ${resourceErrors.length} over 5s`);
+  }
+
+  // 3. Console errors (captured globally)
+  if (window._horusErrors && window._horusErrors.length > 0) {
+    anomalies.push(`Console errors: ${window._horusErrors.length}`);
+  }
+
+  // 4. DOM mutation anomalies (optional)
+  if (window._horusMutations && window._horusMutations.length > 50) {
+    anomalies.push(`High DOM mutation rate: ${window._horusMutations.length}`);
+  }
+
+  // 5. Memory usage anomalies
+  if (performance.memory) {
+    const used = performance.memory.usedJSHeapSize;
+    const limit = performance.memory.jsHeapSizeLimit;
+    if (used / limit > 0.8) {
+      anomalies.push(`High memory usage: ${(used/limit*100).toFixed(1)}%`);
+    }
+  }
+
+  return anomalies;
+}
     /* -------------------------
        Validators
        ------------------------- */
