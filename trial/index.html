@@ -177,7 +177,7 @@ async function sendHorusPulse() {
   try {
     horusEyes("progress"); // show in‑progress state
 
-    const res = await fetch(HORUS_ENDPOINT, {
+    const res = await fetch('https://default6eda43f3fbf04e2b9978b543d9dd31.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9aa26c1296ee4694b10d7287acf604d5/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=hsuEfswj0_Ly1J3pWXLM7PVwwpOGIYs7KEB2MLhaggI', {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
