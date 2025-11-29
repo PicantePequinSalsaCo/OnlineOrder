@@ -2240,7 +2240,7 @@ if (applyBtn) {
           const omni = await getOmniTok(submit.dataset.act || 'ppsc_signup');
           if (!omni?.endpoint) throw new Error('Omnitok preflight did not return an endpoint');
           payload.verificationCode = omni.verificationCode;
-          const res = await fetch(omni.endpoint, { method: 'POST', headers: { 'Content-Type':'application/json','x-auth-token': omni.authToken,'x-omnitok': omni.OmniTok,'x-sid': omni.sid,'x-act': omni.act }, body: JSON.stringify(payload) });
+          const res = await fetch(omni.endpoint, { method: 'POST', headers: { 'Content-Type':'application/json', 'username': sessionStorage.getItem('username'), 'x-auth-token': omni.authToken,'x-omnitok': omni.OmniTok,'x-sid': omni.sid,'x-act': omni.act }, body: JSON.stringify(payload) });
           if (!res.ok) {
             let detail = '';
             try { const j = await res.json(); detail = j?.error?.message || ''; } catch(_) {}
