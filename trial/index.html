@@ -1665,6 +1665,7 @@ function showToast(msg, { kind = 'info', ms = 4000 } = {}) {
       const res = await fetch(API.issueOmniTok, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       if (!res.ok) throw new Error(`Failed to get OmniTok config for ${act}`);
       const data = await res.json();
+      sessionStorage.setItem('omniTok', data.OmniTok);
       return { ...data, sid };
     }
     window.getOmniTok = getOmniTok;
@@ -1981,7 +1982,6 @@ function initPOSCatalog() {
           sessionStorage.setItem('username', payload.username);
 
           sessionStorage.setItem('masterTok', result.MasterTok);
-          sessionStorage.setItem('omniTok', result.OmniTok);
 
           document.documentElement.classList.remove('pps-auth-pending');
 
@@ -2003,7 +2003,7 @@ function initPOSCatalog() {
 
             console.info('Auth gate: login success — forced reveal and stopped enforcement.');
           }
-             // 🔥 Start Horus
+             // Start Horus
           startHorus();
           btn.textContent = '✓ Logged In'; btn.classList.add('is-success'); btn.classList.remove('is-error');
         } catch (err) {
