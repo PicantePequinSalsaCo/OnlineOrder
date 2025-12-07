@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
 
+Disallow: /pos/
+Disallow: /trial/
+Disallow: /test/
+Disallow: /guest/
+Disallow: /pictesord/
+Disallow: /CanningProcedure/
+
 Sitemap: https://picantepequinsalsaco.com/sitemap.xml
