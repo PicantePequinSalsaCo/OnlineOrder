@@ -1,7 +1,7 @@
 {
   "name": "Picante Pequin Salsa Co.",
   "short_name": "Picante Pequin",
-  "start_url": "/",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#1e1e1e",
   "theme_color": "#f57c00",
