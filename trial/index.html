@@ -887,6 +887,89 @@ document.addEventListener("DOMContentLoaded", () => {
     @media (max-width: 420px) { .contact-card { padding: 18px; } .contact-email { font-size: .95rem; } }
     @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
+    /* Checkout modal specifics */
+.tender {
+  display: inline-flex;
+  gap: 12px;
+  padding: 8px 0 12px;
+  border-bottom: 1px solid var(--accent-softborder);
+  margin-bottom: 12px;
+}
+.tender-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+}
+.tender-option input[type="radio"] {
+  appearance: none;
+  width: 16px; height: 16px;
+  border: 2px solid var(--accent-orange);
+  border-radius: 50%;
+  position: relative;
+  cursor: pointer;
+  background: transparent;
+}
+.tender-option input[type="radio"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent-orange);
+  transform: translate(-50%, -50%);
+}
+
+/* Cart replica list/rows */
+.replica {
+  border: 1px solid var(--accent-softborder);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  padding: 10px;
+  box-shadow: var(--shadow);
+}
+.replica .line {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 4px;
+  border-bottom: 1px solid #ffffff12;
+}
+.replica .line:last-child { border-bottom: none; }
+.replica .line.total {
+  font-weight: 800;
+  color: var(--accent-orange);
+  border-top: 1px solid var(--accent-softborder);
+}
+
+/* Cash controls */
+.cash-controls { margin-top: 12px; }
+.cash-label { display: block; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.cash-input {
+  width: 100%;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--input-border);
+  background: var(--banner);
+  color: var(--ink);
+  text-align: right;
+}
+.cash-input:focus { outline: none; border-color: var(--accent-orange); box-shadow: 0 0 0 2px #f57c0033; }
+.change-row {
+  display: flex; justify-content: space-between;
+  margin-top: 6px; padding-top: 6px;
+  border-top: 1px dashed var(--accent-softborder);
+}
+
+/* Status text */
+.status {
+  margin-top: 10px;
+  color: var(--muted);
+  min-height: 20px;
+}
+
         /* 🔥 [WatchDog Patch B] Optional global toast style */
     #globalToast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; z-index: 2000; }
 
@@ -1271,6 +1354,52 @@ document.addEventListener("DOMContentLoaded", () => {
         <div id="rewardsToast" class="contact-toast">Balance retrieved ✔</div>
       </div>
     </div>
+
+    <!-- Checkout Modal -->
+<div id="checkoutModal" class="contact-popup contact-hidden" role="dialog" aria-modal="true" aria-label="Checkout">
+  <div class="contact-overlay"></div>
+  <div class="contact-card">
+    <h2 style="text-align:center; margin-top:0; color:var(--ink)">Checkout</h2>
+
+    <!-- Tender selection -->
+    <div class="tender">
+      <label class="tender-option">
+        <input type="radio" name="tender" value="CASH" checked>
+        <span>Cash</span>
+      </label>
+      <label class="tender-option">
+        <input type="radio" name="tender" value="CARD">
+        <span>Card</span>
+      </label>
+    </div>
+
+    <!-- Static cart replica -->
+    <div id="cartReplica" class="replica"></div>
+
+    <!-- Cash-only controls -->
+    <div id="cashControls" class="cash-controls">
+      <label class="cash-label">Cash received</label>
+      <input id="cashReceived" type="number" step="0.01" min="0" inputmode="decimal" class="cash-input"/>
+      <div id="changeDueRow" class="change-row">
+        <span>Change due:</span>
+        <strong id="changeDue">$0.00</strong>
+      </div>
+    </div>
+
+    <!-- Live status -->
+    <div id="statusRow" class="status" aria-live="polite"></div>
+
+    <!-- Actions -->
+    <div class="contact-actions" style="margin-top:10px;">
+      <button id="submitOrderBtn" class="btn primary">Submit order</button>
+    </div>
+    <div class="contact-actions" style="margin-top:8px;">
+      <button id="retryBtn" class="btn contact-card-button" hidden>Retry</button>
+      <button id="closeCheckoutModal" class="close-modal-btn" aria-label="Close modal">✖</button>
+    </div>
+  </div>
+</div>
+
 
     <!-- Optional overlay (logged-out focus aid) -->
     <div id="authOverlay" class="hidden" aria-hidden="true"></div>
@@ -1807,7 +1936,7 @@ function initPOSCatalog() {
   $id('posCheckoutBtn')?.addEventListener('click', () => {
     if (!cart.length) { alert('Cart is empty.'); return; }
     // Extension point B (POS checkout): integrate OmniTok / Stripe
-    alert('Proceeding to POS checkout…');
+    wirePOSCheckoutModal();
   });
 
   renderCart();
@@ -2189,6 +2318,260 @@ if (applyBtn) {
       form.addEventListener('submit', onSubmit);
       form._rewardsHandler = onSubmit;
     }
+
+    /* -------------------------
+   Checkout modal flow
+   ------------------------- */
+const TAX_RATE = 0.0825;
+const POLL_INTERVAL_MS = 8000;      // 7–8s cadence as requested
+const PAYMENT_TIMEOUT_MS = 180000;  // 3 minutes
+const STATUS_SUCCESS = 'PAID';
+const STATUS_FAIL_LIST = ['FAILED', 'CANCELED', 'DECLINED', 'ERROR'];
+
+function money(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return 0;
+  return Math.round(n * 100) / 100;
+}
+function fmt(v) { return `$${money(v).toFixed(2)}`; }
+
+function openCheckoutModalWithCart(cart) {
+  // Build static snapshot
+  const items = cart.map(i => ({
+    sku: i.id,
+    name: i.name,
+    qty: i.qty,
+    unitPrice: money(i.price),
+    lineTotal: money(i.price * i.qty)
+  }));
+  const subtotal = money(items.reduce((s, i) => s + i.lineTotal, 0));
+  const taxAmount = money(subtotal * TAX_RATE);
+  const total = money(subtotal + taxAmount);
+
+  // Modal elements
+  const modal = document.getElementById('checkoutModal');
+  const replica = document.getElementById('cartReplica');
+  const cashControls = document.getElementById('cashControls');
+  const cashReceivedEl = document.getElementById('cashReceived');
+  const changeDueEl = document.getElementById('changeDue');
+  const statusRow = document.getElementById('statusRow');
+  const submitBtn = document.getElementById('submitOrderBtn');
+  const retryBtn = document.getElementById('retryBtn');
+  const closeBtn = document.getElementById('closeCheckoutModal');
+
+  // Reset state
+  replica.innerHTML = '';
+  statusRow.textContent = '';
+  retryBtn.hidden = true;
+  cashReceivedEl.value = '';
+  changeDueEl.textContent = fmt(0);
+
+  // Render replica
+  const list = document.createElement('div');
+  items.forEach(i => {
+    const row = document.createElement('div');
+    row.className = 'line';
+    const name = document.createElement('span'); name.textContent = `${i.name} x${i.qty}`;
+    const price = document.createElement('span'); price.textContent = fmt(i.lineTotal);
+    row.append(name, price);
+    list.appendChild(row);
+  });
+  const subRow = document.createElement('div');
+  subRow.className = 'line'; subRow.append(
+    Object.assign(document.createElement('span'), { textContent: 'Subtotal' }),
+    Object.assign(document.createElement('span'), { textContent: fmt(subtotal) })
+  );
+  const taxRow = document.createElement('div');
+  taxRow.className = 'line'; taxRow.append(
+    Object.assign(document.createElement('span'), { textContent: `Sales Tax (${(TAX_RATE * 100).toFixed(2)}%)` }),
+    Object.assign(document.createElement('span'), { textContent: fmt(taxAmount) })
+  );
+  const totalRow = document.createElement('div');
+  totalRow.className = 'line total'; totalRow.append(
+    Object.assign(document.createElement('span'), { textContent: 'Total' }),
+    Object.assign(document.createElement('span'), { textContent: fmt(total) })
+  );
+  replica.append(list, subRow, taxRow, totalRow);
+
+  // Tender toggle UI
+  const radios = document.querySelectorAll('input[name="tender"]');
+  function currentTender() {
+    const r = document.querySelector('input[name="tender"]:checked');
+    return r ? r.value : 'CASH';
+  }
+  function updateTenderUI() {
+    const tender = currentTender();
+    cashControls.style.display = tender === 'CASH' ? 'block' : 'none';
+    submitBtn.textContent = tender === 'CASH' ? 'Submit cash order' : 'Submit card order';
+  }
+  radios.forEach(r => r.addEventListener('change', updateTenderUI));
+  updateTenderUI();
+
+  // Change due live update
+  cashReceivedEl.addEventListener('input', () => {
+    const received = money(parseFloat(cashReceivedEl.value || '0'));
+    const change = money(received - total);
+    changeDueEl.textContent = fmt(Math.max(change, 0));
+  });
+
+  // Local state for retry flow
+  let lastPayload = null;
+  let lastEndpoints = null;
+
+  async function createOrderWithOmniTok(tenderType, payloadMeta = {}) {
+    // OmniTok-first preflight (aligned to your helper)
+    const omni = await getOmniTok('pos_checkout', payloadMeta);
+    if (!omni || !omni.endpoint) throw new Error('OmniTok preflight returned no endpoint');
+
+    // Payload aligns with your schema style
+    const payload = {
+      tenderType,
+      cartItems: items,
+      subtotal, taxRate: TAX_RATE, taxAmount, total,
+      sid: omni.sid,
+      authTok: omni.authToken,
+      clientTime: new Date().toISOString(),
+      username: sessionStorage.getItem('username')
+    };
+    lastPayload = payload;
+    lastEndpoints = { createOrder: omni.endpoint, orderStatusBase: omni.statusBase || '/orders' };
+
+    // Create order
+    const res = await fetch(omni.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-omnitok': omni.OmniTok,
+        'x-sid': omni.sid,
+        'x-act': omni.act,
+        'x-auth-token': omni.authToken
+      },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '');
+      throw new Error(detail || 'Order creation failed');
+    }
+    const json = await res.json().catch(() => ({}));
+    return { omni, orderId: json.orderId, endpoints: lastEndpoints };
+  }
+
+  async function pollOrderStatus(orderId, statusEndpoint, onTick) {
+    const start = Date.now();
+    while (Date.now() - start < PAYMENT_TIMEOUT_MS) {
+      try {
+        const r = await fetch(`${statusEndpoint}/${orderId}/status`, { credentials: 'include' });
+        if (!r.ok) throw new Error('Status check failed');
+        const { status } = await r.json();
+        onTick?.(status);
+        if (status === STATUS_SUCCESS) return { ok: true, status };
+        if (STATUS_FAIL_LIST.includes(status)) return { ok: false, status };
+      } catch (_) {
+        // Transient failure — continue polling
+      }
+      await new Promise(res => setTimeout(res, POLL_INTERVAL_MS));
+    }
+    return { ok: false, status: 'TIMEOUT' };
+  }
+
+  async function handleSubmit() {
+    const tenderType = currentTender();
+    submitBtn.disabled = true; retryBtn.hidden = true; statusRow.textContent = '';
+
+    try {
+      const meta = { rewardsPointsConsumed: window.rewardsConsumedPoints || 0 };
+      const { orderId, endpoints } = await createOrderWithOmniTok(tenderType, meta);
+
+      if (tenderType === 'CASH') {
+        showToast(`Cash order created: ${orderId}`);
+        modal.classList.add('contact-hidden');
+        document.body.classList.remove('body-lock');
+        return;
+      }
+
+      // Card: backend has pushed to reader; enter pending mode
+      statusRow.textContent = 'Waiting for card payment... please follow the reader instructions.';
+      const base = endpoints.orderStatusBase || '/orders';
+
+      const result = await pollOrderStatus(orderId, base, (status) => {
+        statusRow.textContent = status === STATUS_SUCCESS
+          ? 'Payment confirmed.'
+          : `Payment status: ${status}...`;
+      });
+
+      if (result.ok) {
+        showToast(`Card payment succeeded: ${orderId}`);
+        modal.classList.add('contact-hidden');
+        document.body.classList.remove('body-lock');
+      } else {
+        statusRow.textContent = `Payment ${result.status.toLowerCase()}. You can retry the card transaction.`;
+        retryBtn.hidden = false;
+      }
+    } catch (err) {
+      console.error(err);
+      statusRow.textContent = 'Checkout failed. You can retry.';
+      retryBtn.hidden = false;
+    } finally {
+      submitBtn.disabled = false;
+    }
+  }
+
+  async function handleRetry() {
+    try {
+      submitBtn.disabled = true;
+      retryBtn.hidden = true;
+      statusRow.textContent = 'Retrying card transaction...';
+
+      const { orderId, endpoints } = await createOrderWithOmniTok('CARD', { retry: true });
+      const base = endpoints.orderStatusBase || '/orders';
+
+      const result = await pollOrderStatus(orderId, base, (status) => {
+        statusRow.textContent = status === STATUS_SUCCESS
+          ? 'Payment confirmed.'
+          : `Payment status: ${status}...`;
+      });
+
+      if (result.ok) {
+        showToast(`Card payment succeeded: ${orderId}`);
+        modal.classList.add('contact-hidden');
+        document.body.classList.remove('body-lock');
+      } else {
+        statusRow.textContent = `Payment ${result.status.toLowerCase()}. You can retry again.`;
+        retryBtn.hidden = false;
+      }
+    } catch (e) {
+      console.error(e);
+      statusRow.textContent = 'Retry failed. Please try again.';
+      retryBtn.hidden = false;
+    } finally {
+      submitBtn.disabled = false;
+    }
+  }
+
+  submitBtn.onclick = handleSubmit;
+  retryBtn.onclick = handleRetry;
+  closeBtn.onclick = () => {
+    modal.classList.add('contact-hidden');
+    document.body.classList.remove('body-lock');
+  };
+
+  // Reveal modal
+  document.body.classList.add('body-lock');
+  modal.classList.remove('contact-hidden');
+}
+
+/* -------------------------
+   POS checkout button wiring
+   ------------------------- */
+// Replace the alert inside initPOSCatalog checkout click with opening the modal:
+(function wirePOSCheckoutModal() {
+  const btn = document.getElementById('posCheckoutBtn');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    if (!Array.isArray(window.posCart) || !window.posCart.length) { alert('Cart is empty.'); return; }
+    openCheckoutModalWithCart(window.posCart);
+  });
+})();
 
     /* -------------------------
        Signup wiring
