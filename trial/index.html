@@ -1100,6 +1100,8 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
       <nav aria-label="Primary">
         <ul>
+          <li><button id="chooseJoinBtn" class="btn" hidden>Join Rewards</button></li>
+          <li><button id="chooseLogoutBtn" class="btn" hidden>LogOut</button></li>
           <li><a class="link" href="https://picantepequinsalsaco.com/PrivacyPolicy">Privacy</a></li>
           <div class="horus">
             <svg viewBox="0 0 558 603" xmlns="http://www.w3.org/2000/svg">
@@ -1394,7 +1396,6 @@ document.addEventListener("DOMContentLoaded", () => {
       <button id="submitOrderBtn" class="btn primary">Submit order</button>
     </div>
     <div class="contact-actions" style="margin-top:8px;">
-      <button id="retryBtn" class="btn contact-card-button" hidden>Retry</button>
       <button id="closeCheckoutModal" class="close-modal-btn" aria-label="Close modal">✖</button>
     </div>
   </div>
@@ -1457,6 +1458,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('posContainer')?.classList.add('hidden');
     document.getElementById('contactForm')?.classList.add('hidden');
     document.getElementById('authOverlay')?.classList.add('hidden');
+    document.getElementById('chooseJoinBtn')?.classList.remove('hidden');
+    document.getElementById('chooseLogOutBtn')?.classList.remove('hidden');
   }
 
   function showPOSContainer() {
@@ -1465,15 +1468,30 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('modeSelector')?.classList.add('hidden');
     document.getElementById('contactForm')?.classList.add('hidden');
     document.getElementById('authOverlay')?.classList.add('hidden');
+    document.getElementById('chooseJoinBtn')?.classList.remove('hidden');
+    document.getElementById('chooseLogOutBtn')?.classList.remove('hidden');
     initPOSCatalog();
   }
 
   function showSelfCheckout() {
+    currentView = 'self';
+    document.getElementById('posContainer')?.classList.remove('hidden');
+    document.getElementById('modeSelector')?.classList.add('hidden');
+    document.getElementById('contactForm')?.classList.add('hidden');
+    document.getElementById('authOverlay')?.classList.add('hidden');
+    document.getElementById('chooseJoinBtn')?.classList.remove('hidden');
+    document.getElementById('chooseLogOutBtn')?.classList.add('hidden');
+    initPOSCatalog();
+  }
+  
+    function showJoinRewards() {
     currentView = 'contact';
     document.getElementById('contactForm')?.classList.remove('hidden');
     document.getElementById('modeSelector')?.classList.add('hidden');
     document.getElementById('posContainer')?.classList.add('hidden');
     document.getElementById('authOverlay')?.classList.add('hidden');
+    document.getElementById('chooseJoinBtn')?.classList.add('hidden');
+    document.getElementById('chooseLogOutBtn')?.classList.add('hidden');
   }
 
   // Gate respects currentView
@@ -1490,9 +1508,10 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (currentView === 'pos') { showPOSContainer(); }
-    else if (currentView === 'contact') { showSelfCheckout(); }
-    else { showModeSelector(); }
+  if (currentView === 'pos') { showPOSContainer(); } 
+  else if (currentView === 'self') { showSelfCheckout(); } 
+  else if (currentView === 'contact') { showJoinRewards(); } 
+  else { showModeSelector(); }
 
     document.documentElement.classList.remove('pps-auth-pending');
     console.info(`Gate: authenticated — ${currentView} visible.`);
@@ -1755,30 +1774,48 @@ function showToast(msg, { kind = 'info', ms = 4000 } = {}) {
        UI toggles / views
        ------------------------- */
     function showModeSelector() {
-      const sel = $id('modeSelector'), login = $id('loginContainer'), contact = $id('contactForm');
+      const sel = $id('modeSelector'), login = $id('loginContainer'), contact = $id('contactForm'), join = $id('chooseJoinBtn'), LogOut = $id('chooseLogOutBtn');
       login?.classList.add('hidden');
       contact?.classList.add('hidden');
       sel?.classList.remove('hidden');
+      join?.classList.remove('hidden');
+      LogOut?.classList.remove('hidden');
       $id('authOverlay')?.classList.add('hidden');
       resetZoom();
     }
     function showPOSContainer() {
-      const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm');
+      const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm'), join = $id('chooseJoinBtn'), LogOut = $id('chooseLogOutBtn');
       sel?.classList.add('hidden');
       contact?.classList.add('hidden');
       pos?.classList.remove('hidden');
+      join?.classList.remove('hidden');
+      LogOut?.classList.remove('hidden');
       $id('authOverlay')?.classList.add('hidden');
       initPOSCatalog(); // Extension point A (POS init)
       resetZoom();
     }
     function showSelfCheckout() {
-      const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm');
+      const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm'), join = $id('chooseJoinBtn'), LogOut = $id('chooseLogOutBtn');
+      sel?.classList.add('hidden');
+      contact?.classList.add('hidden');
+      pos?.classList.remove('hidden');
+      join?.classList.remove('hidden');
+      LogOut?.classList.add('hidden');
+      $id('authOverlay')?.classList.add('hidden');
+      resetZoom();
+    }
+    
+      function showJoinRewards() {
+      const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm'), join = $id('chooseJoinBtn'), LogOut = $id('chooseLogOutBtn');
       pos?.classList.add('hidden');
       sel?.classList.add('hidden');
+      join?.classList.add('hidden');
+      LogOut?.classList.add('hidden');
       contact?.classList.remove('hidden');
       $id('authOverlay')?.classList.add('hidden');
       resetZoom();
     }
+    
     function openRewardsModal() { document.body.classList.add('body-lock'); $id('rewardsModal')?.classList.remove('contact-hidden'); }
     function closeRewardsModal() { document.body.classList.remove('body-lock'); $id('rewardsModal')?.classList.add('contact-hidden'); }
 
@@ -2652,6 +2689,8 @@ function openCheckoutModalWithCart(cart) {
 
       $id('choosePOSBtn')?.addEventListener('click', showPOSContainer);
       $id('chooseSelfBtn')?.addEventListener('click', showSelfCheckout);
+      $id('chooseJoinBtn')?.addEventListener('click', showJoinRewards);
+      $id('chooseLogOutBtn')?.addEventListener('click', forceLogout);
       $id('openRewardsModal')?.addEventListener('click', openRewardsModal);
       $id('closeRewardsModal')?.addEventListener('click', closeRewardsModal);
 
