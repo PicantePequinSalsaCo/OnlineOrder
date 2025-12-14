@@ -2521,13 +2521,11 @@ function openCheckoutModalWithCart(cart) {
   const changeDueEl = document.getElementById('changeDue');
   const statusRow = document.getElementById('statusRow');
   const submitBtn = document.getElementById('submitOrderBtn');
-  const retryBtn = document.getElementById('retryBtn');
   const closeBtn = document.getElementById('closeCheckoutModal');
 
   // Reset state
   replica.innerHTML = '';
   statusRow.textContent = '';
-  retryBtn.hidden = true;
   cashReceivedEl.value = '';
   changeDueEl.textContent = fmt(0);
 
@@ -2641,7 +2639,7 @@ function openCheckoutModalWithCart(cart) {
 
   async function handleSubmit() {
     const tenderType = currentTender();
-    submitBtn.disabled = true; retryBtn.hidden = true; statusRow.textContent = '';
+    submitBtn.disabled = true; statusRow.textContent = '';
 
     try {
       const meta = { rewardsPointsConsumed: window.rewardsConsumedPoints || 0 };
@@ -2670,51 +2668,18 @@ function openCheckoutModalWithCart(cart) {
         document.body.classList.remove('body-lock');
       } else {
         statusRow.textContent = `Payment ${result.status.toLowerCase()}. You can retry the card transaction.`;
-        retryBtn.hidden = false;
+        
       }
     } catch (err) {
       console.error(err);
       statusRow.textContent = 'Checkout failed. You can retry.';
-      retryBtn.hidden = false;
-    } finally {
-      submitBtn.disabled = false;
-    }
-  }
-
-  async function handleRetry() {
-    try {
-      submitBtn.disabled = true;
-      retryBtn.hidden = true;
-      statusRow.textContent = 'Retrying card transaction...';
-
-      const { orderId, endpoints } = await createOrderWithOmniTok('CARD', { retry: true });
-      const base = endpoints.orderStatusBase || '/orders';
-
-      const result = await pollOrderStatus(orderId, base, (status) => {
-        statusRow.textContent = status === STATUS_SUCCESS
-          ? 'Payment confirmed.'
-          : `Payment status: ${status}...`;
-      });
-
-      if (result.ok) {
-        showToast(`Card payment succeeded: ${orderId}`);
-        modal.classList.add('contact-hidden');
-        document.body.classList.remove('body-lock');
-      } else {
-        statusRow.textContent = `Payment ${result.status.toLowerCase()}. You can retry again.`;
-        retryBtn.hidden = false;
-      }
-    } catch (e) {
-      console.error(e);
-      statusRow.textContent = 'Retry failed. Please try again.';
-      retryBtn.hidden = false;
+      
     } finally {
       submitBtn.disabled = false;
     }
   }
 
   submitBtn.onclick = handleSubmit;
-  retryBtn.onclick = handleRetry;
   closeBtn.onclick = () => {
     modal.classList.add('contact-hidden');
     document.body.classList.remove('body-lock');
