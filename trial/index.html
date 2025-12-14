@@ -1491,7 +1491,7 @@ function showPOSContainer() {
   pos?.classList.remove('hidden');
   $id('chooseJoinBtn')?.classList.remove('hidden');
   $id('chooseLogOutBtn')?.classList.remove('hidden');
-  $id('returnFromJoinBtn')?.classList.add('hidden');
+  $id('returnFromJoinBtn')?.classList.remove('hidden');
   $id('authOverlay')?.classList.add('hidden');
   initPOSCatalog();
   resetZoom();
@@ -1528,11 +1528,17 @@ function showJoinRewards() {
   // -------------------------
   // Back button wiring
   // -------------------------
-  $id('returnFromJoinBtn')?.addEventListener('click', () => {
-    if (joinCaller === 'pos') showPOSContainer();
-    else if (joinCaller === 'self') showSelfCheckout();
-    else showModeSelector(); // fallback
-  });
+$id('returnFromJoinBtn')?.addEventListener('click', () => {
+  if (currentView === 'pos') {
+    showModeSelector(); // employees go back to mode selector
+  } else if (joinCaller === 'pos') {
+    showPOSContainer(); // return from Join Rewards back to POS
+  } else if (joinCaller === 'self') {
+    showSelfCheckout(); // return from Join Rewards back to Self Checkout
+  } else {
+    showModeSelector(); // fallback
+  }
+});
 
   // -------------------------
   // Gate respects currentView
