@@ -1123,28 +1123,41 @@ document.addEventListener("DOMContentLoaded", () => {
 .eye--flash[data-rate="slow"] { animation: horusFlashSlow 2400ms infinite; }
 .eye--flash:not([data-rate])  { animation: horusFlash 1200ms infinite; }
     
-  .back-arrow {
+  .back-arrow,
+  .logout-icon,
+  .join-icon {
   stroke: #ffffff1f;
   fill: #ffffff0f;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.btnrtn {
+.btnrtn,
+.btnlog,
+.btnjoin {
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
 }
-.btnrtn svg {
+.btnrtn svg,
+.btnlog svg,
+.btnjoin svg {
   display: block;
   width: 24px;
   height: 24px;
   transition: transform .15s ease;
 }
-.btnrtn:hover svg {
+.btnrtn:hover svg,
+.btnlog:hover svg,
+.btnjoin:hover svg {
   transform: translateY(-1px);
 }
 
-.btnrtn.hidden {
+.btnrtn.hidden,
+.btnlog.hidden, 
+.btnjoin.hidden {
   display: none;
 }
   </style>
@@ -1173,9 +1186,55 @@ document.addEventListener("DOMContentLoaded", () => {
                   class="back-arrow" />
               </svg>
             </button>
-          </li>      
-          <li><button id="chooseJoinBtn" class="btn hidden">Join Rewards</button></li>
-          <li><button id="chooseLogOutBtn" class="btn hidden">LogOut</button></li>
+          </li>     
+          <li>
+            <button id="chooseJoinBtn" class="btnjoin hidden" aria-label="Join Rewards">
+              <svg xmlns="http://www.w3.org/2000/svg"
+                   viewBox="-97.28 -97.28 706.54 706.54"
+                   width="24" height="24" transform="rotate(45)">
+                <g>
+                  <path d="M238.948,405.661h139.56c63.64-36.875,115.341-122.857,25.593-218.34
+                           c-72.998-77.701-45.904-166.168-45.904-166.168c-111.249,31.78-160.795,100.31-160.795,196.793
+                           c-11.094-7.609-26.71-20.421-35.039-30.828C115.794,294.382,170.746,371.786,238.948,405.661z"
+                        class="join-icon" />
+                  <path d="M330.321,417.41h-68.842c-31.391-18.187-56.898-60.608-12.625-107.7
+                           c36.015-38.344,22.649-81.999,22.649-81.999c54.881,15.688,79.318,49.499,79.318,97.092
+                           c5.469-3.75,13.188-10.062,17.296-15.202C391.085,362.52,363.977,400.708,330.321,417.41z"
+                        class="join-icon" />
+                  <path d="M75.537,346.068c-0.711,0-1.43-0.078-2.156-0.219c-2.234-0.453-54.874-11.844-72.819-65.046
+                           c-1.882-5.578,1.117-11.625,6.703-13.5c5.578-1.891,11.633,1.109,13.516,6.688
+                           c14.07,41.718,56.467,50.874,56.889,50.968c5.773,1.188,9.492,6.812,8.305,12.594
+                           C84.935,342.584,80.498,346.068,75.537,346.068z"
+                        class="join-icon" />
+                  <path d="M510.942,311.913c-287.908,150.355-340.212-1.25-399.765-11.953
+                           c-64.101-11.547-87.256,66.592-52.124,96.186C318.337,614.609,528.645,398.333,510.942,311.913z"
+                        class="join-icon" />
+                  <path d="M59.053,374.817c-8.422-7.094-13.484-16.984-15.445-27.734
+                           c-3.172,18.25,1.617,37.422,15.445,49.062c258.659,217.933,468.577,3.219,452.014-83.608
+                           C496.036,407.661,298.415,576.485,59.053,374.817z"
+                        class="join-icon" />
+                  <path d="M39.749,316.959c-9.773,9.781,3.352,33.655,3.352,33.655l27.194-44.217
+                           C70.295,306.397,49.53,307.179,39.749,316.959z"
+                        class="join-icon" />
+                </g>
+              </svg>
+            </button>
+          </li>
+          <li>
+            <button id="chooseLogOutBtn" class="btnlog hidden" aria-label="Logout">
+              <svg xmlns="http://www.w3.org/2000/svg"
+                   viewBox="-3.2 -3.2 38.40 38.40"
+                   width="24" height="24">
+                <g>
+                  <polyline fill="none" points="21,18 21,11 11,1 1,11 1,31 21,31 21,24"
+                            class="logout-icon" />
+                  <line x1="10" y1="21" x2="31" y2="21" class="logout-icon" />
+                  <polyline fill="none" points="25,15 31,21 25,27" class="logout-icon" />
+                </g>
+              </svg>
+            </button>
+          </li>
+          
           <li><a class="link" href="https://picantepequinsalsaco.com/PrivacyPolicy">Privacy</a></li>
           <div class="horus">
             <svg viewBox="0 0 558 603" xmlns="http://www.w3.org/2000/svg">
