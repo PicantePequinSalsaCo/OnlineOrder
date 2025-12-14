@@ -2160,6 +2160,18 @@ function initPOSCatalog() {
       }
     })();
 
+              function doManualReveal() {
+            try { clearInterval(window._ppsAuthGateIntervalId); } catch(e) {}
+            try { window._ppsAuthGateObserver?.disconnect(); } catch(e) {}
+
+            $id('loginContainer')?.classList.add('hidden');
+            $id('modeSelector')?.classList.remove('hidden');
+            $id('posContainer')?.classList.add('hidden');
+            $id('contactForm')?.classList.add('hidden');
+            $id('authOverlay')?.classList.add('hidden');
+
+            console.info('Auth gate: login success — forced reveal and stopped enforcement.');
+          }
     /* -------------------------
        Login wiring
        ------------------------- */
@@ -2284,19 +2296,7 @@ function initPOSCatalog() {
             try { window._ppsApplyAuthGate(); }
             catch (e) { console.warn('ppsApplyAuthGate threw', e); doManualReveal(); }
           } else { doManualReveal(); }
-
-          function doManualReveal() {
-            try { clearInterval(window._ppsAuthGateIntervalId); } catch(e) {}
-            try { window._ppsAuthGateObserver?.disconnect(); } catch(e) {}
-
-            $id('loginContainer')?.classList.add('hidden');
-            $id('modeSelector')?.classList.remove('hidden');
-            $id('posContainer')?.classList.add('hidden');
-            $id('contactForm')?.classList.add('hidden');
-            $id('authOverlay')?.classList.add('hidden');
-
-            console.info('Auth gate: login success — forced reveal and stopped enforcement.');
-          }
+          
              // Start Horus
           startHorus();
           btn.textContent = '✓ Logged In'; btn.classList.add('is-success'); btn.classList.remove('is-error');
@@ -2694,14 +2694,18 @@ function openCheckoutModalWithCart(cart) {
    POS checkout button wiring
    ------------------------- */
 // Replace the alert inside initPOSCatalog checkout click with opening the modal:
-(function wirePOSCheckoutModal() {
+function wirePOSCheckoutModal() {
   const btn = document.getElementById('posCheckoutBtn');
   if (!btn) return;
   btn.addEventListener('click', () => {
-    if (!Array.isArray(window.posCart) || !window.posCart.length) { alert('Cart is empty.'); return; }
+    if (!Array.isArray(window.posCart) || !window.posCart.length) {
+      alert('Cart is empty.');
+      return;
+    }
     openCheckoutModalWithCart(window.posCart);
   });
-})();
+}
+wirePOSCheckoutModal(); // run at startup
 
     /* -------------------------
        Signup wiring
