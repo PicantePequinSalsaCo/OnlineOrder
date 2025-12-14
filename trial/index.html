@@ -87,34 +87,43 @@ function collectAnomalies() {
        FORCE LOGOUT HELPER
        ------------------------- */
     function forceLogout() {
-      stopHorus();
-      const authKey = `pps_loggedIn@${location.origin}`;
-      sessionStorage.removeItem(authKey);
-      sessionStorage.removeItem('sid');
+  stopHorus();
+  const authKey = `pps_loggedIn@${location.origin}`;
+  sessionStorage.removeItem(authKey);
+  sessionStorage.removeItem('sid');
 
-              // Reset login button state
-      const btn = document.getElementById('loginBtn');
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = 'Login';
-        btn.classList.remove('is-success', 'is-error', 'btn-loading');
+  // Reset login button state
+  const btn = document.getElementById('loginBtn');
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = 'Login';
+    btn.classList.remove('is-success', 'is-error', 'btn-loading');
   }
 
-      // Show login; hide all post-login cards (sibling model)
-      document.getElementById('loginContainer')?.classList.remove('hidden');
-      document.getElementById('modeSelector')?.classList.add('hidden');
-      document.getElementById('posContainer')?.classList.add('hidden');
-      document.getElementById('contactForm')?.classList.add('hidden');
+  // Show login; hide all post-login cards (sibling model)
+  document.getElementById('loginContainer')?.classList.remove('hidden');
+  document.getElementById('modeSelector')?.classList.add('hidden');
+  document.getElementById('posContainer')?.classList.add('hidden');
+  document.getElementById('contactForm')?.classList.add('hidden');
 
-      // Optional: clear in-memory state
-      window.rewardsMember = undefined;
+  // Hide header buttons
+  document.getElementById('chooseJoinBtn')?.classList.add('hidden');
+  document.getElementById('chooseLogOutBtn')?.classList.add('hidden');
+  document.getElementById('returnFromJoinBtn')?.classList.add('hidden');
 
-      // Overlay for focus (optional)
-      document.getElementById('authOverlay')?.classList.remove('hidden');
+  // Reset rewards state to guest
+  resetRewardsToGuest();
 
-      console.info('PPS: forced logout — session cleared');
-    }
-    window.forceLogout = forceLogout;
+  // Overlay for focus (optional)
+  document.getElementById('authOverlay')?.classList.remove('hidden');
+
+  // Reset global view/caller
+  currentView = 'login';
+  joinCaller = 'login';
+
+  console.info('PPS: forced logout — session cleared');
+}
+window.forceLogout = forceLogout;
 
     // take out // below before forceLogout(); during testing if you want default to logged-out
     // forceLogout();
@@ -1100,8 +1109,9 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
       <nav aria-label="Primary">
         <ul>
-          <li><button id="chooseJoinBtn" class="btn" hidden>Join Rewards</button></li>
-          <li><button id="chooseLogoutBtn" class="btn" hidden>LogOut</button></li>
+          <li><button id="returnFromJoinBtn" class="btn hidden">← Back</button></li>
+          <li><button id="chooseJoinBtn" class="btn hidden">Join Rewards</button></li>
+          <li><button id="chooseLogOutBtn" class="btn hidden">LogOut</button></li>
           <li><a class="link" href="https://picantepequinsalsaco.com/PrivacyPolicy">Privacy</a></li>
           <div class="horus">
             <svg viewBox="0 0 558 603" xmlns="http://www.w3.org/2000/svg">
@@ -1431,70 +1441,101 @@ document.addEventListener("DOMContentLoaded", () => {
   const authKey = `pps_loggedIn@${location.origin}`;
   document.documentElement.classList.add('pps-auth-pending');
 
-  // Dev override...
-  // Legacy migration...
-
   function isLogged() {
     return sessionStorage.getItem(authKey) === 'true';
   }
 
   // Track current view globally
-  let currentView = 'login'; // 'login' | 'mode' | 'pos' | 'contact'
+  let currentView = 'login'; // 'login' | 'mode' | 'pos' | 'self' | 'contact'
 
-  // Show functions (only once!)
+  // Track join button caller globally
+  let joinCaller = null; // 'pos' | 'self' | 'mode' | 'login'
+
+  // -------------------------
+  // Scene functions
+  // -------------------------
   function showLogin() {
     currentView = 'login';
-    document.getElementById('loginContainer')?.classList.remove('hidden');
-    document.getElementById('modeSelector')?.classList.add('hidden');
-    document.getElementById('posContainer')?.classList.add('hidden');
-    document.getElementById('contactForm')?.classList.add('hidden');
-    document.getElementById('authOverlay')?.classList.remove('hidden');
+    joinCaller = 'login';
+    $id('loginContainer')?.classList.remove('hidden');
+    $id('modeSelector')?.classList.add('hidden');
+    $id('posContainer')?.classList.add('hidden');
+    $id('contactForm')?.classList.add('hidden');
+    $id('authOverlay')?.classList.remove('hidden');
+    $id('chooseJoinBtn')?.classList.add('hidden');
+    $id('chooseLogOutBtn')?.classList.add('hidden');
+    $id('returnFromJoinBtn')?.classList.add('hidden'); // hide back button
   }
 
-  function showModeSelector() {
-    currentView = 'mode';
-    document.getElementById('loginContainer')?.classList.add('hidden');
-    document.getElementById('modeSelector')?.classList.remove('hidden');
-    document.getElementById('posContainer')?.classList.add('hidden');
-    document.getElementById('contactForm')?.classList.add('hidden');
-    document.getElementById('authOverlay')?.classList.add('hidden');
-    document.getElementById('chooseJoinBtn')?.classList.remove('hidden');
-    document.getElementById('chooseLogOutBtn')?.classList.remove('hidden');
-  }
+function showModeSelector() {
+  currentView = 'mode';
+  joinCaller = 'mode';
+  const sel = $id('modeSelector'), login = $id('loginContainer'), contact = $id('contactForm');
+  login?.classList.add('hidden');
+  contact?.classList.add('hidden');
+  sel?.classList.remove('hidden');
+  $id('chooseJoinBtn')?.classList.remove('hidden');
+  $id('chooseLogOutBtn')?.classList.remove('hidden');
+  $id('returnFromJoinBtn')?.classList.add('hidden');
+  $id('authOverlay')?.classList.add('hidden');
+  resetZoom();
+}
 
-  function showPOSContainer() {
-    currentView = 'pos';
-    document.getElementById('posContainer')?.classList.remove('hidden');
-    document.getElementById('modeSelector')?.classList.add('hidden');
-    document.getElementById('contactForm')?.classList.add('hidden');
-    document.getElementById('authOverlay')?.classList.add('hidden');
-    document.getElementById('chooseJoinBtn')?.classList.remove('hidden');
-    document.getElementById('chooseLogOutBtn')?.classList.remove('hidden');
-    initPOSCatalog();
-  }
+function showPOSContainer() {
+  currentView = 'pos';
+  joinCaller = 'pos';
+  const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm');
+  sel?.classList.add('hidden');
+  contact?.classList.add('hidden');
+  pos?.classList.remove('hidden');
+  $id('chooseJoinBtn')?.classList.remove('hidden');
+  $id('chooseLogOutBtn')?.classList.remove('hidden');
+  $id('returnFromJoinBtn')?.classList.add('hidden');
+  $id('authOverlay')?.classList.add('hidden');
+  initPOSCatalog();
+  resetZoom();
+}
 
-  function showSelfCheckout() {
-    currentView = 'self';
-    document.getElementById('posContainer')?.classList.remove('hidden');
-    document.getElementById('modeSelector')?.classList.add('hidden');
-    document.getElementById('contactForm')?.classList.add('hidden');
-    document.getElementById('authOverlay')?.classList.add('hidden');
-    document.getElementById('chooseJoinBtn')?.classList.remove('hidden');
-    document.getElementById('chooseLogOutBtn')?.classList.add('hidden');
-    initPOSCatalog();
-  }
-  
-    function showJoinRewards() {
-    currentView = 'contact';
-    document.getElementById('contactForm')?.classList.remove('hidden');
-    document.getElementById('modeSelector')?.classList.add('hidden');
-    document.getElementById('posContainer')?.classList.add('hidden');
-    document.getElementById('authOverlay')?.classList.add('hidden');
-    document.getElementById('chooseJoinBtn')?.classList.add('hidden');
-    document.getElementById('chooseLogOutBtn')?.classList.add('hidden');
-  }
+function showSelfCheckout() {
+  currentView = 'self';
+  joinCaller = 'self';
+  const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm');
+  sel?.classList.add('hidden');
+  contact?.classList.add('hidden');
+  pos?.classList.remove('hidden');
+  $id('chooseJoinBtn')?.classList.remove('hidden');
+  $id('chooseLogOutBtn')?.classList.add('hidden');
+  $id('returnFromJoinBtn')?.classList.add('hidden');
+  $id('authOverlay')?.classList.add('hidden');
+  initPOSCatalog();
+  resetZoom();
+}
 
+function showJoinRewards() {
+  currentView = 'contact';
+  const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm');
+  pos?.classList.add('hidden');
+  sel?.classList.add('hidden');
+  contact?.classList.remove('hidden');
+  $id('chooseJoinBtn')?.classList.add('hidden');
+  $id('chooseLogOutBtn')?.classList.add('hidden');
+  $id('returnFromJoinBtn')?.classList.remove('hidden'); // show back button
+  $id('authOverlay')?.classList.add('hidden');
+  resetZoom();
+}
+
+  // -------------------------
+  // Back button wiring
+  // -------------------------
+  $id('returnFromJoinBtn')?.addEventListener('click', () => {
+    if (joinCaller === 'pos') showPOSContainer();
+    else if (joinCaller === 'self') showSelfCheckout();
+    else showModeSelector(); // fallback
+  });
+
+  // -------------------------
   // Gate respects currentView
+  // -------------------------
   function applyGate() {
     const now = Date.now();
     if (now - _ppsAuthGateLastRun < 150) return;
@@ -1508,18 +1549,35 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-  if (currentView === 'pos') { showPOSContainer(); } 
-  else if (currentView === 'self') { showSelfCheckout(); } 
-  else if (currentView === 'contact') { showJoinRewards(); } 
-  else { showModeSelector(); }
+    if (currentView === 'pos') showPOSContainer();
+    else if (currentView === 'self') showSelfCheckout();
+    else if (currentView === 'contact') showJoinRewards();
+    else showModeSelector();
 
     document.documentElement.classList.remove('pps-auth-pending');
     console.info(`Gate: authenticated — ${currentView} visible.`);
   }
 
   window._internalApplyGate = applyGate;
-  // ... rest of your interval/observer code ...
 })();
+    
+// -------------------------
+// Global rewards defaults
+// -------------------------
+function resetRewardsToGuest() {
+  window.rewardsMember = {
+    name: 'Guest',
+    balance: '0.00',
+    points: 0,
+    email: null,
+    phone: null,
+    isGuest: true
+  };
+  window.rewardsConsumedPoints = 0;
+}
+
+// Initialize once at startup
+resetRewardsToGuest();
 
     /* -------------------------
        Small helpers
@@ -1773,48 +1831,6 @@ function showToast(msg, { kind = 'info', ms = 4000 } = {}) {
     /* -------------------------
        UI toggles / views
        ------------------------- */
-    function showModeSelector() {
-      const sel = $id('modeSelector'), login = $id('loginContainer'), contact = $id('contactForm'), join = $id('chooseJoinBtn'), LogOut = $id('chooseLogOutBtn');
-      login?.classList.add('hidden');
-      contact?.classList.add('hidden');
-      sel?.classList.remove('hidden');
-      join?.classList.remove('hidden');
-      LogOut?.classList.remove('hidden');
-      $id('authOverlay')?.classList.add('hidden');
-      resetZoom();
-    }
-    function showPOSContainer() {
-      const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm'), join = $id('chooseJoinBtn'), LogOut = $id('chooseLogOutBtn');
-      sel?.classList.add('hidden');
-      contact?.classList.add('hidden');
-      pos?.classList.remove('hidden');
-      join?.classList.remove('hidden');
-      LogOut?.classList.remove('hidden');
-      $id('authOverlay')?.classList.add('hidden');
-      initPOSCatalog(); // Extension point A (POS init)
-      resetZoom();
-    }
-    function showSelfCheckout() {
-      const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm'), join = $id('chooseJoinBtn'), LogOut = $id('chooseLogOutBtn');
-      sel?.classList.add('hidden');
-      contact?.classList.add('hidden');
-      pos?.classList.remove('hidden');
-      join?.classList.remove('hidden');
-      LogOut?.classList.add('hidden');
-      $id('authOverlay')?.classList.add('hidden');
-      resetZoom();
-    }
-    
-      function showJoinRewards() {
-      const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm'), join = $id('chooseJoinBtn'), LogOut = $id('chooseLogOutBtn');
-      pos?.classList.add('hidden');
-      sel?.classList.add('hidden');
-      join?.classList.add('hidden');
-      LogOut?.classList.add('hidden');
-      contact?.classList.remove('hidden');
-      $id('authOverlay')?.classList.add('hidden');
-      resetZoom();
-    }
     
     function openRewardsModal() { document.body.classList.add('body-lock'); $id('rewardsModal')?.classList.remove('contact-hidden'); }
     function closeRewardsModal() { document.body.classList.remove('body-lock'); $id('rewardsModal')?.classList.add('contact-hidden'); }
