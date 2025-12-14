@@ -1433,6 +1433,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /* -------------------------
        AUTH GATE — sibling cards
        ------------------------- */
+ const $id = id => document.getElementById(id);
 (function enforceAuthGate() {
   if (window._ppsAuthGateInitialized) return;
   window._ppsAuthGateInitialized = true;
