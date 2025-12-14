@@ -2799,17 +2799,22 @@ function openCheckoutModalWithCart(cart) {
       const sid = sessionStorage.getItem('sid');
 
       if (sessionStorage.getItem(authKey) && sid) {
-      // Session exists → apply gate
+        console.info('Startup: session found, applying gate');
         if (typeof window._ppsApplyAuthGate === 'function') {
-          window._ppsApplyAuthGate();
+          try { window._ppsApplyAuthGate(); }
+          catch (e) { console.warn('ppsApplyAuthGate threw', e); doManualReveal(); }
+        } else {
+          doManualReveal();
         }
+        // ✅ Restart Horus if not already running
+        if (typeof startHorus === 'function') startHorus();
       } else {
-        // No session → show login
+        console.info('Startup: no session, showing login');
         $id('loginContainer')?.classList.remove('hidden');
         $id('authOverlay')?.classList.remove('hidden');
         resetRewardsToGuest();
       }
-
+      
       if (typeof validateContactForm === 'function') validateContactForm();
     }));
 
