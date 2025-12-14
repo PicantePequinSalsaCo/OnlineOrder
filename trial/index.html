@@ -88,9 +88,12 @@ function collectAnomalies() {
        ------------------------- */
     function forceLogout() {
   stopHorus();
+
   const authKey = `pps_loggedIn@${location.origin}`;
   sessionStorage.removeItem(authKey);
   sessionStorage.removeItem('sid');
+  sessionStorage.removeItem('masterTok');
+  sessionStorage.removeItem('OmniTok');
 
   // Reset login button state
   const btn = document.getElementById('loginBtn');
@@ -100,7 +103,7 @@ function collectAnomalies() {
     btn.classList.remove('is-success', 'is-error', 'btn-loading');
   }
 
-  // Show login; hide all post-login cards (sibling model)
+  // Show login; hide all post-login cards
   document.getElementById('loginContainer')?.classList.remove('hidden');
   document.getElementById('modeSelector')?.classList.add('hidden');
   document.getElementById('posContainer')?.classList.add('hidden');
@@ -114,12 +117,21 @@ function collectAnomalies() {
   // Reset rewards state to guest
   resetRewardsToGuest();
 
-  // Overlay for focus (optional)
+  // Overlay for focus
   document.getElementById('authOverlay')?.classList.remove('hidden');
 
   // Reset global view/caller
   currentView = 'login';
+        sessionStorage.setItem('currentView', currentView);
   joinCaller = 'login';
+        sessionStorage.setItem('joinCaller', joinCaller);
+
+  // One-off Horus logout pulse
+  try {
+    horusPulse({ logout: true });
+  } catch (e) {
+    console.warn('Horus logout pulse failed', e);
+  }
 
   console.info('PPS: forced logout — session cleared');
 }
@@ -1550,16 +1562,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Track current view globally
   let currentView = 'login'; // 'login' | 'mode' | 'pos' | 'self' | 'contact'
+  sessionStorage.setItem('currentView', currentView);
 
   // Track join button caller globally
   let joinCaller = null; // 'pos' | 'self' | 'mode' | 'login'
+  sessionStorage.setItem('joinCaller', joinCaller);
 
   // -------------------------
   // Scene functions
   // -------------------------
   function showLogin() {
     currentView = 'login';
+    sessionStorage.setItem('currentView', currentView);
     joinCaller = 'login';
+    sessionStorage.setItem('joinCaller', joinCaller);
     $id('loginContainer')?.classList.remove('hidden');
     $id('modeSelector')?.classList.add('hidden');
     $id('posContainer')?.classList.add('hidden');
@@ -1572,7 +1588,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function showModeSelector() {
   currentView = 'mode';
+  sessionStorage.setItem('currentView', currentView);
   joinCaller = 'mode';
+  sessionStorage.setItem('joinCaller', joinCaller);
   const sel = $id('modeSelector'), login = $id('loginContainer'), contact = $id('contactForm'), pos = $id('posContainer');
   login?.classList.add('hidden');
   contact?.classList.add('hidden');
@@ -1587,7 +1605,9 @@ function showModeSelector() {
 
 function showPOSContainer() {
   currentView = 'pos';
+  sessionStorage.setItem('currentView', currentView);
   joinCaller = 'pos';
+  sessionStorage.setItem('joinCaller', joinCaller);
   const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm');
   sel?.classList.add('hidden');
   contact?.classList.add('hidden');
@@ -1602,7 +1622,9 @@ function showPOSContainer() {
 
 function showSelfCheckout() {
   currentView = 'self';
+  sessionStorage.setItem('currentView', currentView);
   joinCaller = 'self';
+  sessionStorage.setItem('joinCaller', joinCaller);
   const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm');
   sel?.classList.add('hidden');
   contact?.classList.add('hidden');
@@ -1617,6 +1639,7 @@ function showSelfCheckout() {
 
 function showJoinRewards() {
   currentView = 'contact';
+  sessionStorage.setItem('currentView', currentView);
   const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm');
   pos?.classList.add('hidden');
   sel?.classList.add('hidden');
@@ -2697,7 +2720,13 @@ function openCheckoutModalWithCart(cart) {
 function wirePOSCheckoutModal() {
   const btn = document.getElementById('posCheckoutBtn');
   if (!btn) return;
-  btn.addEventListener('click', () => {
+
+  // Remove any existing listener
+  btn.replaceWith(btn.cloneNode(true));
+  const newBtn = document.getElementById('posCheckoutBtn');
+
+  newBtn.addEventListener('click', () => {
+    console.log('posCart at checkout:', window.posCart);
     if (!Array.isArray(window.posCart) || !window.posCart.length) {
       alert('Cart is empty.');
       return;
@@ -2781,49 +2810,65 @@ wirePOSCheckoutModal(); // run at startup
     /* -------------------------
        Initial DOM wiring
        ------------------------- */
-    document.addEventListener('DOMContentLoaded', once(() => {
-      const y = $id('y'); if (y) y.textContent = new Date().getFullYear();
+document.addEventListener('DOMContentLoaded', once(() => {
+  const y = $id('y'); if (y) y.textContent = new Date().getFullYear();
 
-      $id('choosePOSBtn')?.addEventListener('click', showPOSContainer);
-      $id('chooseSelfBtn')?.addEventListener('click', showSelfCheckout);
-      $id('chooseJoinBtn')?.addEventListener('click', showJoinRewards);
-      $id('chooseLogOutBtn')?.addEventListener('click', forceLogout);
-      $id('openRewardsModal')?.addEventListener('click', openRewardsModal);
-      $id('closeRewardsModal')?.addEventListener('click', closeRewardsModal);
+  $id('choosePOSBtn')?.addEventListener('click', showPOSContainer);
+  $id('chooseSelfBtn')?.addEventListener('click', showSelfCheckout);
+  $id('chooseJoinBtn')?.addEventListener('click', showJoinRewards);
+  $id('chooseLogOutBtn')?.addEventListener('click', forceLogout);
+  $id('openRewardsModal')?.addEventListener('click', openRewardsModal);
+  $id('closeRewardsModal')?.addEventListener('click', closeRewardsModal);
 
-      wireLogin();
-      wireRewards();
-      wireSignup();
+  wireLogin();
+  wireRewards();
+  wireSignup();
 
-      wirePhone($id('custPhone'));
-      wirePhone($id('rewardsPhone'));
+  wirePhone($id('custPhone'));
+  wirePhone($id('rewardsPhone'));
 
-      setupFieldValidation('rewardsEmail', v => true, 'Enter email or phone (optional)');
-      setupFieldValidation('rewardsPhone', v => true, 'Enter email or phone (optional)');
+  setupFieldValidation('rewardsEmail', v => true, 'Enter email or phone (optional)');
+  setupFieldValidation('rewardsPhone', v => true, 'Enter email or phone (optional)');
 
-      // Default view driven by gate; check for existing session first
-      const authKey = `pps_loggedIn@${location.origin}`;
-      const sid = sessionStorage.getItem('sid');
+  // Default view driven by gate; check for existing session first
+  const authKey = `pps_loggedIn@${location.origin}`;
+  const sid = sessionStorage.getItem('sid');
 
-      if (sessionStorage.getItem(authKey) && sid) {
-        console.info('Startup: session found, applying gate');
-        if (typeof window._ppsApplyAuthGate === 'function') {
-          try { window._ppsApplyAuthGate(); }
-          catch (e) { console.warn('ppsApplyAuthGate threw', e); doManualReveal(); }
-        } else {
-          doManualReveal();
-        }
-        // ✅ Restart Horus if not already running
-        if (typeof startHorus === 'function') startHorus();
-      } else {
-        console.info('Startup: no session, showing login');
-        $id('loginContainer')?.classList.remove('hidden');
-        $id('authOverlay')?.classList.remove('hidden');
-        resetRewardsToGuest();
-      }
-      
-      if (typeof validateContactForm === 'function') validateContactForm();
-    }));
+  if (sessionStorage.getItem(authKey) && sid) {
+    console.info('Startup: session found, applying gate');
+    if (typeof window._ppsApplyAuthGate === 'function') {
+      try { window._ppsApplyAuthGate(); }
+      catch (e) { console.warn('ppsApplyAuthGate threw', e); doManualReveal(); }
+    } else {
+      doManualReveal();
+    }
+    // ✅ Restart Horus if not already running
+    if (typeof startHorus === 'function') startHorus();
+
+    // 🔥 Restore saved UI state here
+    const savedView = sessionStorage.getItem('currentView');
+    if (savedView) {
+      showView(savedView); // your helper that hides siblings and shows the right container
+    }
+
+    const savedJoin = sessionStorage.getItem('joinCaller');
+    if (savedJoin === 'join') {
+      $id('chooseJoinBtn')?.classList.remove('hidden');
+      $id('returnFromJoinBtn')?.classList.remove('hidden');
+    } else {
+      $id('chooseJoinBtn')?.classList.add('hidden');
+      $id('returnFromJoinBtn')?.classList.add('hidden');
+    }
+
+  } else {
+    console.info('Startup: no session, showing login');
+    $id('loginContainer')?.classList.remove('hidden');
+    $id('authOverlay')?.classList.remove('hidden');
+    resetRewardsToGuest();
+  }
+
+  if (typeof validateContactForm === 'function') validateContactForm();
+}));
 
     /* -------------------------
        Public helpers
@@ -2833,11 +2878,7 @@ wirePOSCheckoutModal(); // run at startup
     window.openRewardsModal = openRewardsModal;
     window.closeRewardsModal = closeRewardsModal;
     window.wirePhone = wirePhone;
-
-    //🔥 Fire emoji markers for quick patch locations:
-    // - Extension point A: inside showPOSContainer() — external POS widgets
-    // - Extension point B: inside initPOSCatalog() checkout — OmniTok / Stripe
-    // - Extension point C: rewards success — map reward to checkout/cart UI
+  
   })();
   </script>
 </body>
