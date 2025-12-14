@@ -1123,22 +1123,25 @@ document.addEventListener("DOMContentLoaded", () => {
 .eye--flash[data-rate="slow"] { animation: horusFlashSlow 2400ms infinite; }
 .eye--flash:not([data-rate])  { animation: horusFlash 1200ms infinite; }
     
-    .back-arrow {
-  stroke: #ff99007e;
-  fill: #ff99007e;
+  .back-arrow {
+  stroke: #ffffff1f;
+  fill: #ffffff0f;
 }
 
-    .btnrtn {
+.btnrtn {
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
 }
-
 .btnrtn svg {
   display: block;
   width: 24px;
   height: 24px;
+  transition: transform .15s ease;
+}
+.btnrtn:hover svg {
+  transform: translateY(-1px);
 }
 
 .btnrtn.hidden {
@@ -2791,12 +2794,20 @@ function openCheckoutModalWithCart(cart) {
       setupFieldValidation('rewardsEmail', v => true, 'Enter email or phone (optional)');
       setupFieldValidation('rewardsPhone', v => true, 'Enter email or phone (optional)');
 
-      // Default view driven by gate; no manual showModeSelector here
-      if (typeof window._ppsApplyAuthGate === 'function') window._ppsApplyAuthGate();
-      else {
-        // fallback: show login by default
+      // Default view driven by gate; check for existing session first
+      const authKey = `pps_loggedIn@${location.origin}`;
+      const sid = sessionStorage.getItem('sid');
+
+      if (sessionStorage.getItem(authKey) && sid) {
+      // Session exists → apply gate
+        if (typeof window._ppsApplyAuthGate === 'function') {
+          window._ppsApplyAuthGate();
+        }
+      } else {
+        // No session → show login
         $id('loginContainer')?.classList.remove('hidden');
         $id('authOverlay')?.classList.remove('hidden');
+        resetRewardsToGuest();
       }
 
       if (typeof validateContactForm === 'function') validateContactForm();
