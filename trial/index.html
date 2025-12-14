@@ -127,35 +127,33 @@ window.forceLogout = forceLogout;
 
      // Horus 5 tap Logout
     
-(function setupHorusLogout() {
-  const horusEl = document.querySelector('.horus');
-  if (!horusEl) return;
+    function setupHorusLogout() {
+      const horusEl = document.querySelector('.horus');
+      if (!horusEl) return;
 
-  let clickCount = 0;
-  let timerId = null;
+      let clickCount = 0;
+      let timerId = null;
 
-  horusEl.addEventListener('click', () => {
-    clickCount++;
-
-    // Start/reset the 8s timer
-    if (!timerId) {
-      timerId = setTimeout(() => {
-        clickCount = 0;
-        timerId = null;
-      }, 8000);
+      horusEl.addEventListener('click', () => {
+        clickCount++;
+        if (!timerId) {
+          timerId = setTimeout(() => {
+            clickCount = 0;
+            timerId = null;
+          }, 8000);
+        }
+        if (clickCount >= 5) {
+          clearTimeout(timerId);
+          timerId = null;
+          clickCount = 0;
+          console.info('HORUS: 5 clicks detected within 8s → force logout');
+          forceLogout();
+        }
+      });
     }
 
-    if (clickCount >= 5) {
-      clearTimeout(timerId);
-      timerId = null;
-      clickCount = 0;
-      console.info('HORUS: 5 clicks detected within 8s → force logout');
-      if (typeof forceLogout === 'function') {
-        forceLogout();
-      }
-    }
-  });
-})();
+    document.addEventListener('DOMContentLoaded', setupHorusLogout);
+
 
       //Initialize HORUS//      
 const HORUS_INTERVAL_MS = 120000; // Horus pulse every 120s
@@ -1124,6 +1122,32 @@ document.addEventListener("DOMContentLoaded", () => {
 .eye--flash[data-rate="fast"] { animation: horusFlashFast 600ms infinite; }
 .eye--flash[data-rate="slow"] { animation: horusFlashSlow 2400ms infinite; }
 .eye--flash:not([data-rate])  { animation: horusFlash 1200ms infinite; }
+    
+    .back-arrow {
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+    .btnrtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #333; /* arrow color */
+}
+
+.btnrtn svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.btnrtn.hidden {
+  display: none;
+}
   </style>
 </head>
 <body>
@@ -1139,21 +1163,20 @@ document.addEventListener("DOMContentLoaded", () => {
       <nav aria-label="Primary">
         <ul>
           <li>
-            <button id="returnFromJoinBtn" class="btn hidden" aria-label="Back">
-              <svg xmlns="http://www.w3.org/2000/svg" 
-               viewBox="0 0 24 24" 
-               width="24" height="24" 
-               fill="none" 
-               stroke="currentColor" 
-               stroke-width="2" 
-               stroke-linecap="round" 
-               stroke-linejoin="round">
-              <!-- Curvy arrow path -->
-              <path d="M9 19l-7-7 7-7" />
-              <path d="M20 12H2" />
-            </svg>
-          </button>
-          </li>
+            <button id="returnFromJoinBtn" class="btnrtn hidden" aria-label="Back">
+              <svg xmlns="http://www.w3.org/2000/svg"
+                   viewBox="0 0 558 603"  <!-- match your Horus SVG viewBox -->
+                   width="24" height="24"
+                   fill="none"
+                   stroke="currentColor"
+                   stroke-width="2"
+                   stroke-linecap="round"
+                   stroke-linejoin="round">
+                <!-- Replace this with your actual path data -->
+                <path d="M20 4c-5 4-8 8-8 8s3 4 8 8M12 12H2" class="back-arrow" />
+              </svg>
+            </button>
+          </li>          
           <li><button id="chooseJoinBtn" class="btn hidden">Join Rewards</button></li>
           <li><button id="chooseLogOutBtn" class="btn hidden">LogOut</button></li>
           <li><a class="link" href="https://picantepequinsalsaco.com/PrivacyPolicy">Privacy</a></li>
