@@ -1583,7 +1583,6 @@ resetRewardsToGuest();
     /* -------------------------
        Small helpers
        ------------------------- */
-    const $id = id => document.getElementById(id);
     const safe = v => (v || '').toString().trim();
     function once(fn) { let ran = false; return (...a) => { if (ran) return; ran = true; return fn(...a); }; }
 
