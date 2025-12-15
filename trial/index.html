@@ -86,54 +86,74 @@ function collectAnomalies() {
     /* -------------------------
        FORCE LOGOUT HELPER
        ------------------------- */
-    function forceLogout() {
+async function forceLogout() {
+  const authKey   = `pps_loggedIn@${location.origin}`;
+  const sid       = sessionStorage.getItem("sid");
+  const username  = sessionStorage.getItem("username");
+  sessionStorage.removeItem(authKey);
+  sessionStorage.removeItem("sid");
+  sessionStorage.removeItem("masterTok");
+  sessionStorage.removeItem("OmniTok");
+
+
+  // Build logout payload before clearing tokens
+  const payload = {
+    sid,
+    username,
+    MasterTok: null,
+    OmniTok: null,
+    ts: new Date().toISOString(),
+    logout: true
+  };
+
+  try {
+    // Send one-off Horus logout pulse
+    const res = await fetch(
+      "https://default6eda43f3fbf04e2b9978b543d9dd31.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9aa26c1296ee4694b10d7287acf604d5/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=hsuEfswj0_Ly1J3pWXLM7PVwwpOGIYs7KEB2MLhaggI",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      }
+    );
+    console.info("HORUS: logout pulse sent", res.status);
+  } catch (e) {
+    console.warn("HORUS: logout pulse failed", e);
+  }
   stopHorus();
 
-  const authKey = `pps_loggedIn@${location.origin}`;
-  sessionStorage.removeItem(authKey);
-  sessionStorage.removeItem('sid');
-  sessionStorage.removeItem('masterTok');
-  sessionStorage.removeItem('OmniTok');
-
   // Reset login button state
-  const btn = document.getElementById('loginBtn');
+  const btn = document.getElementById("loginBtn");
   if (btn) {
     btn.disabled = false;
-    btn.textContent = 'Login';
-    btn.classList.remove('is-success', 'is-error', 'btn-loading');
+    btn.textContent = "Login";
+    btn.classList.remove("is-success", "is-error", "btn-loading");
   }
 
   // Show login; hide all post-login cards
-  document.getElementById('loginContainer')?.classList.remove('hidden');
-  document.getElementById('modeSelector')?.classList.add('hidden');
-  document.getElementById('posContainer')?.classList.add('hidden');
-  document.getElementById('contactForm')?.classList.add('hidden');
+  document.getElementById("loginContainer")?.classList.remove("hidden");
+  document.getElementById("modeSelector")?.classList.add("hidden");
+  document.getElementById("posContainer")?.classList.add("hidden");
+  document.getElementById("contactForm")?.classList.add("hidden");
 
   // Hide header buttons
-  document.getElementById('chooseJoinBtn')?.classList.add('hidden');
-  document.getElementById('chooseLogOutBtn')?.classList.add('hidden');
-  document.getElementById('returnFromJoinBtn')?.classList.add('hidden');
+  document.getElementById("chooseJoinBtn")?.classList.add("hidden");
+  document.getElementById("chooseLogOutBtn")?.classList.add("hidden");
+  document.getElementById("returnFromJoinBtn")?.classList.add("hidden");
 
   // Reset rewards state to guest
   resetRewardsToGuest();
 
   // Overlay for focus
-  document.getElementById('authOverlay')?.classList.remove('hidden');
+  document.getElementById("authOverlay")?.classList.remove("hidden");
 
   // Reset global view/caller
-  currentView = 'login';
-        sessionStorage.setItem('currentView', currentView);
-  joinCaller = 'login';
-        sessionStorage.setItem('joinCaller', joinCaller);
+  currentView = "login";
+  sessionStorage.setItem("currentView", currentView);
+  joinCaller = "login";
+  sessionStorage.setItem("joinCaller", joinCaller);
 
-  // One-off Horus logout pulse
-  try {
-    horusPulse({ logout: true });
-  } catch (e) {
-    console.warn('Horus logout pulse failed', e);
-  }
-
-  console.info('PPS: forced logout — session cleared');
+  console.info("PPS: forced logout — session cleared");
 }
 window.forceLogout = forceLogout;
 
@@ -1571,31 +1591,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // -------------------------
   // Scene functions
   // -------------------------
-  function showLogin() {
-    currentView = 'login';
-    sessionStorage.setItem('currentView', currentView);
-    joinCaller = 'login';
-    sessionStorage.setItem('joinCaller', joinCaller);
-    $id('loginContainer')?.classList.remove('hidden');
-    $id('modeSelector')?.classList.add('hidden');
-    $id('posContainer')?.classList.add('hidden');
-    $id('contactForm')?.classList.add('hidden');
-    $id('authOverlay')?.classList.remove('hidden');
-    $id('chooseJoinBtn')?.classList.add('hidden');
-    $id('chooseLogOutBtn')?.classList.add('hidden');
-    $id('returnFromJoinBtn')?.classList.add('hidden'); // hide back button
-  }
+function showLogin() {
+  showView('login');
+  joinCaller = 'login';
+  sessionStorage.setItem('joinCaller', joinCaller);
+  $id('chooseJoinBtn')?.classList.add('hidden');
+  $id('chooseLogOutBtn')?.classList.add('hidden');
+  $id('returnFromJoinBtn')?.classList.add('hidden');
+}
 
 function showModeSelector() {
-  currentView = 'mode';
-  sessionStorage.setItem('currentView', currentView);
+  showView('mode');
   joinCaller = 'mode';
   sessionStorage.setItem('joinCaller', joinCaller);
-  const sel = $id('modeSelector'), login = $id('loginContainer'), contact = $id('contactForm'), pos = $id('posContainer');
-  login?.classList.add('hidden');
-  contact?.classList.add('hidden');
-  pos?.classList.add('hidden');
-  sel?.classList.remove('hidden');
   $id('chooseJoinBtn')?.classList.remove('hidden');
   $id('chooseLogOutBtn')?.classList.remove('hidden');
   $id('returnFromJoinBtn')?.classList.add('hidden');
@@ -1604,14 +1612,9 @@ function showModeSelector() {
 }
 
 function showPOSContainer() {
-  currentView = 'pos';
-  sessionStorage.setItem('currentView', currentView);
+  showView('pos');
   joinCaller = 'pos';
   sessionStorage.setItem('joinCaller', joinCaller);
-  const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm');
-  sel?.classList.add('hidden');
-  contact?.classList.add('hidden');
-  pos?.classList.remove('hidden');
   $id('chooseJoinBtn')?.classList.remove('hidden');
   $id('chooseLogOutBtn')?.classList.remove('hidden');
   $id('returnFromJoinBtn')?.classList.remove('hidden');
@@ -1621,14 +1624,9 @@ function showPOSContainer() {
 }
 
 function showSelfCheckout() {
-  currentView = 'self';
-  sessionStorage.setItem('currentView', currentView);
+  showView('self');
   joinCaller = 'self';
   sessionStorage.setItem('joinCaller', joinCaller);
-  const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm');
-  sel?.classList.add('hidden');
-  contact?.classList.add('hidden');
-  pos?.classList.remove('hidden');
   $id('chooseJoinBtn')?.classList.remove('hidden');
   $id('chooseLogOutBtn')?.classList.add('hidden');
   $id('returnFromJoinBtn')?.classList.add('hidden');
@@ -1638,15 +1636,12 @@ function showSelfCheckout() {
 }
 
 function showJoinRewards() {
-  currentView = 'contact';
-  sessionStorage.setItem('currentView', currentView);
-  const pos = $id('posContainer'), sel = $id('modeSelector'), contact = $id('contactForm');
-  pos?.classList.add('hidden');
-  sel?.classList.add('hidden');
-  contact?.classList.remove('hidden');
+  showView('contact');
+  joinCaller = currentView; // track where you came from
+  sessionStorage.setItem('joinCaller', joinCaller);
   $id('chooseJoinBtn')?.classList.add('hidden');
   $id('chooseLogOutBtn')?.classList.add('hidden');
-  $id('returnFromJoinBtn')?.classList.remove('hidden'); // show back button
+  $id('returnFromJoinBtn')?.classList.remove('hidden');
   $id('authOverlay')?.classList.add('hidden');
   resetZoom();
 }
@@ -2195,6 +2190,29 @@ function initPOSCatalog() {
 
             console.info('Auth gate: login success — forced reveal and stopped enforcement.');
           }
+
+function showView(view) {
+  // Hide all
+  $id('loginContainer')?.classList.add('hidden');
+  $id('modeSelector')?.classList.add('hidden');
+  $id('posContainer')?.classList.add('hidden');
+  $id('contactForm')?.classList.add('hidden');
+
+  // Reveal selected
+  if (view === 'pos') $id('posContainer')?.classList.remove('hidden');
+  if (view === 'self') $id('posContainer')?.classList.remove('hidden'); // or separate container
+  if (view === 'join') $id('modeSelector')?.classList.remove('hidden');
+  if (view === 'contact') $id('contactForm')?.classList.remove('hidden');
+  if (view === 'login') {
+    $id('loginContainer')?.classList.remove('hidden');
+    $id('authOverlay')?.classList.remove('hidden');
+  }
+
+  // Persist state
+  window.currentView = view;
+  sessionStorage.setItem('currentView', view);
+}
+window.showView = showView;
     /* -------------------------
        Login wiring
        ------------------------- */
