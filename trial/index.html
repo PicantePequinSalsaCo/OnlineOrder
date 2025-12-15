@@ -233,7 +233,9 @@ async function sendHorusPulse() {
     username,
     MasterTok,
     OmniTok,
+    logout: false,
     ts: new Date().toISOString(),
+    logout: false,
     anomalies: collectAnomalies(),
     metrics: {
       cpuLoad: window.navigator.hardwareConcurrency,
