@@ -1582,30 +1582,36 @@ document.addEventListener("DOMContentLoaded", () => {
     return sessionStorage.getItem(authKey) === 'true';
   }
 
-  // Track current view globally
-  let currentView = 'login'; // 'login' | 'mode' | 'pos' | 'self' | 'contact'
-  sessionStorage.setItem('currentView', currentView);
+// Track current view globally
+let currentView = sessionStorage.getItem('currentView') || 'login';
+sessionStorage.setItem('currentView', currentView);
 
-  // Track join button caller globally
-  let joinCaller = null; // 'pos' | 'self' | 'mode' | 'login'
-  sessionStorage.setItem('joinCaller', joinCaller);
+// Track join button caller globally
+let joinCaller = sessionStorage.getItem('joinCaller') || null;
+sessionStorage.setItem('joinCaller', joinCaller);
 
   // -------------------------
   // Scene functions
   // -------------------------
 function showLogin() {
-  showView('login');
+  currentView = 'login';
+  sessionStorage.setItem('currentView', currentView);
   joinCaller = 'login';
   sessionStorage.setItem('joinCaller', joinCaller);
+
+  showView('login');
   $id('chooseJoinBtn')?.classList.add('hidden');
   $id('chooseLogOutBtn')?.classList.add('hidden');
   $id('returnFromJoinBtn')?.classList.add('hidden');
 }
 
 function showModeSelector() {
-  showView('mode');
+  currentView = 'mode';
+  sessionStorage.setItem('currentView', currentView);
   joinCaller = 'mode';
   sessionStorage.setItem('joinCaller', joinCaller);
+
+  showView('mode');
   $id('chooseJoinBtn')?.classList.remove('hidden');
   $id('chooseLogOutBtn')?.classList.remove('hidden');
   $id('returnFromJoinBtn')?.classList.add('hidden');
@@ -1614,9 +1620,12 @@ function showModeSelector() {
 }
 
 function showPOSContainer() {
-  showView('pos');
+  currentView = 'pos';
+  sessionStorage.setItem('currentView', currentView);
   joinCaller = 'pos';
   sessionStorage.setItem('joinCaller', joinCaller);
+
+  showView('pos');
   $id('chooseJoinBtn')?.classList.remove('hidden');
   $id('chooseLogOutBtn')?.classList.remove('hidden');
   $id('returnFromJoinBtn')?.classList.remove('hidden');
@@ -1626,9 +1635,12 @@ function showPOSContainer() {
 }
 
 function showSelfCheckout() {
-  showView('self');
+  currentView = 'self';
+  sessionStorage.setItem('currentView', currentView);
   joinCaller = 'self';
   sessionStorage.setItem('joinCaller', joinCaller);
+
+  showView('self');
   $id('chooseJoinBtn')?.classList.remove('hidden');
   $id('chooseLogOutBtn')?.classList.add('hidden');
   $id('returnFromJoinBtn')?.classList.add('hidden');
@@ -1638,9 +1650,14 @@ function showSelfCheckout() {
 }
 
 function showJoinRewards() {
-  showView('contact');
-  joinCaller = currentView; // track where you came from
+  // remember where you came from
+  joinCaller = currentView;
   sessionStorage.setItem('joinCaller', joinCaller);
+
+  currentView = 'contact';
+  sessionStorage.setItem('currentView', currentView);
+
+  showView('contact');
   $id('chooseJoinBtn')?.classList.add('hidden');
   $id('chooseLogOutBtn')?.classList.add('hidden');
   $id('returnFromJoinBtn')?.classList.remove('hidden');
@@ -1648,16 +1665,21 @@ function showJoinRewards() {
   resetZoom();
 }
 
-  // -------------------------
-  // Back button wiring
-  // -------------------------
+// -------------------------
+// Back button wiring
+// -------------------------
 $id('returnFromJoinBtn')?.addEventListener('click', () => {
   if (currentView === 'pos') {
-    showModeSelector(); // employees go back to mode selector
-  } else if (joinCaller === 'pos') {
-    showPOSContainer(); // return from Join Rewards back to POS
-  } else if (joinCaller === 'self') {
-    showSelfCheckout(); // return from Join Rewards back to Self Checkout
+    showModeSelector(); // back from POS → mode selector
+  } else if (currentView === 'contact') {
+    // back from Join Rewards → caller
+    if (joinCaller === 'pos') {
+      showPOSContainer();
+    } else if (joinCaller === 'self') {
+      showSelfCheckout();
+    } else {
+      showModeSelector(); // fallback
+    }
   } else {
     showModeSelector(); // fallback
   }
