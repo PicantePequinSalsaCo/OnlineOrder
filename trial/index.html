@@ -2887,10 +2887,16 @@ document.addEventListener('DOMContentLoaded', once(() => {
     // ✅ Restart Horus if not already running
     if (typeof startHorus === 'function') startHorus();
 
-    // 🔥 Restore saved UI state here
+    //  Restore saved UI state here
     const savedView = sessionStorage.getItem('currentView');
     if (savedView) {
-      showView(savedView); // your helper that hides siblings and shows the right container
+      switch (savedView) {
+        case 'pos': showPOSContainer(); break;
+        case 'self': showSelfCheckout(); break;
+        case 'contact': showJoinRewards(); break;
+        case 'mode': showModeSelector(); break;
+        default: showLogin(); break;
+      }
     }
 
     const savedJoin = sessionStorage.getItem('joinCaller');
