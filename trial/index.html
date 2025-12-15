@@ -2247,14 +2247,6 @@ function showView(view) {
 }
 window.showView = showView;
 
-    console.info('[showView]', view, {
-  modeVisible: !$id('modeSelector')?.classList.contains('hidden'),
-  posVisible: !$id('posContainer')?.classList.contains('hidden'),
-  overlayHidden: $id('authOverlay')?.classList.contains('hidden'),
-  authPending: document.documentElement.classList.contains('pps-auth-pending'),
-  joinCaller: sessionStorage.getItem('joinCaller'),
-  currentView: sessionStorage.getItem('currentView')
-});
 
     /* -------------------------
        Login wiring
