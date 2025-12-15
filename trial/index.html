@@ -2235,6 +2235,10 @@ function showView(view) {
   if (view !== 'login') {
     $id('authOverlay')?.classList.add('hidden');
   }
+    // Lift paint-block in any non-login view
+  if (view !== 'login') {
+    document.documentElement.classList.remove('pps-auth-pending');
+  }
 
   // Persist state
   window.currentView = view;
