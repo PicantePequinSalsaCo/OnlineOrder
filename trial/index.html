@@ -2902,6 +2902,8 @@ document.addEventListener('DOMContentLoaded', once(() => {
         default: showLogin(); break;
       }
     }
+    // Force-lift any paint block once we’ve restored a view
+document.documentElement.classList.remove('pps-auth-pending');
 
   } else {
     console.info('Startup: no session, showing login');
