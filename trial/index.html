@@ -8,7 +8,7 @@
     // Paint-block until gate decides
     document.documentElement.classList.add('pps-auth-pending');
 
-        // 🔥 Collect anomalies and telemetry for Horus
+        //  Collect anomalies and telemetry for Horus
 function collectAnomalies() {
   const anomalies = [];
 
@@ -215,7 +215,7 @@ function horusEyes(state) {
   }
 }
 
-// 🔥 HORUS: sends Horus heartbeat to backend
+//  HORUS: sends Horus heartbeat to backend
 async function sendHorusPulse() {
   const sid       = sessionStorage.getItem("sid");
   const username  = sessionStorage.getItem("username");
@@ -270,14 +270,14 @@ async function sendHorusPulse() {
   }
 }
 
-// 🔥 startHorus: starts Horus pulse loop
+//  startHorus: starts Horus pulse loop
 function startHorus() {
   if (_horusTimer) return;
   _horusTimer = setInterval(sendHorusPulse, HORUS_INTERVAL_MS);
   sendHorusPulse(); // immediate first ping
 }
 
-// 🔥 stopHorus: stops Horus pulse loop
+//  stopHorus: stops Horus pulse loop
 function stopHorus() {
   if (_horusTimer) {
     clearInterval(_horusTimer);
@@ -321,7 +321,7 @@ function stopFlash(id) {
   el.removeAttribute("data-rate");
 }
 
-// 🔥 Unified eye controller
+//  Unified eye controller
 function setEyes(configs) {
   configs.forEach(cfg => {
     const { id, state, flash, rate } = cfg;
@@ -1040,7 +1040,7 @@ document.addEventListener("DOMContentLoaded", () => {
   min-height: 20px;
 }
 
-        /* 🔥 [WatchDog Patch B] Optional global toast style */
+        /*  [WatchDog Patch B] Optional global toast style */
     #globalToast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; z-index: 2000; }
 
     /* HORUS */
@@ -1766,7 +1766,7 @@ resetRewardsToGuest();
   }
 }
 
-// 🔥 Toast utility — generic, reused across flows
+// Toast utility — generic, reused across flows
 function showToast(msg, { kind = 'info', ms = 4000 } = {}) {
   let toast = document.getElementById('globalToast');
   if (!toast) {
@@ -2897,15 +2897,6 @@ document.addEventListener('DOMContentLoaded', once(() => {
         case 'mode': showModeSelector(); break;
         default: showLogin(); break;
       }
-    }
-
-    const savedJoin = sessionStorage.getItem('joinCaller');
-    if (savedJoin === 'join') {
-      $id('chooseJoinBtn')?.classList.remove('hidden');
-      $id('returnFromJoinBtn')?.classList.remove('hidden');
-    } else {
-      $id('chooseJoinBtn')?.classList.add('hidden');
-      $id('returnFromJoinBtn')?.classList.add('hidden');
     }
 
   } else {
