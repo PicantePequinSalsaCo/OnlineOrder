@@ -1107,12 +1107,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 /* Show tooltip on hover or tap */
-.btnrtn:hover.tooltip,
-.btnlog:hover.tooltip,
-.btnjoin:hover.tooltip,
-.btnrtn:focus.tooltip,
-.btnlog:focus.tooltip,
-.btnjoin:focus.tooltip,
+.btnrtn:hover .tooltip,
+.btnlog:hover .tooltip,
+.btnjoin:hover .tooltip,
+.btnrtn:focus .tooltip,
+.btnlog:focus .tooltip,
+.btnjoin:focus .tooltip,
 .horus:hover .tooltip,
 .horus:focus .tooltip {
   visibility: visible;
@@ -1176,6 +1176,7 @@ document.addEventListener("DOMContentLoaded", () => {
 .btnrtn,
 .btnlog,
 .btnjoin {
+  position: relative;
   background: none;
   border: none;
   padding: 0;
