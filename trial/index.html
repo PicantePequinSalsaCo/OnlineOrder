@@ -1105,7 +1105,11 @@ document.addEventListener("DOMContentLoaded", () => {
 }
 
 
-
+.btnrtn .tooltip,
+.btnlog .tooltip,
+.btnjoin .tooltip {
+  transform: translateX(-50%) translateY(160%); /* increase from 135% to 160% */
+}
 /* Show tooltip on hover or tap */
 .btnrtn:hover .tooltip,
 .btnlog:hover .tooltip,
