@@ -1107,6 +1107,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 /* Show tooltip on hover or tap */
+.btnrtn:hover.tooltip,
+.btnlog:hover.tooltip,
+.btnjoin:hover.tooltip,
+.btnrtn:focus.tooltip,
+.btnlog:focus.tooltip,
+.btnjoin:focus.tooltip,
 .horus:hover .tooltip,
 .horus:focus .tooltip {
   visibility: visible;
@@ -1227,9 +1233,8 @@ document.addEventListener("DOMContentLoaded", () => {
           <li>
             <button id="chooseJoinBtn" class="btnjoin hidden" aria-label="Join Rewards">
               <svg xmlns="http://www.w3.org/2000/svg"
-                   viewBox="-1.28 -1.28 18.56 18.56"
-                   width="24" height="24"
-                   transform="matrix(-1, 0, 0, 1, 0, 0)">
+                   viewBox="0 0 45.902 45.902"
+                   width="24" height="24">
                 <path d="M43.162,26.681c-1.564-1.578-3.631-2.539-5.825-2.742c1.894-1.704,3.089-4.164,3.089-6.912
 						c0-5.141-4.166-9.307-9.308-9.307c-4.911,0-8.932,3.804-9.281,8.625c4.369,1.89,7.435,6.244,7.435,11.299
 						c0,1.846-0.42,3.65-1.201,5.287c1.125,0.588,2.162,1.348,3.066,2.26c2.318,2.334,3.635,5.561,3.61,8.851l-0.002,0.067
