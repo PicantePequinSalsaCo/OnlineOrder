@@ -1654,13 +1654,6 @@ function showPOSContainer() {
   sessionStorage.setItem('currentView', currentView);
   joinCaller = 'pos';
   sessionStorage.setItem('joinCaller', joinCaller);
-
-	  // 🔥 Clear cart when entering POS
-  if (Array.isArray(window.posCart)) {
-    window.posCart.length = 0;
-  }
-  renderCart(); // ensure UI updates
-
 	
   showView('pos');
   $id('chooseJoinBtn')?.classList.remove('hidden');
@@ -1677,12 +1670,6 @@ function showSelfCheckout() {
   sessionStorage.setItem('currentView', currentView);
   joinCaller = 'self';
   sessionStorage.setItem('joinCaller', joinCaller);
-
-	  // 🔥 Clear cart when entering POS
-  if (Array.isArray(window.posCart)) {
-    window.posCart.length = 0;
-  }
-  renderCart(); // ensure UI updates
 
 
   showView('self');
