@@ -1663,6 +1663,7 @@ function showPOSContainer() {
   initPOSCatalog();
   resetZoom();
   resetRewardsToGuest();
+  clearPOSCartOnly();
 }
 
 function showSelfCheckout() {
@@ -1680,6 +1681,7 @@ function showSelfCheckout() {
   initPOSCatalog();
   resetZoom();
   resetRewardsToGuest();
+  clearPOSCartOnly();
 }
 
 function showJoinRewards() {
@@ -1697,7 +1699,18 @@ function showJoinRewards() {
   $id('authOverlay')?.classList.add('hidden');
   resetZoom();
 }
+	
+function clearPOSCartOnly() {
+  // Clear the underlying cart array
+  if (Array.isArray(window.posCart)) {
+    window.posCart.length = 0;
+  }
 
+  // Clear the DOM rows + totals
+  if (typeof renderCart === 'function') {
+    renderCart();
+  }
+}
 // -------------------------
 // Back button wiring
 // -------------------------
