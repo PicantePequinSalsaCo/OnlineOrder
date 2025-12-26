@@ -2101,7 +2101,7 @@ function initPOSCatalog() {
             inputEl.value = window.rewardsMember?.points || 0;
           }
           window.rewardsConsumedPoints = 0;
-          const applyBtn = $id('applyRewardsBtn');
+          const applyBtn = $id('checkoutApplyRewardsBtn');
           if (applyBtn) { applyBtn.disabled = false; applyBtn.classList.remove('disabled'); }
         };
       } else {
@@ -2189,7 +2189,7 @@ function initPOSCatalog() {
       inputEl.classList.remove('locked');
       inputEl.value = window.rewardsMember?.points || 0;
     }
-    const applyBtn = $id('applyRewardsBtn');
+    const applyBtn = $id('checkoutApplyRewardsBtn');
     if (applyBtn) { applyBtn.disabled = false; applyBtn.classList.remove('disabled'); }
   });
 
