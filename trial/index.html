@@ -1356,12 +1356,15 @@ document.addEventListener("DOMContentLoaded", () => {
             <button id="posClearBtn" class="btn">Clear Cart</button>
             <button id="openRewardsModal" class="btn rewards">Get Rewards Member Info</button>                        <!-- Rewards summary inline -->
             <div class="rewards-row">
-             <span class="rewards-label">Member:</span>
-             <span id="rewardsMemberName" class="rewards-box">—</span>
-             <span class="rewards-label">Balance:</span>
-             <span id="rewardsMemberBalance" class="rewards-box">$0.00</span>
-             <input type="number" id="rewardsRedeemInput" class="rewards-input" min="0" step="0.01" disabled />
-             <button id="applyRewardsBtn" class="btn apply-rewards" disabled>Apply</button>
+                <span class="rewards-label">Member:</span>
+                <span id="checkoutMemberName" class="rewards-box">Guest</span>
+
+                <span class="rewards-label">Balance:</span>
+                <span id="checkoutRewardsBalance" class="rewards-box">$0.00</span>
+
+                <input type="number" id="checkoutRewardsInput" class="rewards-input" min="0" step="0.01" disabled />
+
+                <button id="checkoutApplyRewardsBtn" class="btn apply-rewards" disabled>Apply</button>
             </div>
           </div>
         </aside>
@@ -2175,6 +2178,7 @@ function initPOSCatalog() {
   $id('posClearBtn')?.addEventListener('click', () => {
     cart.length = 0;
     renderCart();
+    resetRewardsToGuest();
     window.rewardsConsumedPoints = 0;
     const openBtn = $id('openRewardsModal');
     const inputEl = $id('rewardsRedeemInput');
@@ -2848,8 +2852,9 @@ function openCheckoutModalWithCart(cart) {
      ============================================================ */
   // Your existing Phase‑2 logic remains untouched here.
   // We will refactor this in Phase 2.
+  // <-- delete for enablement of submitBtn.onclick = handleSubmit;
 
-  submitBtn.onclick = handleSubmit;
+
   closeBtn.onclick = () => {
     modal.classList.add('contact-hidden');
     document.body.classList.remove('body-lock');
