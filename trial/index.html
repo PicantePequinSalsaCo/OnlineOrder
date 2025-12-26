@@ -1536,16 +1536,17 @@ document.addEventListener("DOMContentLoaded", () => {
     <h2 style="text-align:center; margin-top:0; color:var(--ink)">Checkout</h2>
 
     <!-- Tender selection -->
-    <div class="tender">
-      <label class="tender-option">
-        <input type="radio" name="tender" value="CASH" checked>
-        <span>Cash</span>
-      </label>
-      <label class="tender-option">
-        <input type="radio" name="tender" value="CARD">
-        <span>Card</span>
-      </label>
-    </div>
+<div class="tender">
+  <label class="tender-option" id="tenderCashLabel">
+    <input type="radio" id="tenderCash" name="tender" value="CASH" checked>
+    <span>Cash</span>
+  </label>
+
+  <label class="tender-option" id="tenderCardLabel">
+    <input type="radio" id="tenderCard" name="tender" value="CARD">
+    <span>Card</span>
+  </label>
+</div>
 
     <!-- Static cart replica -->
     <div id="cartReplica" class="replica"></div>
@@ -2754,6 +2755,7 @@ function openCheckoutModalWithCart(cart) {
     }
   }
 
+  showModal();
   configureTenderOptions(checkoutMode);
 
 
@@ -2838,7 +2840,7 @@ function openCheckoutModalWithCart(cart) {
     modal.classList.remove('contact-hidden');
   }
 
-  showModal();
+  
 
 
   /* ============================================================
