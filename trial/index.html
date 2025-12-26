@@ -1710,6 +1710,13 @@ function clearPOSCartOnly() {
   if (typeof renderCart === 'function') {
     renderCart();
   }
+  // Unlock the rewards lookup button
+  const openBtn = $id('openRewardsModal');
+  if (openBtn) {
+    openBtn.disabled = false;
+    openBtn.classList.remove('disabled');
+    openBtn.removeAttribute('aria-disabled');
+  }
 }
 // -------------------------
 // Back button wiring
