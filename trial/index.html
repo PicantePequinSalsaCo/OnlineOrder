@@ -1764,10 +1764,10 @@ function resetRewardsToGuest() {
   window.rewardsConsumedPoints = 0;
 
   // POS / Self Checkout inline UI
-  const memberNameEl = document.getElementById("rewardsMemberName");
-  const balanceEl = document.getElementById("rewardsBalance");
-  const inputEl = document.getElementById("rewardsRedeemInput");
-  const applyBtn = document.getElementById("applyRewardsBtn");
+  const memberNameEl = document.getElementById("checkoutMemberName");
+  const balanceEl = document.getElementById("checkoutRewardsBalance");
+  const inputEl = document.getElementById("checkoutRewardsInput");
+  const applyBtn = document.getElementById("checkoutApplyRewardsBtn");
 
   if (memberNameEl) memberNameEl.textContent = "Guest";
   if (balanceEl) balanceEl.textContent = "$0.00";
@@ -2497,10 +2497,10 @@ window.showView = showView;
           };
 
           // Populate inline rewards UI
-          const nameEl = document.getElementById('rewardsMemberName');
-          const balEl = document.getElementById('rewardsMemberBalance');
-          const inputEl = document.getElementById('rewardsRedeemInput');
-          const applyBtn = document.getElementById('applyRewardsBtn');
+          const nameEl = document.getElementById('checkoutMemberName');
+          const balEl = document.getElementById('checkoutRewardsBalance');
+          const inputEl = document.getElementById('checkoutRewardsInput');
+          const applyBtn = document.getElementById('checkoutApplyRewardsBtn');
 
           if (nameEl) nameEl.textContent = window.rewardsMember.name;
           if (balEl) balEl.textContent = `$${balance}`; // or  balance.toString() if you want string
