@@ -2512,18 +2512,23 @@ window.showView = showView;
 
                    // 🔒 Clamp free typing to cart total (points) and rewards balance (points)
               inputEl.addEventListener('input', () => {
-                const cartTotal = typeof window.cartTotal === 'number' ? window.cartTotal : Infinity;
-                const cartPoints = Math.floor(cartTotal * 1000); // convert dollars → points
-                const rewardsPoints = window.rewardsMember?.points || 0;
+                    const cartTotal = typeof window.cartTotal === 'number' ? window.cartTotal : Infinity;
+                    const cartPoints = Math.floor(cartTotal * 1000);
+                    const rewardsPoints = window.rewardsMember?.points || 0;
 
-                let val = parseInt(inputEl.value || '0', 10);
-                if (isNaN(val) || val < 0) val = 0;
-                if (val > cartPoints) val = cartPoints;
-                if (val > rewardsPoints) val = rewardsPoints;
+                    let val = parseInt(inputEl.value || '0', 10);
 
-                      // Show clamped points back in the field (not dollars yet!)
-                inputEl.value = val;
-              });
+                    if (isNaN(val)) return; // let browser handle empty state
+
+                    if (val < 0) val = 0;
+                    if (val > cartPoints) val = cartPoints;
+                    if (val > rewardsPoints) val = rewardsPoints;
+
+                      // Only update if clamped
+                    if (inputEl.value != val.toString()) {
+                        inputEl.value = val;
+                    }
+                });
 
                   // On focus, just leave the field editable in points
               inputEl.addEventListener('focus', () => {
