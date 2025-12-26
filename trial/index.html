@@ -2093,7 +2093,7 @@ function initPOSCatalog() {
           cart.splice(idx, 1);
           renderCart();
           // Re-enable rewards input
-          const inputEl = $id('rewardsRedeemInput');
+          const inputEl = $id('checkoutRewardsInput');
           if (inputEl) {
             inputEl.disabled = false;
             inputEl.readOnly = false;
@@ -2180,7 +2180,7 @@ function initPOSCatalog() {
     renderCart();
     window.rewardsConsumedPoints = 0;
     const openBtn = $id('openRewardsModal');
-    const inputEl = $id('rewardsRedeemInput');
+    const inputEl = $id('checkoutRewardsInput');
     if (openBtn) { openBtn.disabled = false; openBtn.classList.remove('disabled'); }
     if (inputEl) {
       inputEl.value = '';
@@ -2541,7 +2541,7 @@ if (applyBtn) {
     const rewardsPoints = window.rewardsMember?.points || 0;
 
           // Always parse directly from the input field
-  let valPoints = parseInt((document.getElementById('rewardsRedeemInput')?.value || '0'), 10);
+  let valPoints = parseInt((document.getElementById('checkoutRewardsInput')?.value || '0'), 10);
   if (isNaN(valPoints)) valPoints = 0;
 
     const cartPoints = Math.floor(cartTotal * 1000);
