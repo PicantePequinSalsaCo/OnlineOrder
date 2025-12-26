@@ -1357,7 +1357,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <button id="openRewardsModal" class="btn rewards">Get Rewards Member Info</button>                        <!-- Rewards summary inline -->
             <div class="rewards-row">
                 <span class="rewards-label">Member:</span>
-                <span id="checkoutMemberName" class="rewards-box">Guest</span>
+                 <span id="checkoutMemberName" class="rewards-box">Guest</span>
 
                 <span class="rewards-label">Balance:</span>
                 <span id="checkoutRewardsBalance" class="rewards-box">$0.00</span>
@@ -2178,7 +2178,6 @@ function initPOSCatalog() {
   $id('posClearBtn')?.addEventListener('click', () => {
     cart.length = 0;
     renderCart();
-    resetRewardsToGuest();
     window.rewardsConsumedPoints = 0;
     const openBtn = $id('openRewardsModal');
     const inputEl = $id('rewardsRedeemInput');
