@@ -2686,6 +2686,24 @@ function openCheckoutModalWithCart(cart) {
   }
 
   const snapshot = buildCartSnapshot(cart);
+
+
+  /* ============================================================
+     MODULE 2 — Grab Modal Elements
+     ============================================================ */
+  const modal = document.getElementById('checkoutModal');
+  const replica = document.getElementById('cartReplica');
+  const cashControls = document.getElementById('cashControls');
+  const cashReceivedEl = document.getElementById('cashReceived');
+  const changeDueEl = document.getElementById('changeDue');
+  const statusRow = document.getElementById('statusRow');
+  const submitBtn = document.getElementById('submitOrderBtn');
+  const closeBtn = document.getElementById('closeCheckoutModal');
+
+  const cashOption = document.getElementById("tenderCash");
+  const cashLabel = document.getElementById("tenderCashLabel");
+  const cardOption = document.getElementById("tenderCard");
+
   // ============================================================
 // ZERO‑TOTAL CART → Disable Cash in POS
 // ============================================================
@@ -2705,25 +2723,7 @@ if (mode === "pos" && isZeroTotal) {
     cardOption.checked = true;
   }
 }
-
-
-  /* ============================================================
-     MODULE 2 — Grab Modal Elements
-     ============================================================ */
-  const modal = document.getElementById('checkoutModal');
-  const replica = document.getElementById('cartReplica');
-  const cashControls = document.getElementById('cashControls');
-  const cashReceivedEl = document.getElementById('cashReceived');
-  const changeDueEl = document.getElementById('changeDue');
-  const statusRow = document.getElementById('statusRow');
-  const submitBtn = document.getElementById('submitOrderBtn');
-  const closeBtn = document.getElementById('closeCheckoutModal');
-
-  const cashOption = document.getElementById("tenderCash");
-  const cashLabel = document.getElementById("tenderCashLabel");
-  const cardOption = document.getElementById("tenderCard");
-
-
+	
   /* ============================================================
      MODULE 3 — Reset Modal State
      ============================================================ */
