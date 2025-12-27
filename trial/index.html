@@ -2873,18 +2873,190 @@ function openCheckoutModalWithCart(cart) {
 
 
   /* ============================================================
-     MODULE 11 — Keep Phase 2 Logic Intact (Submit + Close)
+     MODULE 11 — Checkout API wiring (Phase 2)
+     OmniTok-first + Cash/Card flows
      ============================================================ */
-  // Your existing Phase‑2 logic remains untouched here.
-  // We will refactor this in Phase 2.
-  // <-- delete for enablement of submitBtn.onclick = handleSubmit;
 
+  // Local state for retry / diagnostics
+  let lastPayload = null;
+  let lastEndpoints = null;
 
+  // Helper: get current tender directly from DOM
+  function getCurrentTender() {
+    const r = document.querySelector('input[name="tender"]:checked');
+    return r ? r.value : 'CASH'; // default
+  }
+
+  async function createOrderWithOmniTok(tenderType, payloadMeta = {}) {
+    // OmniTok preflight
+    const omni = await getOmniTok('pos_checkout', payloadMeta);
+    if (!omni || !omni.endpoint) {
+      throw new Error('OmniTok preflight returned no endpoint');
+    }
+
+    const username = sessionStorage.getItem('username') || 'unknown';
+
+    // Rewards context
+    const m = window.rewardsMember || {
+      name: 'Guest',
+      email: null,
+      phone: null,
+      points: 0,
+      balance: '0.00',
+      isGuest: true
+    };
+
+    const rewardsPointsConsumed = window.rewardsConsumedPoints || 0;
+
+    // Payload aligned to your backend mapping, but extended for Phase 2/3
+    const payload = {
+      tenderType,                       // 'CASH' or 'CARD'
+      cartItems: snapshot.items,        // built in Module 1
+      subtotal: snapshot.subtotal,
+      taxRate: TAX_RATE,
+      taxAmount: snapshot.taxAmount,
+      total: snapshot.total,
+
+      // Session / auth
+      sid: omni.sid,
+      authTok: omni.authToken,
+      clientTime: new Date().toISOString(),
+      username,
+
+      // Mode + rewards context
+      checkoutMode: checkoutMode,       // 'pos' or 'self'
+      rewards: {
+        memberName: m.name,
+        memberEmail: m.email,
+        memberPhone: m.phone,
+        pointsAvailable: m.points,
+        balanceDollars: m.balance,
+        pointsConsumed: rewardsPointsConsumed
+      },
+
+      // Extra meta from caller
+      meta: payloadMeta || {}
+    };
+
+    lastPayload = payload;
+    lastEndpoints = {
+      createOrder: omni.endpoint,
+      orderStatusBase: omni.statusBase || '/orders'
+    };
+
+    const res = await fetch(omni.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-omnitok': omni.OmniTok,
+        'x-sid': omni.sid,
+        'x-act': omni.act,
+        'x-auth-token': omni.authToken
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '');
+      throw new Error(detail || 'Order creation failed');
+    }
+
+    const json = await res.json().catch(() => ({}));
+    return {
+      omni,
+      orderId: json.orderId,
+      endpoints: lastEndpoints
+    };
+  }
+
+  async function pollOrderStatus(orderId, statusEndpoint, onTick) {
+    const start = Date.now();
+
+    while (Date.now() - start < PAYMENT_TIMEOUT_MS) {
+      try {
+        const r = await fetch(`${statusEndpoint}/${orderId}/status`, {
+          credentials: 'include'
+        });
+        if (!r.ok) throw new Error('Status check failed');
+
+        const { status } = await r.json();
+        if (typeof onTick === 'function') onTick(status);
+
+        if (status === STATUS_SUCCESS) {
+          return { ok: true, status };
+        }
+        if (STATUS_FAIL_LIST.includes(status)) {
+          return { ok: false, status };
+        }
+      } catch (_) {
+        // transient error, continue polling
+      }
+
+      await new Promise(res => setTimeout(res, POLL_INTERVAL_MS));
+    }
+
+    return { ok: false, status: 'TIMEOUT' };
+  }
+
+  async function handleSubmit() {
+    const tenderType = getCurrentTender();  // 'CASH' or 'CARD'
+    submitBtn.disabled = true;
+    statusRow.textContent = '';
+
+    try {
+      const meta = {
+        rewardsPointsConsumed: window.rewardsConsumedPoints || 0,
+        checkoutMode
+      };
+
+      const { orderId, endpoints } = await createOrderWithOmniTok(tenderType, meta);
+
+      // CASH FLOW — fire-and-forget, no reader
+      if (tenderType === 'CASH') {
+        showToast(`Cash order created: ${orderId}`);
+        // Phase 3 stub: post-checkout POS reset / receipt, etc.
+        modal.classList.add('contact-hidden');
+        document.body.classList.remove('body-lock');
+        return;
+      }
+
+      // CARD FLOW — backend pushes to reader, we poll status
+      statusRow.textContent = 'Waiting for card payment... please follow the reader instructions.';
+      const base = endpoints.orderStatusBase || '/orders';
+
+      const result = await pollOrderStatus(orderId, base, (status) => {
+        statusRow.textContent =
+          status === STATUS_SUCCESS
+            ? 'Payment confirmed.'
+            : `Payment status: ${status}...`;
+      });
+
+      if (result.ok) {
+        showToast(`Card payment succeeded: ${orderId}`);
+        // Phase 3 stub: post-checkout POS reset / receipt, etc.
+        modal.classList.add('contact-hidden');
+        document.body.classList.remove('body-lock');
+      } else {
+        // Keep modal open to allow retry; use lastPayload / lastEndpoints if you want a retry button later
+        statusRow.textContent =
+          `Payment ${result.status.toLowerCase()}. You can retry the card transaction.`;
+      }
+    } catch (err) {
+      console.error('Checkout error:', err);
+      statusRow.textContent = 'Checkout failed. You can retry.';
+    } finally {
+      submitBtn.disabled = false;
+    }
+  }
+
+  // Wire buttons
+  submitBtn.onclick = handleSubmit;
   closeBtn.onclick = () => {
     modal.classList.add('contact-hidden');
     document.body.classList.remove('body-lock');
   };
 
+  // Finally show the modal
   showModal();
 }
 
