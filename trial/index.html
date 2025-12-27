@@ -2704,26 +2704,7 @@ function openCheckoutModalWithCart(cart) {
   const cashLabel = document.getElementById("tenderCashLabel");
   const cardOption = document.getElementById("tenderCard");
 
-  // ============================================================
-// ZERO‑TOTAL CART → Disable Cash in POS
-// ============================================================
-const isZeroTotal = snapshot.total === 0;
-const mode = sessionStorage.getItem("currentView"); // 'pos' or 'self'
 
-if (mode === "pos" && isZeroTotal) {
-  // Force card
-  if (cashOption) {
-    cashOption.checked = false;
-    cashOption.disabled = true;
-  }
-  if (cashLabel) {
-    cashLabel.classList.add("hidden");
-  }
-  if (cardOption) {
-    cardOption.checked = true;
-  }
-}
-	
   /* ============================================================
      MODULE 3 — Reset Modal State
      ============================================================ */
@@ -2790,26 +2771,41 @@ if (mode === "pos" && isZeroTotal) {
   const checkoutMode = sessionStorage.getItem("currentView"); // 'pos' or 'self'
 
 
-  /* ============================================================
-     MODULE 6 — Configure Tender Options (Cash Disable in Self)
-     ============================================================ */
-  function configureTenderOptions(mode) {
-    if (mode === "self") {
-      if (cashOption) {
-        cashOption.checked = false;
-        cashOption.disabled = true;
-      }
-      if (cashLabel) cashLabel.classList.add("hidden");
 
-      if (cardOption) cardOption.checked = true;
+/* ============================================================
+   MODULE 6 — Configure Tender Options (Cash Disable in Self + Zero-Total in POS)
+   ============================================================ */
+function configureTenderOptions(mode) {
+  const isZeroTotal = snapshot.total === 0;
 
-    } else {
-      if (cashOption) {
-        cashOption.disabled = false;
-        cashLabel.classList.remove("hidden");
-      }
+  // Self checkout → always card only
+  if (mode === "self") {
+    if (cashOption) {
+      cashOption.checked = false;
+      cashOption.disabled = true;
     }
+    if (cashLabel) cashLabel.classList.add("hidden");
+    if (cardOption) cardOption.checked = true;
+    return;
   }
+
+  // POS + zero-total → force card only
+  if (mode === "pos" && isZeroTotal) {
+    if (cashOption) {
+      cashOption.checked = false;
+      cashOption.disabled = true;
+    }
+    if (cashLabel) cashLabel.classList.add("hidden");
+    if (cardOption) cardOption.checked = true;
+    return;
+  }
+
+  // POS + non-zero → allow cash
+  if (cashOption) {
+    cashOption.disabled = false;
+    cashLabel.classList.remove("hidden");
+  }
+}
 
   
   configureTenderOptions(checkoutMode);
