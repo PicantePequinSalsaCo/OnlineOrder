@@ -2486,8 +2486,16 @@ window.showView = showView;
           phoneDigits = phoneDigits.slice(0,10);
           
 
-          if (!emailVal && !phoneDigits) { alert('Please enter an email or a 10-digit phone number.'); return; }
+                // Enforce single-identity lookup
+                if (!emailVal && !phoneDigits) {
+                alert('Please enter an email OR a 10-digit phone number.');
+                return;
+                }
 
+                if (emailVal && phoneDigits) {
+                alert('Please enter ONLY email OR ONLY phone — not both.');
+                 return;
+                }
           const omni = await getOmniTok(lookupBtn.dataset.act || 'posrewardsmember', { email: emailVal || undefined, phone: phoneDigits || undefined });
           if (!omni || !omni.endpoint) throw new Error('OmniTok preflight returned no endpoint.');
 
@@ -2678,6 +2686,25 @@ function openCheckoutModalWithCart(cart) {
   }
 
   const snapshot = buildCartSnapshot(cart);
+  // ============================================================
+// ZERO‑TOTAL CART → Disable Cash in POS
+// ============================================================
+const isZeroTotal = snapshot.total === 0;
+const mode = sessionStorage.getItem("currentView"); // 'pos' or 'self'
+
+if (mode === "pos" && isZeroTotal) {
+  // Force card
+  if (cashOption) {
+    cashOption.checked = false;
+    cashOption.disabled = true;
+  }
+  if (cashLabel) {
+    cashLabel.classList.add("hidden");
+  }
+  if (cardOption) {
+    cardOption.checked = true;
+  }
+}
 
 
   /* ============================================================
@@ -2948,6 +2975,7 @@ function openCheckoutModalWithCart(cart) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'username': sessionStorage.getItem('username'),
         'x-omnitok': omni.OmniTok,
         'x-sid': omni.sid,
         'x-act': omni.act,
