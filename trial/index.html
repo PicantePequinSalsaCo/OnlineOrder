@@ -1578,6 +1578,30 @@ document.addEventListener("DOMContentLoaded", () => {
 </div>
 
 
+<!-- Phase 3: Order Success Modal -->
+<div id="orderSuccessModal" class="contact-popup contact-hidden" role="dialog" aria-modal="true" aria-label="Order success">
+  <div class="contact-overlay"></div>
+  <div class="contact-card">
+    <h2 style="text-align:center; margin-top:0; color:var(--ink)">Thank you for your order!</h2>
+
+    <div id="orderSuccessBody" style="margin-top:10px; color:var(--ink); font-size:0.95rem;">
+      <!-- Populated by JS -->
+      <p id="orderSuccessLine1"></p>
+      <p id="orderSuccessLine2"></p>
+    </div>
+
+    <!-- Guest-only CTA -->
+    <div id="orderSuccessGuestActions" class="contact-actions" style="margin-top:12px; display:none; flex-direction:column; gap:8px;">
+      <button id="keepPointsBtn" class="btn primary">Keep my points and join rewards</button>
+    </div>
+
+    <!-- Universal dismiss -->
+    <div class="contact-actions" style="margin-top:10px;">
+      <button id="dismissOrderSuccessBtn" class="close-modal-btn" aria-label="Dismiss">Dismiss</button>
+    </div>
+  </div>
+</div>
+
     <!-- Optional overlay (logged-out focus aid) -->
     <div id="authOverlay" class="hidden" aria-hidden="true"></div>
   </main>
@@ -2643,14 +2667,12 @@ if (applyBtn) {
       form._rewardsHandler = onSubmit;
     }
 
-    /* -------------------------
+/* -------------------------
    Checkout modal flow
    ------------------------- */
 const TAX_RATE = 0.0825;
-const POLL_INTERVAL_MS = 8000;      // 7–8s cadence as requested
-const PAYMENT_TIMEOUT_MS = 180000;  // 3 minutes
-const STATUS_SUCCESS = 'PAID';
-const STATUS_FAIL_LIST = ['FAILED', 'CANCELED', 'DECLINED', 'ERROR'];
+const POLL_INTERVAL_MS = 8000;      // for PENDING loop
+const PAYMENT_TIMEOUT_MS = 180000;  // 3 minutes safety cap
 
 function money(v) {
   const n = Number(v);
@@ -2660,12 +2682,10 @@ function money(v) {
 function fmt(v) { return `$${money(v).toFixed(2)}`; }
 
 /* ============================================================
-   Checkout Modal — Phase 1 Refactor
-   Guest Defaults + Self Checkout Cash Disable
+   Checkout Modal — Phase 1/2
    ============================================================ */
 
 function openCheckoutModalWithCart(cart) {
-
   /* ============================================================
      MODULE 1 — Build Cart Snapshot
      ============================================================ */
@@ -2687,7 +2707,6 @@ function openCheckoutModalWithCart(cart) {
 
   const snapshot = buildCartSnapshot(cart);
 
-
   /* ============================================================
      MODULE 2 — Grab Modal Elements
      ============================================================ */
@@ -2704,7 +2723,6 @@ function openCheckoutModalWithCart(cart) {
   const cashLabel = document.getElementById("tenderCashLabel");
   const cardOption = document.getElementById("tenderCard");
 
-
   /* ============================================================
      MODULE 3 — Reset Modal State
      ============================================================ */
@@ -2716,7 +2734,6 @@ function openCheckoutModalWithCart(cart) {
   }
 
   resetModalState();
-
 
   /* ============================================================
      MODULE 4 — Render Cart Replica
@@ -2764,52 +2781,47 @@ function openCheckoutModalWithCart(cart) {
 
   renderCartReplica(snapshot);
 
-
   /* ============================================================
      MODULE 5 — Determine Checkout Mode
      ============================================================ */
   const checkoutMode = sessionStorage.getItem("currentView"); // 'pos' or 'self'
 
+  /* ============================================================
+     MODULE 6 — Configure Tender Options
+     ============================================================ */
+  function configureTenderOptions(mode) {
+    const isZeroTotal = snapshot.total === 0;
 
-
-/* ============================================================
-   MODULE 6 — Configure Tender Options (Cash Disable in Self + Zero-Total in POS)
-   ============================================================ */
-function configureTenderOptions(mode) {
-  const isZeroTotal = snapshot.total === 0;
-
-  // Self checkout → always card only
-  if (mode === "self") {
-    if (cashOption) {
-      cashOption.checked = false;
-      cashOption.disabled = true;
+    // Self checkout → card only
+    if (mode === "self") {
+      if (cashOption) {
+        cashOption.checked = false;
+        cashOption.disabled = true;
+      }
+      if (cashLabel) cashLabel.classList.add("hidden");
+      if (cardOption) cardOption.checked = true;
+      return;
     }
-    if (cashLabel) cashLabel.classList.add("hidden");
-    if (cardOption) cardOption.checked = true;
-    return;
-  }
 
-  // POS + zero-total → force card only
-  if (mode === "pos" && isZeroTotal) {
-    if (cashOption) {
-      cashOption.checked = false;
-      cashOption.disabled = true;
+    // POS + zero-total → force card only
+    if (mode === "pos" && isZeroTotal) {
+      if (cashOption) {
+        cashOption.checked = false;
+        cashOption.disabled = true;
+      }
+      if (cashLabel) cashLabel.classList.add("hidden");
+      if (cardOption) cardOption.checked = true;
+      return;
     }
-    if (cashLabel) cashLabel.classList.add("hidden");
-    if (cardOption) cardOption.checked = true;
-    return;
+
+    // POS + non-zero → allow cash
+    if (cashOption) {
+      cashOption.disabled = false;
+      cashLabel.classList.remove("hidden");
+    }
   }
 
-  // POS + non-zero → allow cash
-  if (cashOption) {
-    cashOption.disabled = false;
-    cashLabel.classList.remove("hidden");
-  }
-}
-
-  
   configureTenderOptions(checkoutMode);
-
 
   /* ============================================================
      MODULE 7 — Tender Toggle UI
@@ -2836,7 +2848,6 @@ function configureTenderOptions(mode) {
 
   wireTenderUI();
 
-
   /* ============================================================
      MODULE 8 — Change Due Live Update
      ============================================================ */
@@ -2849,7 +2860,6 @@ function configureTenderOptions(mode) {
   }
 
   wireCashChangeUI();
-
 
   /* ============================================================
      MODULE 9 — Populate Checkout Rewards UI (Guest Default)
@@ -2883,7 +2893,6 @@ function configureTenderOptions(mode) {
 
   syncCheckoutRewardsUI();
 
-
   /* ============================================================
      MODULE 10 — Show Modal
      ============================================================ */
@@ -2892,26 +2901,20 @@ function configureTenderOptions(mode) {
     modal.classList.remove('contact-hidden');
   }
 
-  
-
-
   /* ============================================================
      MODULE 11 — Checkout API wiring (Phase 2)
-     OmniTok-first + Cash/Card flows
      ============================================================ */
 
-  // Local state for retry / diagnostics
+  // Local state for retry / diagnostics (kept, in case you expand later)
   let lastPayload = null;
   let lastEndpoints = null;
 
-  // Helper: get current tender directly from DOM
   function getCurrentTender() {
     const r = document.querySelector('input[name="tender"]:checked');
-    return r ? r.value : 'CASH'; // default
+    return r ? r.value : 'CASH';
   }
 
   async function createOrderWithOmniTok(tenderType, payloadMeta = {}) {
-    // OmniTok preflight
     const omni = await getOmniTok('pos_checkout', payloadMeta);
     if (!omni || !omni.endpoint) {
       throw new Error('OmniTok preflight returned no endpoint');
@@ -2919,7 +2922,6 @@ function configureTenderOptions(mode) {
 
     const username = sessionStorage.getItem('username') || 'unknown';
 
-    // Rewards context
     const m = window.rewardsMember || {
       name: 'Guest',
       email: null,
@@ -2931,23 +2933,20 @@ function configureTenderOptions(mode) {
 
     const rewardsPointsConsumed = window.rewardsConsumedPoints || 0;
 
-    // Payload aligned to your backend mapping, but extended for Phase 2/3
     const payload = {
-      tenderType,                       // 'CASH' or 'CARD'
-      cartItems: snapshot.items,        // built in Module 1
+      tenderType,
+      cartItems: snapshot.items,
       subtotal: snapshot.subtotal,
       taxRate: TAX_RATE,
       taxAmount: snapshot.taxAmount,
       total: snapshot.total,
 
-      // Session / auth
       sid: omni.sid,
       authTok: omni.authToken,
       clientTime: new Date().toISOString(),
       username,
 
-      // Mode + rewards context
-      checkoutMode: checkoutMode,       // 'pos' or 'self'
+      checkoutMode: checkoutMode,
       rewards: {
         memberName: m.name,
         memberEmail: m.email,
@@ -2957,14 +2956,12 @@ function configureTenderOptions(mode) {
         pointsConsumed: rewardsPointsConsumed
       },
 
-      // Extra meta from caller
       meta: payloadMeta || {}
     };
 
     lastPayload = payload;
     lastEndpoints = {
-      createOrder: omni.endpoint,
-      orderStatusBase: omni.statusBase || '/orders'
+      createOrder: omni.endpoint
     };
 
     const res = await fetch(omni.endpoint, {
@@ -2986,40 +2983,95 @@ function configureTenderOptions(mode) {
     }
 
     const json = await res.json().catch(() => ({}));
+
+    // json is your backend response: { status, orderId, checkoutMode, memberName, isGuest, rewards {...} }
     return {
       omni,
-      orderId: json.orderId,
-      endpoints: lastEndpoints
+      response: json
     };
   }
 
-  async function pollOrderStatus(orderId, statusEndpoint, onTick) {
+  // Sleep helper for PENDING polling loop
+  function sleep(ms) {
+    return new Promise(res => setTimeout(res, ms));
+  }
+   //Start PHASE 3
+  async function handlePaid(resp) {
+       showToast(`Order ${resp.orderId} completed (${resp.status}).`);
+    modal.classList.add('contact-hidden');
+    document.body.classList.remove('body-lock');
+    // stash resp for Phase 3:
+    openOrderSuccessModal(resp);
+  }
+
+  async function handleRetry(resp) {
+    statusRow.textContent = "Card reader error. Please try again.";
+    submitBtn.disabled = false;
+  }
+
+  async function handleFailed(resp) {
+    statusRow.textContent = "Payment failed. Please try again.";
+    submitBtn.disabled = false;
+  }
+
+  async function handlePending(resp) {
     const start = Date.now();
+    statusRow.textContent = "Waiting for card payment...";
 
     while (Date.now() - start < PAYMENT_TIMEOUT_MS) {
-      try {
-        const r = await fetch(`${statusEndpoint}/${orderId}/status`, {
-          credentials: 'include'
-        });
-        if (!r.ok) throw new Error('Status check failed');
+      const omni = await getOmniTok("pos_orderStatus", {
+        orderId: resp.orderId,
+        checkoutMode: resp.checkoutMode
+      });
 
-        const { status } = await r.json();
-        if (typeof onTick === 'function') onTick(status);
+      const res = await fetch(omni.endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "username": sessionStorage.getItem("username"),
+          "x-omnitok": omni.OmniTok,
+          "x-sid": omni.sid,
+          "x-act": omni.act,
+          "x-auth-token": omni.authToken
+        },
+        body: JSON.stringify({
+          orderId: resp.orderId,
+          checkoutMode: resp.checkoutMode
+        })
+      });
 
-        if (status === STATUS_SUCCESS) {
-          return { ok: true, status };
-        }
-        if (STATUS_FAIL_LIST.includes(status)) {
-          return { ok: false, status };
-        }
-      } catch (_) {
-        // transient error, continue polling
+      if (!res.ok) {
+        statusRow.textContent = "Error checking payment status. Retrying…";
+        await sleep(POLL_INTERVAL_MS);
+        continue;
       }
 
-      await new Promise(res => setTimeout(res, POLL_INTERVAL_MS));
+      const json = await res.json().catch(() => ({}));
+
+      switch (json.status) {
+        case "PAID":
+          return handlePaid(json);
+
+        case "PENDING":
+          statusRow.textContent = "Still waiting for card payment…";
+          await sleep(POLL_INTERVAL_MS);
+          continue;
+
+        case "FAILED":
+          return handleFailed(json);
+
+        case "RETRY":
+          return handleRetry(json);
+
+        default:
+          statusRow.textContent = "Unexpected status from payment. You can retry.";
+          submitBtn.disabled = false;
+          return;
+      }
     }
 
-    return { ok: false, status: 'TIMEOUT' };
+    statusRow.textContent = "Payment timeout. Please try again.";
+    submitBtn.disabled = false;
   }
 
   async function handleSubmit() {
@@ -3033,43 +3085,40 @@ function configureTenderOptions(mode) {
         checkoutMode
       };
 
-      const { orderId, endpoints } = await createOrderWithOmniTok(tenderType, meta);
+      const { response: checkoutResponse } =
+        await createOrderWithOmniTok(tenderType, meta);
 
-      // CASH FLOW — fire-and-forget, no reader
-      if (tenderType === 'CASH') {
-        showToast(`Cash order created: ${orderId}`);
-        // Phase 3 stub: post-checkout POS reset / receipt, etc.
-        modal.classList.add('contact-hidden');
-        document.body.classList.remove('body-lock');
-        return;
-      }
+        // CASH FLOW — treat exactly like PAID card
+        if (tenderType === 'CASH') {
+        return handlePaid(checkoutResponse);
+        }
 
-      // CARD FLOW — backend pushes to reader, we poll status
-      statusRow.textContent = 'Waiting for card payment... please follow the reader instructions.';
-      const base = endpoints.orderStatusBase || '/orders';
+      // CARD FLOW — backend returns PAID/PENDING/FAILED/RETRY
+      switch (checkoutResponse.status) {
+        case "PAID":
+          return handlePaid(checkoutResponse);
 
-      const result = await pollOrderStatus(orderId, base, (status) => {
-        statusRow.textContent =
-          status === STATUS_SUCCESS
-            ? 'Payment confirmed.'
-            : `Payment status: ${status}...`;
-      });
+        case "PENDING":
+          return handlePending(checkoutResponse);
 
-      if (result.ok) {
-        showToast(`Card payment succeeded: ${orderId}`);
-        // Phase 3 stub: post-checkout POS reset / receipt, etc.
-        modal.classList.add('contact-hidden');
-        document.body.classList.remove('body-lock');
-      } else {
-        // Keep modal open to allow retry; use lastPayload / lastEndpoints if you want a retry button later
-        statusRow.textContent =
-          `Payment ${result.status.toLowerCase()}. You can retry the card transaction.`;
+        case "RETRY":
+          return handleRetry(checkoutResponse);
+
+        case "FAILED":
+          return handleFailed(checkoutResponse);
+
+        default:
+          throw new Error("Unknown checkout status");
       }
     } catch (err) {
       console.error('Checkout error:', err);
       statusRow.textContent = 'Checkout failed. You can retry.';
     } finally {
-      submitBtn.disabled = false;
+      // For PENDING, handlePending re-enables submit when done; this just
+      // ensures we don't get stuck disabled on immediate failures.
+      if (statusRow.textContent !== "Waiting for card payment...") {
+        submitBtn.disabled = false;
+      }
     }
   }
 
@@ -3080,14 +3129,13 @@ function configureTenderOptions(mode) {
     document.body.classList.remove('body-lock');
   };
 
-  // Finally show the modal
+  // Show the modal
   showModal();
 }
 
 /* -------------------------
    POS checkout button wiring
    ------------------------- */
-// Replace the alert inside initPOSCatalog checkout click with opening the modal:
 function wirePOSCheckoutModal() {
   const btn = document.getElementById('posCheckoutBtn');
   if (!btn) return;
@@ -3106,6 +3154,53 @@ function wirePOSCheckoutModal() {
   });
 }
 wirePOSCheckoutModal(); // run at startup
+
+function openOrderSuccessModal(resp) {
+  const modal = document.getElementById("orderSuccessModal");
+  if (!modal) return;
+
+  const line1 = document.getElementById("orderSuccessLine1");
+  const line2 = document.getElementById("orderSuccessLine2");
+  const guestActions = document.getElementById("orderSuccessGuestActions");
+
+  const isGuest = String(resp.isGuest).toLowerCase() === "true";
+  const earned = resp.rewards?.earned ?? "0";
+  const total = resp.rewards?.total ?? "0";
+  const orderId = resp.orderId ?? "";
+
+  // Line 1: generic thank you
+  if (line1) {
+    line1.textContent = `Order ${orderId} is complete.`;
+  }
+
+  // Line 2: points text varies by guest/member
+  if (line2) {
+    if (isGuest) {
+      line2.textContent = `You just earned ${earned} rewards points. You can keep them by joining our rewards trading post.`;
+    } else {
+      line2.textContent = `You earned ${earned} rewards points. Your new total balance is ${total}.`;
+    }
+  }
+
+  // Guest CTA
+  if (guestActions) {
+    guestActions.style.display = isGuest ? "flex" : "none";
+  }
+
+  document.body.classList.add("body-lock");
+  modal.classList.remove("contact-hidden");
+
+  // Stash for later use (contact form handoff)
+  window.lastOrder = resp;
+}
+
+function closeOrderSuccessModal() {
+  const modal = document.getElementById("orderSuccessModal");
+  if (!modal) return;
+  modal.classList.add("contact-hidden");
+  document.body.classList.remove("body-lock");
+}
+
 
     /* -------------------------
        Signup wiring
@@ -3134,6 +3229,9 @@ wirePOSCheckoutModal(); // run at startup
         if (!isAuth) { alert('Please log in before signing up.'); return; }
 
         const phoneEl = $id('custPhone'), smsEl = $id('smsConsent');
+        
+        const meta = window.pendingSignupMetadata || {};
+
         const payload = {
           firstName: safe($id('custFirstname')?.value),
           lastName: safe($id('custLastname')?.value),
@@ -3145,6 +3243,11 @@ wirePOSCheckoutModal(); // run at startup
           password: safe($id('custPassword')?.value),
           phone: (phoneEl?.dataset?.raw || (phoneEl?.value || '').replace(/\D/g,'')),
           smsConsent: Boolean(smsEl?.checked),
+            // Phase 3 extras
+          orderId: meta.orderId || null,
+          pointsEarned: meta.pointsEarned || null,
+          checkoutMode: meta.checkoutMode || null,
+
           verificationCode: undefined
         };
         const confirm = safe($id('custConfirmpassword')?.value);
@@ -3167,6 +3270,7 @@ wirePOSCheckoutModal(); // run at startup
           alert(`✅ Welcome to the Trading Post, ${payload.firstName || payload.email}!`);
           submit.textContent = '✓ Account Created'; submit.classList.add('is-success');
           resetContactForm();
+          window.pendingSignupMetadata = null;
           setTimeout(()=>{ submit.disabled=false; submit.textContent = original; submit.classList.remove('is-success','btn-loading','enabled'); }, 800);
         } catch (err) {
           console.error('Signup error:', err);
@@ -3244,6 +3348,59 @@ document.documentElement.classList.remove('pps-auth-pending');
 
   if (typeof validateContactForm === 'function') validateContactForm();
 }));
+
+
+  const dismissSuccessBtn = $id('dismissOrderSuccessBtn');
+  const keepPointsBtn = $id('keepPointsBtn');
+
+  if (dismissSuccessBtn) {
+    dismissSuccessBtn.addEventListener('click', () => {
+      // Close Phase 3
+      closeOrderSuccessModal();
+
+      // Reset POS / Self checkout state
+      try {
+        clearPOSCartOnly?.();   // clear cart only, your helper
+        resetRewardsToGuest?.();
+        // return to appropriate view based on checkoutMode if needed:
+        const last = window.lastOrder;
+        const mode = last?.checkoutMode || sessionStorage.getItem('currentView');
+        if (mode === 'pos') {
+          showPOSContainer?.();
+        } else if (mode === 'self') {
+          showSelfCheckout?.();
+        } else {
+          showModeSelector?.();
+        }
+      } catch (e) {
+        console.warn('Order dismiss reset failed', e);
+      }
+    });
+  }
+
+  if (keepPointsBtn) {
+    keepPointsBtn.addEventListener('click', () => {
+      const last = window.lastOrder;
+      if (!last) {
+        alert('Order context missing. Please try again.');
+        return;
+      }
+
+      // Close success modal
+      closeOrderSuccessModal();
+
+      // Stash metadata for signup flow
+      window.pendingSignupMetadata = {
+        orderId: last.orderId,
+        pointsEarned: last.rewards?.earned ?? "0",
+        checkoutMode: last.checkoutMode || sessionStorage.getItem('currentView')
+      };
+
+      // Navigate to contact form (Join Rewards)
+      showJoinRewards?.();
+    });
+  }
+
 
     /* -------------------------
        Public helpers
