@@ -3265,6 +3265,12 @@ function wirePOSCheckoutModal() {
 wirePOSCheckoutModal(); // run at startup
 
 function openOrderSuccessModal(resp) {
+	
+	// SAFETY GUARD — prevents modal from opening on page load
+  if (!resp || typeof resp !== "object" || !resp.status) {
+    return;
+  }
+	
   const modal = document.getElementById("orderSuccessModal");
   if (!modal) return;
 
