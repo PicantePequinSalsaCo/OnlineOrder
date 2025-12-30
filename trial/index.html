@@ -1205,6 +1205,108 @@ document.addEventListener("DOMContentLoaded", () => {
 .btnjoin.hidden {
   display: none;
 }
+
+	  /* ============================
+   Phase 3 Success Modal
+   ============================ */
+
+.pps-success-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pps-success-overlay {
+  position: absolute;
+  inset: 0;
+  background: #00000088;
+  backdrop-filter: blur(6px);
+}
+
+.pps-success-card {
+  position: relative;
+  z-index: 10;
+  width: min(420px, 90%);
+  padding: 28px 24px;
+  border-radius: var(--radius);
+  background: var(--card);
+  border: 1px solid var(--accent-orange);
+  box-shadow: var(--accent-glow), var(--shadow);
+  animation: ppsSuccessPop 0.25s ease-out;
+}
+
+@keyframes ppsSuccessPop {
+  0% { transform: scale(0.92); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.pps-success-title {
+  margin: 0 0 12px;
+  text-align: center;
+  color: var(--accent-orange);
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.pps-success-body {
+  margin-top: 10px;
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.pps-success-line {
+  margin: 6px 0;
+}
+
+.pps-success-actions {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pps-success-btn {
+  width: 100%;
+  font-weight: 700;
+}
+
+.pps-dismiss-btn {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--accent-softborder);
+  color: var(--ink);
+}
+
+.pps-dismiss-btn:hover {
+  background: var(--accent-softorange);
+  color: var(--dropdown);
+}
+
+	  .pps-points-badge {
+  margin: 14px auto 0;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--accent-orange);
+  color: var(--dropdown);
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+  box-shadow: var(--accent-glow);
+  width: fit-content;
+  animation: ppsPointsPop 0.3s ease-out;
+}
+
+@keyframes ppsPointsPop {
+  0% { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+	  
   </style>
 </head>
 <body>
@@ -1579,25 +1681,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 <!-- Phase 3: Order Success Modal -->
-<div id="orderSuccessModal" class="contact-popup contact-hidden" role="dialog" aria-modal="true" aria-label="Order success">
-  <div class="contact-overlay"></div>
-  <div class="contact-card">
-    <h2 style="text-align:center; margin-top:0; color:var(--ink)">Thank you for your order!</h2>
+<div id="orderSuccessModal" class="pps-success-modal contact-hidden" role="dialog" aria-modal="true" aria-label="Order success">
+  <div class="pps-success-overlay"></div>
 
-    <div id="orderSuccessBody" style="margin-top:10px; color:var(--ink); font-size:0.95rem;">
-      <!-- Populated by JS -->
-      <p id="orderSuccessLine1"></p>
-      <p id="orderSuccessLine2"></p>
+  <div class="pps-success-card">
+    <h2 class="pps-success-title">Order Complete</h2>
+
+    <div id="orderSuccessBody" class="pps-success-body">
+      <p id="orderSuccessLine1" class="pps-success-line"></p>
+      <p id="orderSuccessLine2" class="pps-success-line"></p>
+		<div id="orderSuccessPointsBadge" class="pps-points-badge hidden">
+  			+<span id="orderSuccessPointsValue"></span> pts
+		</div>
     </div>
 
     <!-- Guest-only CTA -->
-    <div id="orderSuccessGuestActions" class="contact-actions" style="margin-top:12px; display:none; flex-direction:column; gap:8px;">
-      <button id="keepPointsBtn" class="btn primary">Keep my points and join rewards</button>
+    <div id="orderSuccessGuestActions" class="pps-success-actions hidden">
+      <button id="keepPointsBtn" class="btn primary pps-success-btn">
+        Keep my points & join rewards
+      </button>
     </div>
 
     <!-- Universal dismiss -->
-    <div class="contact-actions" style="margin-top:10px;">
-      <button id="dismissOrderSuccessBtn" class="close-modal-btn" aria-label="Dismiss">Dismiss</button>
+    <div class="pps-success-actions">
+      <button id="dismissOrderSuccessBtn" class="btn pps-dismiss-btn">
+        Dismiss
+      </button>
     </div>
   </div>
 </div>
@@ -2188,10 +2297,10 @@ function initPOSCatalog() {
   // Build gallery only once
   gallery.innerHTML = '';
   const products = [
-    { id: 'house-pequin', name: 'House Pequin Salsa', price: 10, image: 'https://picantepequinsalsaco.com/images/image1.jpg' },
-    { id: 'spicy-green', name: 'Spicy Green Chile Pequin', price: 10, image: 'https://picantepequinsalsaco.com/images/image2.jpg' },
-    { id: 'red-hot', name: 'Red Hot Pepper Pequin', price: 10, image: 'https://picantepequinsalsaco.com/images/image3.jpg' },
-    { id: 'the-crew', name: 'The Crew (3‑Pack)', price: 30, image: 'https://picantepequinsalsaco.com/images/image4.jpg' }
+    { id: 'PPSC-001', name: 'House Pequin Salsa', price: 10, image: 'https://picantepequinsalsaco.com/images/image1.jpg' },
+    { id: 'PPSC-002', name: 'Spicy Green Chile Pequin', price: 10, image: 'https://picantepequinsalsaco.com/images/image2.jpg' },
+    { id: 'PPSC-003', name: 'Red Hot Pepper Pequin', price: 10, image: 'https://picantepequinsalsaco.com/images/image3.jpg' },
+    { id: 'PPSC-004', name: 'The Crew (3‑Pack)', price: 30, image: 'https://picantepequinsalsaco.com/images/image4.jpg' }
   ];
 
   products.forEach(p => {
@@ -3168,6 +3277,20 @@ function openOrderSuccessModal(resp) {
   const total = resp.rewards?.total ?? "0";
   const orderId = resp.orderId ?? "";
 
+  const badge = document.getElementById("orderSuccessPointsBadge");
+  const badgeValue = document.getElementById("orderSuccessPointsValue");
+
+if (badge && badgeValue) {
+  const earned = resp.rewards?.earned ?? "0";
+  badgeValue.textContent = earned;
+
+  // Show badge only if earned > 0
+  if (parseInt(earned) > 0) {
+    badge.classList.remove("hidden");
+  } else {
+    badge.classList.add("hidden");
+  }
+}
   // Line 1: generic thank you
   if (line1) {
     line1.textContent = `Order ${orderId} is complete.`;
