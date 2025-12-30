@@ -3314,9 +3314,15 @@ if (badge && badgeValue) {
   }
 
   // Guest CTA
-  if (guestActions) {
-    guestActions.style.display = isGuest ? "flex" : "none";
+if (guestActions) {
+  if (isGuest) {
+    guestActions.classList.remove("hidden");
+    guestActions.style.display = "flex";
+  } else {
+    guestActions.classList.add("hidden");
+    guestActions.style.display = "none";
   }
+}
 
   document.body.classList.add("body-lock");
   modal.classList.remove("contact-hidden");
