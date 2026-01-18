@@ -1230,10 +1230,36 @@
 
         <!-- Create Account Form -->
         <form id="signup-form" class="login-form hidden" autocomplete="on" novalidate>
-          <input type="text" id="signup-firstname" name="firstName" placeholder="First Name" required autocomplete="given-name" />
-          <input type="text" id="signup-lastname" name="lastName" placeholder="Last Name" required autocomplete="family-name" />
-          <input type="text" id="signup-address" name="address" placeholder="Street Address" required autocomplete="street-address" />
-          <input type="text" id="signup-city" name="city" placeholder="City" required autocomplete="address-level2" />
+          <input
+  type="text"
+  id="signup-firstname"
+  required
+  minlength="2"
+  pattern="[A-Za-z]+"
+  autocomplete="given-name"
+/>
+          <input
+  type="text"
+  id="signup-lastname"
+  required
+  minlength="2"
+  pattern="[A-Za-z]+"
+  autocomplete="family-name"
+/>
+          <input
+  type="text"
+  id="signup-address"
+  required
+  minlength="3"
+  autocomplete="street-address"
+/>
+          <input
+  type="text"
+  id="signup-city"
+  required
+  pattern="[A-Za-z ]+"
+  minlength="2"
+/>
 
           <div class="state-select-wrapper">
             <select id="signup-state" name="state" required autocomplete="address-level1">
@@ -1258,9 +1284,29 @@
             </select>
           </div>
 
-          <input type="text" id="signup-zip" name="zip" placeholder="ZIP Code" required autocomplete="postal-code" />
-          <input type="text" id="signup-phone" name="phone" placeholder="Phone (10 digits)" required autocomplete="tel" />
-          <input type="email" id="signup-email" name="email" placeholder="Email address" required autocomplete="email" />
+          <input
+  type="text"
+  id="signup-zip"
+  required
+  pattern="\d{5}"
+  inputmode="numeric"
+  maxlength="5"
+/>
+          <input
+  type="text"
+  id="signup-phone"
+  required
+  pattern="\d{10}"
+  inputmode="numeric"
+  maxlength="10"
+  autocomplete="tel"
+/>
+          <input
+  type="email"
+  id="signup-email"
+  required
+  autocomplete="email"
+/>
           <div id="email-error-msg" style="display:none; font-size:0.8rem; color:var(--accent-red);">
             Please enter a valid email domain.
           </div>
@@ -1289,6 +1335,8 @@
               id="signup-verification-code"
               placeholder="Verification code"
               disabled
+              maxlength="6"
+              pattern="[A-Za-z0-9]{6}"
               style="flex:1; padding:8px 10px; border-radius:var(--radius-sm); border:1px solid var(--card-border); background:rgba(5,5,15,0.9); color:var(--ink);"
             />
             <button
@@ -1312,7 +1360,9 @@
         <!-- Reset Password Form -->
         <form id="reset-form" class="login-form hidden" autocomplete="on" novalidate>
           <input type="email" id="reset-email" name="email" placeholder="Email address" required autocomplete="email" />
-          <input type="text" id="reset-phone" name="phone" placeholder="Phone (10 digits)" required autocomplete="tel" />
+          <input type="text"  id="reset-phone" name="phone" placeholder="Phone (10 digits)" required pattern="\d{10}" inputmode="numeric" maxlength="10" autocomplete="tel"/>
+
+
 
           <div class="password-wrapper">
             <input type="password" id="reset-password" name="password" placeholder="New password" required autocomplete="new-password" />
@@ -1338,6 +1388,8 @@
               id="reset-verification-code"
               placeholder="Verification code"
               disabled
+              maxlength="6"
+              pattern="[A-Za-z0-9]{6}"
               style="flex:1; padding:8px 10px; border-radius:var(--radius-sm); border:1px solid var(--card-border); background:rgba(5,5,15,0.9); color:var(--ink);"
             />
             <button
@@ -1761,6 +1813,22 @@
     el.value = el.value.replace(/\D/g, '');
   });
 });
+
+    ['signup-phone','signup-zip'].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('input', () => {
+    el.value = el.value.replace(/\D/g, '');
+  });
+});
+
+    ['reset-phone'].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('input', () => {
+    el.value = el.value.replace(/\D/g, '');
+  });
+});
     /* Stripe Elements setup */
     let stripe, elements, card, cardMounted = false;
 
@@ -1939,11 +2007,11 @@
         const val = pwInput.value;
         let score = 0;
 
-        if (val.length >= 8) score++;
+        if (val.length >= 6) score++;
         if (/[A-Z]/.test(val)) score++;
         if (/[0-9]/.test(val)) score++;
         if (/[^A-Za-z0-9]/.test(val)) score++;
-        if (val.length >= 12) score++;
+        if (val.length >= 10) score++;
 
         const widths = ['0%', '20%', '40%', '60%', '80%', '100%'];
         const colors = ['red', 'orangered', 'orange', 'gold', 'yellowgreen', 'green'];
@@ -2053,11 +2121,11 @@
         const val = pwInput.value;
         let score = 0;
 
-        if (val.length >= 8) score++;
+        if (val.length >= 6) score++;
         if (/[A-Z]/.test(val)) score++;
         if (/[0-9]/.test(val)) score++;
         if (/[^A-Za-z0-9]/.test(val)) score++;
-        if (val.length >= 12) score++;
+        if (val.length >= 10) score++;
 
         const widths = ['0%', '20%', '40%', '60%', '80%', '100%'];
         const colors = ['red', 'orangered', 'orange', 'gold', 'yellowgreen', 'green'];
@@ -2221,6 +2289,8 @@
     }
 
     let cartLocked = false;
+    document.getElementById('login-btn').disabled = false;
+    document.getElementById('login-btn').classList.remove('disabled');
 
     function renderCart() {
       cartItemsEl.innerHTML = '';
@@ -2706,6 +2776,7 @@ guestForm.addEventListener('submit', e => {
   const city     = document.getElementById('guest-city').value.trim();
   const state    = document.getElementById('guest-state').value.trim();
   const zip      = document.getElementById('guest-zip').value.trim();
+  const smsConsent = document.getElementById('guest-smsConsent').checked ? 'enabled' : 'disabled';
 
   // Basic patterns
   const nameOk  = /^\S+\s+\S+/.test(fullName);          // at least "A B"
@@ -2754,7 +2825,8 @@ guestForm.addEventListener('submit', e => {
     country: 'US',
     rewards: 0,
     pointsRedeemed: 0,
-    guest: true
+    guest: true,
+    smsConsent
   };
 
   usernameDisplay.textContent = fullName;
@@ -2854,7 +2926,8 @@ guestForm.addEventListener('submit', e => {
                 city: currentUser.city || '',
                 state: currentUser.state || '',
                 zip: currentUser.zip || '',
-                country: currentUser.country || 'US'
+                country: currentUser.country || 'US',
+                smsConsent: currentUser.smsConsent
               },
               items: cart.map(i => ({
                 id: i.id,
@@ -2999,6 +3072,8 @@ guestForm.addEventListener('submit', e => {
 
           checkoutBtn.dataset.orderData = JSON.stringify(data);
           document.getElementById('cart-total-value').textContent = (data.totalAmount / 100).toFixed(2);
+          document.getElementById('login-btn').disabled = true;
+          document.getElementById('login-btn').classList.add('disabled');
 
           cartLocked = true;
           renderCart();
@@ -3064,7 +3139,9 @@ guestForm.addEventListener('submit', e => {
             renderCart();
             unlockAllProductCards();
             cartLocked = false;
-
+            
+            document.getElementById('login-btn').disabled = false;
+            document.getElementById('login-btn').classList.remove('disabled');
             document.getElementById('payment-section').style.display = 'none';
             checkoutBtn.textContent = 'Payment Successful';
             checkoutBtn.disabled = true;
@@ -3177,6 +3254,9 @@ guestForm.addEventListener('submit', e => {
       confirmStep = false;
       cartLocked = false;
       unlockAllProductCards();
+     
+      document.getElementById('login-btn').disabled = false;
+      document.getElementById('login-btn').classList.remove('disabled');
 
       sessionStorage.removeItem('authToken');
       sessionStorage.removeItem('sid');
