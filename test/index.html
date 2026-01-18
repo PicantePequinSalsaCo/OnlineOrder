@@ -947,6 +947,10 @@
     }
     .qty-input[type=number],
     .cart-qty-input[type=number],
+    .cart-qty-input.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
     #rewards-input[type=number] {
       -moz-appearance: textfield;
     }
@@ -2275,6 +2279,10 @@
             btn.disabled = true;
             btn.classList.add('disabled');
           });
+          const qtyInput = li.querySelector('.cart-qty-input');
+        qtyInput.disabled = true;
+        qtyInput.readOnly = true;
+        qtyInput.classList.add('disabled');
         }
 
         cartItemsEl.appendChild(li);
