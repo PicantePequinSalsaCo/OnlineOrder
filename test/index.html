@@ -1360,53 +1360,64 @@
   <small>We’ll use this info for your order, shipping, and receipts. No account required.</small>
 
   <!-- Full Name -->
-  <input
-    type="text"
-    id="guest-name"
-    name="guestName"
-    placeholder="Full Name"
-    required
-    autocomplete="name"
-  />
+<input
+  type="text"
+  id="guest-name"
+  name="guestName"
+  placeholder="Full Name"
+  required
+  autocomplete="name"
+  minlength="3"
+  pattern="^\S+\s+\S+.*$"
+  inputmode="text"
+/>
 
   <!-- Email -->
-  <input
-    type="email"
-    id="guest-email"
-    name="guestEmail"
-    placeholder="Email address"
-    required
-    autocomplete="email"
-  />
+<input
+  type="email"
+  id="guest-email"
+  name="guestEmail"
+  placeholder="Email address"
+  required
+  autocomplete="email"
+/>
 
   <!-- Phone (Optional) -->
-  <input
-    type="text"
-    id="guest-phone"
-    name="guestPhone"
-    placeholder="Phone (optional)"
-    autocomplete="tel"
-  />
+<input
+  type="text"
+  id="guest-phone"
+  name="guestPhone"
+  placeholder="Phone (optional)"
+  autocomplete="tel"
+  pattern="\d{10}"
+  inputmode="numeric"
+  maxlength="10"
+/>
 
   <!-- Street Address -->
-  <input
-    type="text"
-    id="guest-address"
-    name="guestAddress"
-    placeholder="Street Address"
-    required
-    autocomplete="address-line1"
-  />
+<input
+  type="text"
+  id="guest-address"
+  name="guestAddress"
+  placeholder="Street Address"
+  required
+  autocomplete="address-line1"
+  minlength="3"
+/>
+
 
   <!-- City -->
-  <input
-    type="text"
-    id="guest-city"
-    name="guestCity"
-    placeholder="City"
-    required
-    autocomplete="address-level2"
-  />
+<input
+  type="text"
+  id="guest-city"
+  name="guestCity"
+  placeholder="City"
+  required
+  autocomplete="address-level2"
+  pattern="[A-Za-z ]+"
+  minlength="2"
+/>
+
 
   <!-- Enhanced State Dropdown -->
   <div class="state-select-wrapper">
@@ -1433,14 +1444,18 @@
   </div>
 
   <!-- ZIP -->
-  <input
-    type="text"
-    id="guest-zip"
-    name="guestZip"
-    placeholder="ZIP Code"
-    required
-    autocomplete="postal-code"
-  />
+<input
+  type="text"
+  id="guest-zip"
+  name="guestZip"
+  placeholder="ZIP Code"
+  required
+  autocomplete="postal-code"
+  pattern="\d{5}"
+  inputmode="numeric"
+  maxlength="5"
+/>
+
 
   <!-- SMS Consent -->
   <label class="consent-inline">
@@ -1734,7 +1749,14 @@
         });
       }
     });
-
+    
+['guest-phone','guest-zip'].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('input', () => {
+    el.value = el.value.replace(/\D/g, '');
+  });
+});
     /* Stripe Elements setup */
     let stripe, elements, card, cardMounted = false;
 
