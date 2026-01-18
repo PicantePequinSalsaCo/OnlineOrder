@@ -2664,34 +2664,63 @@
       }
     });
 
-    // Guest Checkout Form
-    guestForm.addEventListener('submit', e => {
-      e.preventDefault();
-      const name = document.getElementById('guest-name').value.trim();
-      const email = document.getElementById('guest-email').value.trim();
-      const phone = document.getElementById('guest-phone').value.trim();
+// Guest Checkout Form
+guestForm.addEventListener('submit', e => {
+  e.preventDefault();
 
-      if (!name || !email) {
-        showMessage('Please provide at least your name and email.', 'error');
-        return;
-      }
+  const fullName = document.getElementById('guest-name').value.trim();
+  const email    = document.getElementById('guest-email').value.trim();
+  const phone    = document.getElementById('guest-phone').value.trim();
 
-      currentUser.name = name;
-      currentUser.email = email;
-      currentUser.rewards = 0;
-      currentUser.pointsRedeemed = 0;
-      currentUser.guest = true;
-      currentUser.phone = phone || '';
-      usernameDisplay.textContent = name;
-      rewardsDisplay.textContent = '0';
+  const address  = document.getElementById('guest-address').value.trim();
+  const city     = document.getElementById('guest-city').value.trim();
+  const state    = document.getElementById('guest-state').value.trim();
+  const zip      = document.getElementById('guest-zip').value.trim();
 
-      isLoggedIn = false; // still guest, but we allow checkout
-      toggleLogin(false);
-      showMessage('Guest details saved. You can now complete checkout.', 'success');
+  // Required fields check
+  if (!fullName || !email || !address || !city || !state || !zip) {
+    showMessage('Please complete all required fields.', 'error');
+    return;
+  }
 
-      checkoutBtn.disabled = cart.length === 0;
-      checkoutBtn.textContent = cart.length === 0 ? 'Cart is Empty' : 'Checkout as Guest';
-    });
+  // Split full name into first/last (simple split)
+  const [firstName, ...rest] = fullName.split(' ');
+  const lastName = rest.join(' ') || '';
+
+  // Store guest user data
+  currentUser = {
+    name: fullName,
+    firstName,
+    lastName,
+    email,
+    phone: phone || '',
+    address,
+    city,
+    state,
+    zip,
+    rewards: 0,
+    pointsRedeemed: 0,
+    guest: true
+  };
+
+  // Update UI
+  usernameDisplay.textContent = fullName;
+  rewardsDisplay.textContent = '0';
+
+  // Guest is not "logged in", but allowed to checkout
+  isLoggedIn = false;
+
+  // Close login modal
+  toggleLogin(false);
+
+  showMessage('Guest details saved. You can now complete checkout.', 'success');
+
+  // Enable checkout button
+  checkoutBtn.disabled = cart.length === 0;
+  checkoutBtn.textContent = cart.length === 0
+    ? 'Cart is Empty'
+    : 'Checkout as Guest';
+});
 
     /* ===========================
        Checkout
@@ -2707,6 +2736,25 @@
     function stopShimmer(btn) {
       btn.classList.remove('loading');
       delete btn.dataset.loadingText;
+    }
+
+    // Lock/unlock all product cards (front-of-site qty + add-to-cart)
+    function lockAllProductCards() {
+      document.querySelectorAll('.qty-btn').forEach(btn => btn.disabled = true);
+      document.querySelectorAll('.qty-input').forEach(inp => inp.disabled = true);
+      document.querySelectorAll('.add-to-cart').forEach(btn => {
+        btn.disabled = true;
+        btn.classList.add('disabled');
+      });
+    }
+
+    function unlockAllProductCards() {
+      document.querySelectorAll('.qty-btn').forEach(btn => btn.disabled = false);
+      document.querySelectorAll('.qty-input').forEach(inp => inp.disabled = false);
+      document.querySelectorAll('.add-to-cart').forEach(btn => {
+        btn.disabled = false;
+        btn.classList.remove('disabled');
+      });
     }
 
     checkoutBtn.addEventListener('click', async () => {
@@ -2752,7 +2800,12 @@
                 name: currentUser.name,
                 rewards: currentUser.rewards,
                 guest: !!currentUser.guest,
-                phone: currentUser.phone || ''
+                phone: currentUser.phone || '',
+                addressLine1: currentUser.addressLine1 || '',
+                city: currentUser.city || '',
+                state: currentUser.state || '',
+                zip: currentUser.zip || '',
+                country: currentUser.country || 'US'
               },
               items: cart.map(i => ({
                 id: i.id,
@@ -2817,11 +2870,11 @@
 
           currentUser.name = raw.billingName || currentUser.name;
           currentUser.email = raw.billingEmail || currentUser.email;
-          currentUser.addressLine1 = raw.billingLine1 || '';
-          currentUser.city = raw.billingCity || '';
-          currentUser.state = raw.billingState || '';
-          currentUser.zip = raw.billingPostal || '';
-          currentUser.country = raw.billingCountry || 'US';
+          currentUser.addressLine1 = raw.billingLine1 || currentUser.addressLine1 || '';
+          currentUser.city = raw.billingCity || currentUser.city || '';
+          currentUser.state = raw.billingState || currentUser.state || '';
+          currentUser.zip = raw.billingPostal || currentUser.zip || '';
+          currentUser.country = raw.billingCountry || currentUser.country || 'US';
 
           const orderNumberEl = document.getElementById('order-number');
           const shippingCostEl = document.getElementById('shipping-cost');
@@ -2900,6 +2953,7 @@
 
           cartLocked = true;
           renderCart();
+          lockAllProductCards();
 
           checkoutBtn.textContent = 'Pay for Order';
           checkoutPhase = 2;
@@ -2959,6 +3013,9 @@
             showMessage('Payment successful!', 'success');
             cart = [];
             renderCart();
+            unlockAllProductCards();
+            cartLocked = false;
+
             document.getElementById('payment-section').style.display = 'none';
             checkoutBtn.textContent = 'Payment Successful';
             checkoutBtn.disabled = true;
@@ -3070,6 +3127,7 @@
       checkoutPhase = 1;
       confirmStep = false;
       cartLocked = false;
+      unlockAllProductCards();
 
       sessionStorage.removeItem('authToken');
       sessionStorage.removeItem('sid');
