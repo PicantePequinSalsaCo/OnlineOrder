@@ -44,37 +44,38 @@
   }
   </script>
 
+  <!-- Stripe.js -->
+  <script src="https://js.stripe.com/v3/"></script>
+
   <style>
     :root {
-      --bg-deep:        #1e1e1e00;
+      --bg-deep:        #050509;
       --ink:            #ececec;
       --muted:          #b0b0b0;
       --accent-trans:   #000000;
       --accent-orange:  #f57c00;
       --accent-green:   #558b2f;
+      --accent-green-dark: #3b5f20;
       --accent-red:     #d84315;
-      --card:           #2e2e2e60;
+      --card:           #2e2e2e80;
       --card-border:    #3a3a3a;
       --row-alt:        #262626;
       --button-opq:     #ffffff2f;
-      --cart-opq:       #010f2b74;
+      --cart-opq:       #050814f0;
       --radius-sm:      12px;
       --radius-lg:      20px;
       --shadow:         0 10px 30px #00000066;
       --accent-glow:    0 0 0 2px #f57c0033, 0 10px 20px #f57c0022;
       --maxw:           1100px;
-      --cart-width:     80vw;
-      --login-width:    60vw;
-      --cart-max-width: 400px;
-      --header-h:       50px;
+      --header-h:       56px;
     }
 
     * { box-sizing: border-box; }
     html, body {
-      margin: 0; padding: 0;
-      height: -webkit-fill-available;
-      min-height: -webkit-fill-available;
-      font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg-deep);
       scroll-behavior: smooth;
       color: var(--ink);
@@ -84,80 +85,108 @@
     img { display: block; max-width: 100%; }
 
     .bg {
-      position: fixed; inset: 0; z-index: -1;
+      position: fixed;
+      inset: 0;
+      z-index: -1;
       background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover no-repeat;
       filter: blur(0) saturate(1.05) brightness(.9);
       transform: translateZ(0) scale(1.02);
     }
 
     header {
-      position: sticky; top: 0; z-index: 50;
+      position: sticky;
+      top: 0;
+      z-index: 50;
       backdrop-filter: saturate(140%) blur(10px);
       background: #161616cc;
-      border-bottom:1px solid #ffffff14;
+      border-bottom: 1px solid #ffffff14;
     }
     .nav {
-      max-width: var(--maxw); margin:0 auto;
-      padding:12px 18px; display:flex;
-      align-items:center; justify-content:space-between;
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
     }
-    .brand { display:flex; align-items:center; gap:10px; }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
     .logo {
-      width:34px; height:34px; border-radius:10px;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
       background: url('https://picantepequinsalsaco.com/images/bg.png') center/cover;
       box-shadow: var(--accent-glow);
     }
     .header-info {
-      display: flex; align-items:center; gap:12px;
-      font-size:0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      white-space: nowrap;
     }
     .header-info .greeting {
       font-weight: 500;
-      margin-right: 0.5rem;
-      display: inline-block;
     }
-    .header-info strong { font-weight:700; }
+    .header-info strong { font-weight: 700; }
+
     nav ul {
-      display:flex; gap:10px; list-style:none; margin:0; padding:0;
+      display: flex;
+      gap: 10px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
     }
     .cta {
-      background:#050f46a9; color:#c06a00b5;
-      font-weight:700; padding:9px 14px; border-radius:999px;
-      box-shadow: var(--accent-glow); cursor:pointer;
-      border:none; transition:filter .2s;
+      background: #050f46a9;
+      color: #f7b15a;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 999px;
+      box-shadow: var(--accent-glow);
+      cursor: pointer;
+      border: none;
+      transition: filter .2s, transform .1s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
-    .cta:hover { filter:brightness(.95); }
+    .cta:hover { filter: brightness(.95); transform: translateY(-1px); }
     .cta.logout {
-      background: var(--accent-red); color: #fff;
+      background: var(--accent-red);
+      color: #fff;
     }
 
     main {
       max-width: var(--maxw);
-      margin: 20px auto 40px;
-      padding: 0 16px 24px;
+      margin: 16px auto 32px;
+      padding: 0 16px 16px;
     }
 
     .vertical-gallery {
-      max-width: var(--maxw);
-      margin: 20px auto;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 16px;
     }
 
+    /* Product cards with glassy feel */
     .prod-card {
       background: var(--card);
       border: 1px solid var(--card-border);
-      border-radius: var(--radius-sm);
-      padding: 16px;
+      border-radius: var(--radius-lg);
+      padding: 14px;
       box-shadow: var(--shadow);
       display: flex;
       flex-direction: column;
+      backdrop-filter: blur(14px) saturate(130%);
       perspective: 1000px;
       overflow: hidden;
-      backdrop-filter: blur(12px) saturate(130%);
     }
-
     .card-inner {
       display: grid;
       transition: transform 0.6s;
@@ -171,23 +200,71 @@
     .card-back {
       grid-area: 1 / 1;
       backface-visibility: hidden;
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-lg);
       display: flex;
       flex-direction: column;
       box-sizing: border-box;
-      padding: 0;
+    }
+    .card-front {
+      padding: 4px;
     }
     .card-back {
-      background: rgba(20,20,20,0.95);
+      background: rgba(10,10,10,0.96);
       color: var(--ink);
       transform: rotateY(180deg);
       padding: 16px;
     }
 
+    .prod-card img {
+      border-radius: var(--radius-sm);
+      margin-bottom: 10px;
+      object-fit: cover;
+      aspect-ratio: 1 / 1;
+    }
+    .prod-name {
+      margin: 0 0 6px;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .prod-price {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .quantity {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .qty-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      background: var(--button-opq);
+      border: 1px solid var(--accent-orange);
+      border-radius: 6px;
+      font-size: 1.1rem;
+      color: #fff;
+      cursor: pointer;
+    }
+    .qty-input {
+      width: 52px;
+      text-align: center;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      background: var(--row-alt);
+      color: var(--ink);
+      padding: 4px 2px;
+      font-size: 0.95rem;
+    }
     .info-btn {
-      margin-left: 6px;
-      padding: 4px 6px;
-      font-size: 0.9em;
+      padding: 4px 7px;
+      font-size: 0.85rem;
       border: none;
       background: var(--button-opq);
       color: #fff;
@@ -196,7 +273,7 @@
       transition: background 0.2s;
     }
     .info-btn:hover {
-      background: #3f6b2a;
+      background: var(--accent-green-dark);
     }
     .close-info {
       margin-top: auto;
@@ -205,157 +282,169 @@
       border: none;
       background: var(--accent-green);
       color: #fff;
-      border-radius: 4px;
+      border-radius: 6px;
       cursor: pointer;
       transition: background 0.2s;
+      font-size: 0.9rem;
     }
     .close-info:hover {
-      background: #3f6b2a;
+      background: var(--accent-green-dark);
+    }
+    .add-to-cart {
+      margin-top: auto;
+      background: linear-gradient(180deg,var(--accent-green),#4a7c27ef);
+      color: #fff;
+      border: solid 1px var(--button-opq);
+      padding: 9px 10px;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.95rem;
     }
 
-    .prod-card img {
-      border-radius: var(--radius-sm);
-      margin-bottom:12px;
-      object-fit:cover;
-      aspect-ratio: 1 / 1;
-    }
-    .prod-name { margin:0 0 8px; font-size:1.2rem; }
-    .prod-price { margin:0 0 12px; color:var(--muted); }
-    .quantity {
-      display:flex; align-items:center; gap:8px; margin-bottom:12px;
-    }
-    .qty-btn {
-      display: inline-flex;
+    /* Shared overlay shell for cart/login (centered web-app style) */
+    .overlay-shell {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.78);
+      display: none;
       align-items: center;
       justify-content: center;
-      width:32px;
-      height:32px;
-      padding: 0;
-      background: var(--button-opq); border: 1px solid var(--accent-orange);
-      border-radius: 6px;
-      font-size:1.2rem;
-      color: #fff;
-      cursor:pointer;
+      z-index: 100;
+      padding: 16px;
     }
-    .qty-input {
-      width:50px; text-align:center;
-      border:1px solid var(--card-border);
-      border-radius:var(--radius-sm);
+    .overlay-shell.open {
+      display: flex;
+    }
+    .panel {
+      width: 100%;
+      max-width: 420px;
+      max-height: 90vh;
+      background: var(--cart-opq);
+      border-radius: 20px;
+      border: 1px solid var(--accent-orange);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      backdrop-filter: blur(18px) saturate(140%);
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--card-border);
+      gap: 8px;
+    }
+    .panel-header h2 {
+      flex: 1;
+      margin: 0;
+      font-size: 1.1rem;
+      text-align: center;
+    }
+    .panel-close {
+      background: none;
+      border: none;
+      color: var(--ink);
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+    .panel-body {
+      flex: 1 1 auto;
+      overflow: auto;
+      padding: 1rem;
+    }
+
+    /* Cart specifics */
+    #cart-container .panel {
+      border-color: var(--accent-orange);
+    }
+    #cart-items {
+      list-style: none;
+      margin: 0 0 0.5rem;
+      padding: 0;
+    }
+    #cart-items li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px;
+      margin-bottom: 8px;
+      background: var(--row-alt);
+      border-radius: var(--radius-sm);
+      transition: opacity 0.3s ease;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    #cart-items li.removing { opacity: 0; }
+    #cart-items li img.cart-thumb {
+      flex: 0 0 auto;
+      width: 32px;
+      height: 32px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-right: 8px;
+    }
+    #cart-items li .cart-name {
+      flex: 1 1 auto;
+      margin-right: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 0.9rem;
+    }
+    #cart-items li .cart-quantity {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .cart-qty-input {
+      width: 3.2em;
+      text-align: center;
+      padding: 2px 4px;
+      font-size: 0.85rem;
+      border: 1px solid var(--accent-green);
+      border-radius: 4px;
       background: var(--row-alt);
       color: var(--ink);
     }
-    .add-to-cart {
-      margin-top:auto;
-      background: linear-gradient(180deg,var(--accent-green),#4a7c27ef);
-      color:#fff; border: solid; border-color: var(--button-opq); padding: 10px;
-      border-radius: var(--radius-sm);
-      font-weight:700; cursor:pointer;
-    }
-
-    #cart-container {
-      position:fixed; inset:0;
-      background: rgba(0,0,0,0.8);
-      display:none; align-items:center; justify-content:flex-end;
-      height: 100%;
-      z-index:100;
-      padding-top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-    }
-    #cart-container.open { display:flex; }
-    .cart-panel {
-      width: var(--cart-width); max-width: var(--cart-max-width);
-      height: calc(100% - calc(var(--header-h) + env(safe-area-inset-top, 0px)));
-      background: var(--cart-opq);
-      border: solid 1px var(--accent-orange); border-radius: 20px;
-      transform: translateX(100%); transition: transform .3s ease;
-      display:flex; flex-direction:column;
-      overscroll-behavior: contain;
-      backdrop-filter: blur(16px) saturate(140%);
-    }
-    #cart-container.open .cart-panel {
-      transform: translateX(0);
-    }
-    .cart-header {
-      display:flex; align-items:center;
-      padding:1rem; border-bottom:1px solid var(--card-border);
-    }
-    .cart-header h2 {
-      flex:1; margin:0; font-size:1.2rem; text-align:center;
-    }
-    #close-cart {
-      background:none; border:none;
-      color:var(--ink); font-size:1.5rem; cursor:pointer;
-    }
-    .cart-content {
-      flex: 1 1 auto; overflow:auto; padding:1rem;
-    }
-    .cart-total {
-      display: flex; justify-content: space-between;
-      align-items: center; padding: 0.75rem 1rem;
-      border-top: 1px solid var(--card-border);
-      font-size: 1.1rem;
-    }
-    .cart-qty-input {
-      width: 3.5em;
-      text-align: center;
-      padding: 2px 4px;
-      font-size: 0.9em;
-      border: 1px solid var(--accent-green);
-      border-radius: 4px;
-    }
-    #cart-items { list-style:none; margin:0; padding:0; }
-    #cart-items li {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:8px; margin-bottom:8px;
-      background:var(--row-alt); border-radius:var(--radius-sm);
-      transition:opacity 0.3s ease; overflow:hidden; white-space:nowrap;
-    }
-    #cart-items li.removing { opacity:0; }
-    #cart-items li img.cart-thumb {
-      flex:0 0 auto; width:32px; height:32px;
-      object-fit:cover; border-radius:4px; margin-right:8px;
-    }
-    #cart-items li .cart-name {
-      flex:1 1 auto; margin-right:8px;
-      overflow:hidden; text-overflow:ellipsis;
-    }
-    #cart-items li .cart-quantity {
-      display:flex; align-items:center; gap:4px;
-    }
     #cart-items li .qty-btn {
-      background:rgba(255,255,255,0.1); border:none;
-      color:var(--ink); width:28px; height:28px;
-      border-radius:6px; font-size:1.2rem; line-height:1;
-      cursor:pointer;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: var(--ink);
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      font-size: 1.1rem;
+      line-height: 1;
+      cursor: pointer;
     }
 
-    .qty-input::-webkit-outer-spin-button,
-    .qty-input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    .qty-input[type=number] {
-      -moz-appearance: textfield;
-    }
-    .cart-qty-input::-webkit-outer-spin-button,
-    .cart-qty-input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    .cart-qty-input[type=number] {
-      -moz-appearance: textfield;
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      font-size: 0.95rem;
     }
 
     #checkout-btn {
-      margin-top:1rem; width:100%;
-      padding:.75rem; border:none; border-radius:4px;
-      background:var(--accent-orange); color:#fff;
-      font-weight:700; cursor:pointer;
+      margin-top: 0.75rem;
+      width: 100%;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 999px;
+      background: var(--accent-orange);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.95rem;
     }
     #checkout-btn[disabled] {
-      background:var(--muted); cursor:not-allowed;
+      background: var(--muted);
+      cursor: not-allowed;
     }
 
+    /* Checkout shimmer */
     #checkout-btn.loading {
       position: relative;
       overflow: hidden;
@@ -372,7 +461,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: var(--accent-trans);
       background: linear-gradient(
         110deg,
         rgba(255,255,255,0) 0%,
@@ -384,300 +472,8 @@
       color: #fff;
       font-weight: bold;
     }
-    #checkout-btn.api-btn.loading::after {
-      content: none !important;
-    }
 
-    @keyframes shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
-
-    .password-wrapper {
-      position: relative;
-      display: inline-block;
-      width: 100%;
-    }
-    .password-wrapper input {
-      width: 100%;
-      padding-right: 2.5rem;
-      box-sizing: border-box;
-    }
-    .reveal-btn {
-      position: absolute;
-      right: 0.5rem;
-      top: 50%;
-      transform: translateY(-75%);
-      background-color: var(--row-alt)!important;
-      border: none;
-      font-size: 1rem;
-      cursor: pointer;
-      padding: 0;
-      line-height: 1;
-      color: #ccc;
-      height: 1.5rem;
-      width: 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    #login-container {
-      position:fixed; inset:0;
-      background: rgba(0,0,0,0.8);
-      display:none; align-items:center; justify-content:flex-end;
-      height: 100%;
-      z-index:100;
-      padding-top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-    }
-    #login-container.open { display:flex; }
-    #login-container .cart-panel {
-      width: var(--login-width); max-width: var(--cart-max-width);
-      height:calc(100% - calc(var(--header-h) + env(safe-area-inset-top, 0px)));
-      background: var(--cart-opq);
-      border: solid 1px var(--accent-green); border-radius: 20px;
-      transform: translateX(100%); transition: transform .3s ease;
-      display:flex; flex-direction:column;
-      overscroll-behavior: contain;
-      backdrop-filter: blur(16px) saturate(140%);
-    }
-    #login-container.open .cart-panel {
-      transform: translateX(0);
-    }
-    .login-form {
-      display:flex; flex-direction:column; padding:1rem;
-    }
-    .login-form input {
-      margin-bottom:12px; padding:8px;
-      border:1px solid var(--card-border);
-      border-radius:var(--radius-sm);
-      background:var(--row-alt); color:var(--ink);
-    }
-    .login-form button {
-      background:var(--accent-green); color:#fff;
-      border:none; padding:12px; border-radius:var(--radius-sm);
-      cursor:pointer; font-weight:700;
-    }
-
-    #close-login {
-      background:none; border:none;
-      color:var(--ink); font-size:1.5rem; cursor:pointer;
-    }
-
-    .hidden { display: none; }
-    .auth-switch {
-      text-align:center; margin-top:8px;
-    }
-    .auth-switch button {
-      background:none; border:none; color:var(--accent-orange);
-      cursor:pointer; text-decoration:underline; font-size:0.9rem;
-    }
-
-    .state-select-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-    .state-select-wrapper select {
-      flex: 1;
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      padding: 8px;
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-sm);
-      background: var(--row-alt);
-      color: var(--muted);
-      font: inherit;
-      font-size: 1rem;
-    }
-
-    .shimmer {
-      position: relative;
-      overflow: hidden;
-    }
-    .shimmer::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -150%;
-      width: 50%;
-      height: 100%;
-      background: linear-gradient(
-        120deg,
-        transparent,
-        rgba(255, 255, 255, 0.6),
-        transparent
-      );
-      animation: shimmer-move 0.8s ease-out forwards;
-    }
-    @keyframes shimmer-move {
-      100% { left: 150%; }
-    }
-
-    .consent-inline {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.95rem;
-      line-height: 1.4;
-      color: var(--ink, #fff);
-      cursor: pointer;
-      user-select: none;
-      white-space: wrap;
-      padding: 0;
-      flex: 0 0 auto;
-      width: auto;
-    }
-    .consent-inline input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      margin: 0;
-      padding: 0;
-      border: 2px solid var(--accent-orange, #ff6a00);
-      background-color: transparent;
-      transition: background-color 0.2s ease;
-      appearance: none;
-      cursor: pointer;
-      position: relative;
-      box-sizing: border-box;
-      flex: 0 0 18px;
-      display: inline-block;
-      vertical-align: middle;
-    }
-    .consent-inline input[type="checkbox"]:checked {
-      background-color: var(--accent-orange, #ff6a00);
-    }
-    .consent-inline input[type="checkbox"]:checked::after {
-      content: '✓';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 14px;
-      color: white;
-      font-weight: bold;
-      line-height: 1;
-      pointer-events: none;
-    }
-    .consent-text {
-      flex: 1 1 auto;
-      color: var(--muted, #ccc);
-    }
-    .consent-optional {
-      color: var(--muted, #888);
-      font-size: 0.88rem;
-      margin-left: 4px;
-    }
-    @media (max-width: 600px) {
-      .consent-inline {
-        white-space: normal;
-        flex-wrap: wrap;
-        align-items: flex-start;
-      }
-      .consent-inline input[type="checkbox"] {
-        width: 17px;
-        height: 17px;
-        flex: 0 0 17px;
-      }
-    }
-
-    .message-box {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      min-width: 240px;
-      max-width: 320px;
-      padding: 12px 16px;
-      border-radius: var(--radius-sm);
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: var(--ink);
-      background: var(--card);
-      border: 1px solid var(--card-border);
-      box-shadow: var(--shadow);
-      z-index: 2000;
-      opacity: 0;
-      transform: translateY(-10px);
-      animation: slideIn 0.3s forwards;
-    }
-    .message-box.success { border-left: 4px solid var(--accent-green); }
-    .message-box.error   { border-left: 4px solid var(--accent-red); }
-    .message-box.info    { border-left: 4px solid var(--accent-orange); }
-    @keyframes slideIn {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    @keyframes fadeOut {
-      to {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-    }
-
-    footer {
-      text-align:center; color:var(--muted);
-      font-size:.9rem; margin:20px 0;
-    }
-    .links {
-      display:flex; gap:14px; justify-content:center;
-      flex-wrap:wrap; margin-top:8px;
-    }
-    .links a { color:var(--accent-orange); font-weight:700; }
-
-    @supports (height: 100dvh) {
-      .use-dvh { height: 100dvh; }
-    }
-    @supports not ((height: 100dvh) and (height: 100svh)) {
-      .use-dvh { height: 100svh; }
-    }
-    .use-dvh { height: 100vh; }
-
-    @media (max-width: 960px) {
-      .vertical-gallery {
-        grid-template-columns: 1fr;
-        max-width: var(--maxw);
-        margin: 0 auto;
-      }
-    }
-    @media (max-width: 640px) {
-      .nav {
-        flex-direction: column;
-        align-items: stretch;
-        text-align: center;
-      }
-      .brand {
-        justify-content: center;
-        margin-bottom: 6px;
-      }
-      .header-info {
-        margin-bottom: 12px;
-      }
-      nav ul {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 8px;
-      }
-      nav ul li {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-      }
-      nav ul li button {
-        width: 100%;
-      }
-      .cart-panel,
-      #login-container .cart-panel {
-        width: 100vw;
-        max-width: 100%;
-        border-radius: 0;
-      }
-    }
-
+    /* API button states */
     .api-btn {
       position: relative;
       overflow: hidden;
@@ -732,6 +528,340 @@
       font-size: 1.2rem;
       color: #fff;
     }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* Password reveal */
+    .password-wrapper {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+    .password-wrapper input {
+      width: 100%;
+      padding-right: 2.5rem;
+      box-sizing: border-box;
+    }
+    .reveal-btn {
+      position: absolute;
+      right: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: var(--row-alt) !important;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+      color: #ccc;
+      height: 1.5rem;
+      width: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Login / Auth panel */
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-bottom: 0.5rem;
+    }
+    .login-form input,
+    .login-form select {
+      padding: 8px;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      background: var(--row-alt);
+      color: var(--ink);
+      font-size: 0.95rem;
+    }
+    .login-form button[type="submit"] {
+      background: var(--accent-green);
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    #close-login {
+      background: none;
+      border: none;
+      color: var(--ink);
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+    .hidden { display: none; }
+    .auth-switch {
+      text-align: center;
+      margin-top: 4px;
+      font-size: 0.85rem;
+    }
+    .auth-switch button {
+      background: none;
+      border: none;
+      color: var(--accent-orange);
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 0.85rem;
+    }
+
+    .state-select-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .state-select-wrapper select {
+      flex: 1;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      padding: 8px;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      background: var(--row-alt);
+      color: var(--muted);
+      font: inherit;
+      font-size: 0.95rem;
+    }
+
+    /* Shimmer flash for sign-in button */
+    .shimmer {
+      position: relative;
+      overflow: hidden;
+    }
+    .shimmer::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -150%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255, 255, 255, 0.6),
+        transparent
+      );
+      animation: shimmer-move 0.8s ease-out forwards;
+    }
+    @keyframes shimmer-move {
+      100% { left: 150%; }
+    }
+
+    /* SMS consent inline */
+    .consent-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      color: var(--ink);
+      cursor: pointer;
+      user-select: none;
+      padding: 0;
+      flex: 0 0 auto;
+      width: auto;
+    }
+    .consent-inline input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      padding: 0;
+      border: 2px solid var(--accent-orange);
+      background-color: transparent;
+      transition: background-color 0.2s ease;
+      appearance: none;
+      cursor: pointer;
+      position: relative;
+      box-sizing: border-box;
+      flex: 0 0 18px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .consent-inline input[type="checkbox"]:checked {
+      background-color: var(--accent-orange);
+    }
+    .consent-inline input[type="checkbox"]:checked::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 14px;
+      color: white;
+      font-weight: bold;
+      line-height: 1;
+      pointer-events: none;
+    }
+    .consent-text {
+      flex: 1 1 auto;
+      color: var(--muted);
+    }
+
+    /* Toast message */
+    .message-box {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      min-width: 240px;
+      max-width: 320px;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--ink);
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow);
+      z-index: 2000;
+      opacity: 0;
+      transform: translateY(-10px);
+      animation: slideIn 0.3s forwards;
+    }
+    .message-box.success { border-left: 4px solid var(--accent-green); }
+    .message-box.error   { border-left: 4px solid var(--accent-red); }
+    .message-box.info    { border-left: 4px solid var(--accent-orange); }
+    @keyframes slideIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin: 20px 0;
+    }
+    .links {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .links a {
+      color: var(--accent-orange);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    /* Processing overlay */
+    #processing-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 150;
+      padding: 16px;
+    }
+    #processing-overlay.open {
+      display: flex;
+    }
+    #processing-overlay .processing-card {
+      max-width: 360px;
+      width: 100%;
+      background: var(--cart-opq);
+      border-radius: 18px;
+      border: 1px solid var(--accent-orange);
+      box-shadow: var(--shadow);
+      padding: 18px 16px;
+      text-align: center;
+      backdrop-filter: blur(18px) saturate(140%);
+    }
+    #processing-overlay h3 {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+    }
+    #processing-overlay p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    /* Stripe card element */
+    #card-element {
+      padding: 10px;
+      border-radius: 10px;
+      background: var(--row-alt);
+      border: 1px solid var(--card-border);
+      margin-bottom: 8px;
+    }
+    #card-errors {
+      color: var(--accent-red);
+      font-size: 0.85rem;
+      min-height: 1.2em;
+    }
+
+    /* Remove number spinners */
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button,
+    .cart-qty-input::-webkit-outer-spin-button,
+    .cart-qty-input::-webkit-inner-spin-button,
+    #rewards-input::-webkit-outer-spin-button,
+    #rewards-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .qty-input[type=number],
+    .cart-qty-input[type=number],
+    #rewards-input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    /* Responsive */
+    @media (max-width: 960px) {
+      .vertical-gallery {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 640px) {
+      .nav {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+      }
+      .brand {
+        justify-content: center;
+      }
+      .header-info {
+        justify-content: center;
+      }
+      nav ul {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+      }
+      nav ul li {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+      }
+      nav ul li button {
+        width: 100%;
+      }
+      .panel {
+        max-width: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
   </style>
 </head>
 
@@ -745,14 +875,20 @@
         <strong>Picante Pequin Salsa Co</strong>
       </a>
       <div class="header-info">
-        <div class="greeting">Hey There,</div>
+        <div class="greeting">Hey there,</div>
         <span id="username-display">Guest</span>
-        <span>|  Rewards: <strong id="rewards-display">0</strong></span>
+        <span>| Rewards: <strong id="rewards-display">0</strong></span>
       </div>
       <nav aria-label="Primary">
         <ul>
-          <li><button id="cart-icon" class="cta" aria-label="Toggle Cart">🛒</button></li>
-          <li><button id="login-btn" class="cta">Sign In</button></li>
+          <li>
+            <button id="cart-icon" class="cta" aria-label="Toggle Cart">
+              🛒 <span style="font-size:0.85rem;">Cart</span>
+            </button>
+          </li>
+          <li>
+            <button id="login-btn" class="cta">Sign In</button>
+          </li>
         </ul>
       </nav>
     </div>
@@ -764,13 +900,14 @@
     </section>
   </main>
 
-  <aside id="cart-container" role="dialog" aria-modal="true" aria-label="Shopping Cart">
-    <div class="cart-panel">
-      <div class="cart-header">
-        <button id="close-cart" aria-label="Close cart">×</button>
+  <!-- Cart overlay -->
+  <aside id="cart-container" class="overlay-shell" role="dialog" aria-modal="true" aria-label="Shopping Cart">
+    <div class="panel">
+      <div class="panel-header">
+        <button id="close-cart" class="panel-close" aria-label="Close cart">×</button>
         <h2>Your Cart</h2>
       </div>
-      <div class="cart-content">
+      <div class="panel-body">
         <ul id="cart-items"></ul>
 
         <div id="order-info-row" class="cart-total" style="display:none;">
@@ -798,18 +935,20 @@
           <strong>$<span id="cart-total-value">0.00</span></strong>
         </div>
 
-        <div id="rewards-box" style="display:none; margin-top:1rem;">
-          <h3 style="margin:0 0 0.5rem; font-size:1rem;">Apply Rewards</h3>
+        <!-- Rewards input box -->
+        <div id="rewards-box" style="display:none; margin-top:0.75rem;">
+          <h3 style="margin:0 0 0.4rem; font-size:0.95rem;">Apply Rewards</h3>
           <input
             type="number"
             id="rewards-input"
             min="0"
             step="1"
-            style="width:100%; padding:0.5rem; text-align:right;"
+            style="width:100%; padding:0.5rem; text-align:right; border-radius:10px; border:1px solid var(--card-border); background:var(--row-alt); color:var(--ink);"
             aria-label="Rewards points to redeem"
           />
         </div>
 
+        <!-- Payment section (Stripe Elements) -->
         <section id="payment-section" style="display:none; margin-top:1rem;">
           <div id="card-element"></div>
           <div id="card-errors" role="alert"></div>
@@ -818,7 +957,7 @@
         <button
           id="checkout-btn"
           class="api-btn"
-          data-loading-text="Processing Order"
+          data-loading-text="Processing Order..."
           disabled
         >
           Checkout
@@ -827,28 +966,27 @@
     </div>
   </aside>
 
-  <div
-    id="signout-confirm"
-    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;"
-  >
-    <div style="background: var(--cart-opq); padding:1.5rem; border: solid 1px var(--accent-orange); border-radius:6px; max-width:400px; width:90%; text-align:center;">
-      <p style="margin-bottom:1rem; font-size:1rem; color: var(--ink);">
+  <!-- Sign-out confirm modal -->
+  <div id="signout-confirm" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:120; align-items:center; justify-content:center;">
+    <div style="background: var(--cart-opq); padding:1.5rem; border: solid 1px var(--accent-orange); border-radius:12px; max-width:400px; width:90%; text-align:center; backdrop-filter:blur(18px) saturate(140%);">
+      <p style="margin-bottom:1rem; font-size:0.95rem; color: var(--ink);">
         If you sign out now, your cart and any pending payments will be lost.
       </p>
       <div style="display:flex; gap:0.5rem; justify-content:center;">
-        <button id="cancel-signout" style="padding:0.5rem 1rem; background:#ccc; border:none; border-radius:4px; cursor:pointer;">Cancel</button>
-        <button id="confirm-signout" style="padding:0.5rem 1rem; background:#d9534f; color:#fff; border:none; border-radius:4px; cursor:pointer;">Sign Out</button>
+        <button id="cancel-signout" style="padding:0.5rem 1rem; background:#444; color:#fff; border:none; border-radius:999px; cursor:pointer; font-size:0.9rem;">Cancel</button>
+        <button id="confirm-signout" style="padding:0.5rem 1rem; background:#d9534f; color:#fff; border:none; border-radius:999px; cursor:pointer; font-size:0.9rem;">Sign Out</button>
       </div>
     </div>
   </div>
 
-  <aside id="login-container" role="dialog" aria-modal="true" aria-label="Customer Authentication">
-    <div class="cart-panel">
-      <div class="cart-header">
-        <button id="close-login" aria-label="Close login">×</button>
+  <!-- Login / Signup / Reset / Guest overlay -->
+  <aside id="login-container" class="overlay-shell" role="dialog" aria-modal="true" aria-label="Customer Authentication">
+    <div class="panel">
+      <div class="panel-header">
+        <button id="close-login" class="panel-close" aria-label="Close login">×</button>
         <h2 id="auth-title">Sign In</h2>
       </div>
-      <div class="cart-content">
+      <div class="panel-body">
         <!-- Sign In Form -->
         <form id="login-form" class="login-form" autocomplete="on">
           <input
@@ -868,16 +1006,21 @@
               required
               autocomplete="current-password"
             />
-            <button type="button" class="reveal-btn" data-target="login-password">🪅</button>
+            <button type="button" class="reveal-btn" data-target="login-password">👁</button>
           </div>
           <button type="submit" class="api-btn" data-loading-text="Signing In">Sign In</button>
+
           <div class="auth-switch">
             <span>Don't have an account?</span>
             <button id="show-signup" type="button">Create Account</button>
           </div>
           <div class="auth-switch">
-            <span>Forgot Your Password?</span>
-            <button id="show-reset" type="button">Click Here to Reset</button>
+            <span>Forgot your password?</span>
+            <button id="show-reset" type="button">Reset Password</button>
+          </div>
+          <div class="auth-switch">
+            <span>Or continue without an account:</span>
+            <button id="show-guest" type="button">Checkout as Guest</button>
           </div>
         </form>
 
@@ -895,40 +1038,31 @@
 
           <div class="state-select-wrapper">
             <select id="signup-state" name="state" required autocomplete="address-level1">
-              <option style="color: var(--muted);" value="">Select State</option>
-              <option value="AL">AL</option><option value="AK">AK</option>
-              <option value="AZ">AZ</option><option value="AR">AR</option>
-              <option value="CA">CA</option><option value="CO">CO</option>
-              <option value="CT">CT</option><option value="DE">DE</option>
-              <option value="FL">FL</option><option value="GA">GA</option>
-              <option value="HI">HI</option><option value="ID">ID</option>
-              <option value="IL">IL</option><option value="IN">IN</option>
-              <option value="IA">IA</option><option value="KS">KS</option>
-              <option value="KY">KY</option><option value="LA">LA</option>
-              <option value="ME">ME</option><option value="MD">MD</option>
-              <option value="MA">MA</option><option value="MI">MI</option>
-              <option value="MN">MN</option><option value="MS">MS</option>
-              <option value="MO">MO</option><option value="MT">MT</option>
-              <option value="NE">NE</option><option value="NV">NV</option>
-              <option value="NH">NH</option><option value="NJ">NJ</option>
-              <option value="NM">NM</option><option value="NY">NY</option>
-              <option value="NC">NC</option><option value="ND">ND</option>
-              <option value="OH">OH</option><option value="OK">OK</option>
-              <option value="OR">OR</option><option value="PA">PA</option>
-              <option value="RI">RI</option><option value="SC">SC</option>
-              <option value="SD">SD</option><option value="TN">TN</option>
-              <option value="TX">TX</option><option value="UT">UT</option>
-              <option value="VT">VT</option><option value="VA">VA</option>
-              <option value="WA">WA</option><option value="WV">WV</option>
+              <option value="">Select State</option>
+              <option value="AL">AL</option><option value="AK">AK</option><option value="AZ">AZ</option>
+              <option value="AR">AR</option><option value="CA">CA</option><option value="CO">CO</option>
+              <option value="CT">CT</option><option value="DE">DE</option><option value="FL">FL</option>
+              <option value="GA">GA</option><option value="HI">HI</option><option value="ID">ID</option>
+              <option value="IL">IL</option><option value="IN">IN</option><option value="IA">IA</option>
+              <option value="KS">KS</option><option value="KY">KY</option><option value="LA">LA</option>
+              <option value="ME">ME</option><option value="MD">MD</option><option value="MA">MA</option>
+              <option value="MI">MI</option><option value="MN">MN</option><option value="MS">MS</option>
+              <option value="MO">MO</option><option value="MT">MT</option><option value="NE">NE</option>
+              <option value="NV">NV</option><option value="NH">NH</option><option value="NJ">NJ</option>
+              <option value="NM">NM</option><option value="NY">NY</option><option value="NC">NC</option>
+              <option value="ND">ND</option><option value="OH">OH</option><option value="OK">OK</option>
+              <option value="OR">OR</option><option value="PA">PA</option><option value="RI">RI</option>
+              <option value="SC">SC</option><option value="SD">SD</option><option value="TN">TN</option>
+              <option value="TX">TX</option><option value="UT">UT</option><option value="VT">VT</option>
+              <option value="VA">VA</option><option value="WA">WA</option><option value="WV">WV</option>
               <option value="WI">WI</option><option value="WY">WY</option>
             </select>
           </div>
 
-          <input type="text" id="signup-zip" name="zip" placeholder="ZIP Code" required inputmode="numeric" autocomplete="postal-code" />
-          <input type="tel" id="signup-phone" name="phone" placeholder="Phone (10 digits)" required inputmode="numeric" autocomplete="tel" />
-
+          <input type="text" id="signup-zip" name="zip" placeholder="ZIP Code" required autocomplete="postal-code" />
+          <input type="tel" id="signup-phone" name="phone" placeholder="Phone (10 digits)" required autocomplete="tel" />
           <input type="email" id="signup-email" name="email" placeholder="Email address" required autocomplete="email" />
-          <div id="email-error-msg" style="display:none; color: var(--accent-red); font-size:0.8rem; margin-top:-6px; margin-bottom:8px;">
+          <div id="email-error-msg" style="display:none; color:var(--accent-red); font-size:0.8rem;">
             Please enter a valid email domain.
           </div>
 
@@ -937,60 +1071,56 @@
               type="password"
               id="signup-password"
               name="password"
-              placeholder="Create Password"
+              placeholder="Create password"
               required
               autocomplete="new-password"
             />
-            <button type="button" class="reveal-btn" data-target="signup-password">🪅</button>
+            <button type="button" class="reveal-btn" data-target="signup-password">👁</button>
           </div>
           <div class="password-wrapper">
             <input
               type="password"
               id="signup-password-confirm"
               name="passwordConfirm"
-              placeholder="Confirm Password"
+              placeholder="Confirm password"
               required
               autocomplete="new-password"
             />
-            <button type="button" class="reveal-btn" data-target="signup-password-confirm">🪅</button>
+            <button type="button" class="reveal-btn" data-target="signup-password-confirm">👁</button>
           </div>
-          <div id="password-match-msg" style="display:none; color: var(--accent-red); font-size:0.8rem; margin-top:-6px; margin-bottom:8px;">
+          <div id="password-match-msg" style="display:none; color:var(--accent-red); font-size:0.8rem;">
             Passwords do not match.
           </div>
 
-          <div style="margin-bottom:8px;">
-            <div style="height:6px; background:#333; border-radius:999px; overflow:hidden;">
-              <div id="password-strength-bar" style="width:0%; height:100%; background:red;"></div>
-            </div>
-            <div id="password-strength-text" style="font-size:0.8rem; margin-top:4px;">Strength: —</div>
+          <div style="margin:6px 0;">
+            <div id="password-strength-bar" style="height:4px; width:0%; background:red; border-radius:999px;"></div>
+            <div id="password-strength-text" style="font-size:0.8rem; margin-top:2px;">Strength: —</div>
           </div>
 
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;">
+          <!-- Signup verification code -->
+          <div style="display:flex; gap:6px; align-items:center; margin-top:4px;">
+            <input
+              type="text"
+              id="signup-verification-code"
+              placeholder="Verification code"
+              disabled
+              style="flex:1;"
+            />
             <button
               type="button"
               id="signup-request-code"
               class="api-btn"
               data-loading-text="Sending Code"
-              style="flex:0 0 auto; padding:8px 10px; font-size:0.85rem;"
+              style="white-space:nowrap; padding:8px 10px; font-size:0.8rem;"
             >
-              Request Verification Code
+              Request Code
             </button>
-            <input
-              type="text"
-              id="signup-verification-code"
-              placeholder="Code"
-              maxlength="6"
-              disabled
-              style="flex:1; padding:8px; border-radius:var(--radius-sm); border:1px solid var(--card-border); background:var(--row-alt); color:var(--ink);"
-            />
           </div>
 
-          <label class="consent-inline" style="margin-bottom:10px;">
+          <!-- SMS consent -->
+          <label class="consent-inline" style="margin-top:4px;">
             <input type="checkbox" id="signup-smsConsent" />
-            <span class="consent-text">
-              Yes, I’d like to receive occasional SMS updates about my orders and rewards.
-              <span class="consent-optional">(Optional)</span>
-            </span>
+            <span class="consent-text">Optional: Receive order updates via SMS.</span>
           </label>
 
           <button type="submit" class="api-btn" data-loading-text="Creating Account" disabled>
@@ -998,8 +1128,7 @@
           </button>
 
           <div class="auth-switch">
-            <span>Already have an account?</span>
-            <button id="show-login" type="button">Sign In</button>
+            <button id="show-login" type="button">Back to Sign In</button>
           </div>
         </form>
 
@@ -1009,7 +1138,7 @@
             type="email"
             id="reset-email"
             name="email"
-            placeholder="Email address"
+            placeholder="Account email"
             required
             autocomplete="email"
           />
@@ -1019,7 +1148,6 @@
             name="phone"
             placeholder="Phone (10 digits)"
             required
-            inputmode="numeric"
             autocomplete="tel"
           />
 
@@ -1027,93 +1155,127 @@
             <input
               type="password"
               id="reset-password"
-              name="newPassword"
-              placeholder="New Password"
+              name="password"
+              placeholder="New password"
               required
               autocomplete="new-password"
             />
-            <button type="button" class="reveal-btn" data-target="reset-password">🪅</button>
+            <button type="button" class="reveal-btn" data-target="reset-password">👁</button>
           </div>
           <div class="password-wrapper">
             <input
               type="password"
               id="reset-password-confirm"
-              name="newPasswordConfirm"
-              placeholder="Confirm New Password"
+              name="passwordConfirm"
+              placeholder="Confirm new password"
               required
               autocomplete="new-password"
             />
-            <button type="button" class="reveal-btn" data-target="reset-password-confirm">🪅</button>
+            <button type="button" class="reveal-btn" data-target="reset-password-confirm">👁</button>
           </div>
-          <div id="reset-password-match-msg" style="display:none; color: var(--accent-red); font-size:0.8rem; margin-top:-6px; margin-bottom:8px;">
+          <div id="reset-password-match-msg" style="display:none; color:var(--accent-red); font-size:0.8rem;">
             Passwords do not match.
           </div>
 
-          <div style="margin-bottom:8px;">
-            <div style="height:6px; background:#333; border-radius:999px; overflow:hidden;">
-              <div id="reset-password-strength-bar" style="width:0%; height:100%; background:red;"></div>
-            </div>
-            <div id="reset-password-strength-text" style="font-size:0.8rem; margin-top:4px;">Strength: —</div>
+          <div style="margin:6px 0;">
+            <div id="reset-password-strength-bar" style="height:4px; width:0%; background:red; border-radius:999px;"></div>
+            <div id="reset-password-strength-text" style="font-size:0.8rem; margin-top:2px;">Strength: —</div>
           </div>
 
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;">
+          <!-- Reset verification code -->
+          <div style="display:flex; gap:6px; align-items:center; margin-top:4px;">
+            <input
+              type="text"
+              id="reset-verification-code"
+              placeholder="Verification code"
+              disabled
+              style="flex:1;"
+            />
             <button
               type="button"
               id="reset-request-code"
               class="api-btn"
               data-loading-text="Sending Code"
-              style="flex:0 0 auto; padding:8px 10px; font-size:0.85rem;"
+              style="white-space:nowrap; padding:8px 10px; font-size:0.8rem;"
             >
-              Request Verification Code
+              Request Code
             </button>
-            <input
-              type="text"
-              id="reset-verification-code"
-              placeholder="Code"
-              maxlength="6"
-              disabled
-              style="flex:1; padding:8px; border-radius:var(--radius-sm); border:1px solid var(--card-border); background:var(--row-alt); color:var(--ink);"
-            />
           </div>
 
-          <label class="consent-inline" style="margin-bottom:10px;">
+          <!-- SMS consent -->
+          <label class="consent-inline" style="margin-top:4px;">
             <input type="checkbox" id="reset-smsConsent" />
-            <span class="consent-text">
-              Yes, I’d like to receive SMS updates about password changes and account security.
-              <span class="consent-optional">(Optional)</span>
-            </span>
+            <span class="consent-text">Optional: Receive reset confirmation via SMS.</span>
           </label>
 
-          <button
-            type="submit"
-            id="reset-submit"
-            class="api-btn"
-            data-loading-text="Resetting Password"
-            disabled
-          >
+          <button id="reset-submit" type="submit" class="api-btn" data-loading-text="Resetting Password" disabled>
             Reset Password
           </button>
 
           <div class="auth-switch">
-            <span>Remembered your password?</span>
             <button id="show-login-from-reset" type="button">Back to Sign In</button>
+          </div>
+        </form>
+
+        <!-- Guest Checkout Form -->
+        <form id="guest-form" class="login-form hidden" autocomplete="on" novalidate>
+          <input type="text" id="guest-name" placeholder="Full Name" required autocomplete="name" />
+          <input type="email" id="guest-email" placeholder="Email address" required autocomplete="email" />
+          <input type="tel" id="guest-phone" placeholder="Phone (10 digits)" required autocomplete="tel" />
+          <input type="text" id="guest-address" placeholder="Street Address" required autocomplete="street-address" />
+          <input type="text" id="guest-city" placeholder="City" required autocomplete="address-level2" />
+          <div class="state-select-wrapper">
+            <select id="guest-state" required autocomplete="address-level1">
+              <option value="">Select State</option>
+              <option value="AL">AL</option><option value="AK">AK</option><option value="AZ">AZ</option>
+              <option value="AR">AR</option><option value="CA">CA</option><option value="CO">CO</option>
+              <option value="CT">CT</option><option value="DE">DE</option><option value="FL">FL</option>
+              <option value="GA">GA</option><option value="HI">HI</option><option value="ID">ID</option>
+              <option value="IL">IL</option><option value="IN">IN</option><option value="IA">IA</option>
+              <option value="KS">KS</option><option value="KY">KY</option><option value="LA">LA</option>
+              <option value="ME">ME</option><option value="MD">MD</option><option value="MA">MA</option>
+              <option value="MI">MI</option><option value="MN">MN</option><option value="MS">MS</option>
+              <option value="MO">MO</option><option value="MT">MT</option><option value="NE">NE</option>
+              <option value="NV">NV</option><option value="NH">NH</option><option value="NJ">NJ</option>
+              <option value="NM">NM</option><option value="NY">NY</option><option value="NC">NC</option>
+              <option value="ND">ND</option><option value="OH">OH</option><option value="OK">OK</option>
+              <option value="OR">OR</option><option value="PA">PA</option><option value="RI">RI</option>
+              <option value="SC">SC</option><option value="SD">SD</option><option value="TN">TN</option>
+              <option value="TX">TX</option><option value="UT">UT</option><option value="VT">VT</option>
+              <option value="VA">VA</option><option value="WA">WA</option><option value="WV">WV</option>
+              <option value="WI">WI</option><option value="WY">WY</option>
+            </select>
+          </div>
+          <input type="text" id="guest-zip" placeholder="ZIP Code" required autocomplete="postal-code" />
+
+          <button type="submit" class="api-btn" data-loading-text="Saving Details">
+            Continue to Checkout
+          </button>
+
+          <div class="auth-switch">
+            <button id="guest-back-login" type="button">Back to Sign In</button>
           </div>
         </form>
       </div>
     </div>
   </aside>
 
+  <!-- Processing overlay -->
+  <div id="processing-overlay">
+    <div class="processing-card">
+      <h3>Calculating Shipping & Taxes…</h3>
+      <p>Please do not refresh or close this page while we finalize your order.</p>
+    </div>
+  </div>
+
   <footer>
     <div>© <span id="y"></span> Picante Pequin Salsa Co. All rights reserved.</div>
     <div class="links">
-      <a href="https://picantepequinsalsaco.com/">Home</a>
-      <a href="https://picantepequinsalsaco.com/#about">About</a>
-      <a href="https://picantepequinsalsaco.com/#contact">Contact</a>
+      <a href="https://picantepequinsalsaco.com">Home</a>
+      <a href="https://picantepequinsalsaco.com/Rewards/">Rewards</a>
+      <a href="https://picantepequinsalsaco.com/Contact/">Contact</a>
     </div>
   </footer>
-
-  <!-- Stripe JS (required for Elements) -->
-  <script src="https://js.stripe.com/v3/"></script>
 
   <script>
   /* ===========================
@@ -1138,7 +1300,6 @@
     sessionStorage.removeItem('sid');
     const newSid = crypto.randomUUID();
     sessionStorage.setItem('sid', newSid);
-    console.log('New sid set:', newSid);
     return newSid;
   }
 
@@ -1240,7 +1401,6 @@
 
   async function pollStatusUntilDone({ statusUrl, jobId, intervalMs = JOB.intervalMs, timeoutMs = JOB.timeoutMs }) {
     if (DEV.stubJobs || !statusUrl) {
-      console.debug('[JOB:STUB] Using stub for job', { jobId, statusUrl });
       return stubStatusUntilDone({ jobId, delayMs: DEV.stubDelayMs, manualEvent: DEV.manualEvent });
     }
 
@@ -1270,8 +1430,6 @@
       const first = await apiCall();
 
       if (first && first.jobId && first.statusUrl) {
-        console.debug('[JOB] Waiting for completion', { jobId: first.jobId, statusUrl: first.statusUrl });
-
         const result = await pollStatusUntilDone({
           statusUrl: first.statusUrl,
           jobId: first.jobId,
@@ -1314,6 +1472,7 @@
      =========================== */
   let cart = [];
   let isLoggedIn = false;
+  let isGuestCheckout = false;
   let currentUser = { email: '', name: '', rewards: 0 };
 
   /* ===========================
@@ -1331,33 +1490,40 @@
   const closeLogin      = document.getElementById('close-login');
   const loginForm       = document.getElementById('login-form');
   const signupForm      = document.getElementById('signup-form');
+  const resetForm       = document.getElementById('reset-form');
+  const guestForm       = document.getElementById('guest-form');
+
   const showSignupBtn   = document.getElementById('show-signup');
   const showLoginBtn    = document.getElementById('show-login');
+  const showResetBtn    = document.getElementById('show-reset');
+  const showLoginFromResetBtn = document.getElementById('show-login-from-reset');
+  const showGuestBtn    = document.getElementById('show-guest');
+  const guestBackLogin  = document.getElementById('guest-back-login');
   const authTitle       = document.getElementById('auth-title');
 
   const usernameDisplay = document.getElementById('username-display');
   const rewardsDisplay  = document.getElementById('rewards-display');
-
-  const resetForm     = document.getElementById('reset-form');
-  const showResetBtn  = document.getElementById('show-reset');
-  const showLoginFromResetBtn = document.getElementById('show-login-from-reset');
 
   const signupRequestCodeBtn = document.getElementById('signup-request-code');
   const signupCodeInput      = document.getElementById('signup-verification-code');
   const resetRequestCodeBtn  = document.getElementById('reset-request-code');
   const resetCodeInput       = document.getElementById('reset-verification-code');
 
-  let stripe, elements, card, cardMounted = false;
-  let smsConsent = false;
-
   const signupSmsConsentEl = document.getElementById('signup-smsConsent');
   const resetSmsConsentEl  = document.getElementById('reset-smsConsent');
+
+  const processingOverlay = document.getElementById('processing-overlay');
+
+  // Stripe Elements setup
+  let stripe, elements, card, cardMounted = false;
+
+  // SMS Optional Consent checkbox state
+  let smsConsent = false;
 
   [signupSmsConsentEl, resetSmsConsentEl].forEach(el => {
     if (el) {
       el.addEventListener('change', () => {
         smsConsent = el.checked;
-        console.log('smsConsent is now:', smsConsent);
       });
     }
   });
@@ -1393,12 +1559,23 @@
       if (!input) return;
       const isHidden = input.type === 'password';
       input.type = isHidden ? 'text' : 'password';
-      btn.textContent = isHidden ? '🪇' : '🪅';
+      btn.textContent = isHidden ? '🙈' : '👁';
     });
   });
 
   /* ===========================
-     Live validators
+     Message helper
+     =========================== */
+  function showMessage(msg, type = 'info') {
+    const box = document.createElement('div');
+    box.className = `message-box ${type}`;
+    box.textContent = msg;
+    document.body.appendChild(box);
+    setTimeout(() => box.remove(), 4000);
+  }
+
+  /* ===========================
+     Live validators (signup/reset)
      =========================== */
 
   function setupRequestCodeHandler(btnId, codeInputId, act, emailInputId) {
@@ -1730,17 +1907,6 @@
   });
 
   /* ===========================
-     Message helper
-     =========================== */
-  function showMessage(msg, type = 'info') {
-    const box = document.createElement('div');
-    box.className = `message-box ${type}`;
-    box.textContent = msg;
-    document.body.appendChild(box);
-    setTimeout(() => box.remove(), 4000);
-  }
-
-  /* ===========================
      Render products
      =========================== */
   function renderProducts() {
@@ -1764,7 +1930,7 @@
           </div>
           <div class="card-back">
             <h4>Quick Facts</h4>
-            <ul>
+            <ul style="padding-left:1.1rem; margin-top:0.4rem; font-size:0.9rem;">
               <li>SKU: ${p.sku || '—'}</li>
               <li>Price: $${p.price.toFixed(2)}</li>
               <li>${p.desc}</li>
@@ -1893,19 +2059,19 @@
 
       rewardsRow.style.display = isLoggedIn ? 'flex' : 'none';
 
-      if (isLoggedIn && cart.length > 0) {
+      if ((isLoggedIn || isGuestCheckout) && cart.length > 0) {
         rewardsBox.style.display = 'block';
       } else {
         rewardsBox.style.display = 'none';
       }
 
       let applied = 0;
-      if (rewardsInput && isLoggedIn) {
+      if (rewardsInput && (isLoggedIn || isGuestCheckout)) {
         const rawPoints = parseInt(rewardsInput.value || "0", 10);
         const pointsRedeemed = parseInt(rewardsInput?.value || "0", 10);
         currentUser.pointsRedeemed = pointsRedeemed;
 
-        const usablePoints = Math.max(0, Math.min(rawPoints, currentUser.rewards));
+        const usablePoints = Math.max(0, Math.min(rawPoints, currentUser.rewards || 0));
         let appliedDollars = usablePoints / 1000;
         appliedDollars = Math.min(appliedDollars, subtotal);
         applied = Math.ceil(appliedDollars * 100) / 100;
@@ -1916,9 +2082,8 @@
       const newTotal = Math.max(0, subtotal - applied);
       document.getElementById('cart-total-value').textContent = newTotal.toFixed(2);
 
-      // Guest checkout enabled: only require cart items
       checkoutBtn.disabled = cart.length === 0;
-      checkoutBtn.textContent = isLoggedIn ? 'Proceed to Checkout' : 'Checkout as Guest';
+      checkoutBtn.textContent = (isLoggedIn || isGuestCheckout) ? 'Proceed to Checkout' : 'Checkout';
     }
   }
 
@@ -1943,6 +2108,7 @@
     if (isLoggedIn) {
       document.getElementById('signout-confirm').style.display = 'flex';
     } else {
+      showAuthView('login');
       toggleLogin(true);
       document.getElementById('login-username').focus();
     }
@@ -1961,36 +2127,53 @@
   loginOverlay.addEventListener('click', e => { if (e.target === loginOverlay) toggleLogin(); });
 
   showSignupBtn.addEventListener('click', () => {
-    loginForm.classList.add('hidden');
-    signupForm.classList.remove('hidden');
-    resetForm.classList.add('hidden');
-    authTitle.textContent = 'Create Account';
+    showAuthView('signup');
   });
   showLoginBtn.addEventListener('click', () => {
-    signupForm.classList.add('hidden');
-    resetForm.classList.add('hidden');
-    loginForm.classList.remove('hidden');
-    authTitle.textContent = 'Sign In';
+    showAuthView('login');
   });
 
   showResetBtn.addEventListener('click', () => {
-    loginForm.classList.add('hidden');
-    signupForm.classList.add('hidden');
-    resetForm.classList.remove('hidden');
-    authTitle.textContent = 'Reset Password';
+    showAuthView('reset');
     document.getElementById('reset-email').focus();
   });
 
   showLoginFromResetBtn.addEventListener('click', () => {
-    resetForm.classList.add('hidden');
-    signupForm.classList.add('hidden');
-    loginForm.classList.remove('hidden');
-    authTitle.textContent = 'Sign In';
+    showAuthView('login');
     document.getElementById('login-username').focus();
   });
 
+  showGuestBtn.addEventListener('click', () => {
+    showAuthView('guest');
+  });
+
+  guestBackLogin.addEventListener('click', () => {
+    showAuthView('login');
+  });
+
+  function showAuthView(view) {
+    loginForm.classList.add('hidden');
+    signupForm.classList.add('hidden');
+    resetForm.classList.add('hidden');
+    guestForm.classList.add('hidden');
+
+    if (view === 'login') {
+      loginForm.classList.remove('hidden');
+      authTitle.textContent = 'Sign In';
+    } else if (view === 'signup') {
+      signupForm.classList.remove('hidden');
+      authTitle.textContent = 'Create Account';
+    } else if (view === 'reset') {
+      resetForm.classList.remove('hidden');
+      authTitle.textContent = 'Reset Password';
+    } else if (view === 'guest') {
+      guestForm.classList.remove('hidden');
+      authTitle.textContent = 'Checkout as Guest';
+    }
+  }
+
   /* ===========================
-     Form handlers
+     Form + button handlers
      =========================== */
 
   // Sign In
@@ -2041,6 +2224,7 @@
     if (result.ok && result?.payload) {
       const data = result.payload;
       isLoggedIn = true;
+      isGuestCheckout = false;
       currentUser = {
         email: data.email || document.getElementById('login-username').value.trim(),
         name: `${data.firstName ?? ''} ${data.lastName ?? ''}`.trim(),
@@ -2048,14 +2232,13 @@
       };
       if (data.token) sessionStorage.setItem('authToken', data.token);
 
-      usernameDisplay.textContent = currentUser.name;
-      rewardsDisplay.textContent = currentUser.rewards;
+      usernameDisplay.textContent = currentUser.name || 'Customer';
+      rewardsDisplay.textContent = currentUser.rewards ?? 0;
 
       const rewardsRow = document.getElementById('rewards-row');
       const rewardsInput = document.getElementById('rewards-input');
       const pointsRedeemed = parseInt(rewardsInput?.value || "0", 10);
       currentUser.pointsRedeemed = pointsRedeemed;
-
       if (currentUser.rewards > 0) {
         rewardsRow.style.display = 'flex';
         rewardsInput.max = currentUser.rewards;
@@ -2067,10 +2250,8 @@
 
       loginBtn.textContent = 'Sign Out';
       loginBtn.classList.add('logout');
-
       checkoutBtn.disabled = cart.length === 0;
-      checkoutBtn.textContent = cart.length === 0 ? 'Checkout' : 'Proceed to Checkout';
-
+      checkoutBtn.textContent = 'Proceed to Checkout';
       loginForm.reset();
       toggleLogin(false);
       showMessage(data?.message || 'Signed in', 'success');
@@ -2244,7 +2425,6 @@
       showMessage(data?.message || 'Account created! Please sign in.', 'success');
       const email = data.body?.email ?? data.email ?? document.getElementById('signup-email').value.trim();
       document.getElementById('login-username').value = email;
-
       signupForm.reset();
       checkSignupValidity();
       document.getElementById('signup-verification-code').disabled = true;
@@ -2257,7 +2437,6 @@
         signupBar.style.background = 'red';
         signupText.textContent = 'Strength: —';
       }
-
       showLoginBtn.click();
 
       setTimeout(() => {
@@ -2272,6 +2451,45 @@
     }
   });
 
+  // Guest Checkout form
+  guestForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const name  = document.getElementById('guest-name').value.trim();
+    const email = document.getElementById('guest-email').value.trim();
+    const phone = document.getElementById('guest-phone').value.trim();
+    const addr  = document.getElementById('guest-address').value.trim();
+    const city  = document.getElementById('guest-city').value.trim();
+    const st    = document.getElementById('guest-state').value.trim();
+    const zip   = document.getElementById('guest-zip').value.trim();
+
+    if (!name || !email || !phone || !addr || !city || !st || !zip) {
+      showMessage('Please complete all contact fields.', 'error');
+      return;
+    }
+
+    isGuestCheckout = true;
+    isLoggedIn = false;
+    currentUser = {
+      email,
+      name,
+      rewards: 0,
+      phone,
+      addressLine1: addr,
+      city,
+      state: st,
+      zip,
+      country: 'US'
+    };
+
+    usernameDisplay.textContent = name || 'Guest';
+    rewardsDisplay.textContent = '0';
+
+    toggleLogin(false);
+    renderCart();
+    toggleCart(true);
+    showMessage('Guest details saved. You can now proceed to checkout.', 'success');
+  });
+
   /* ===========================
      Checkout
      =========================== */
@@ -2280,18 +2498,29 @@
 
   function startShimmer(btn, text) {
     btn.classList.add('loading');
-    btn.dataset.loadingText = text || 'Processing...';
+    if (text) btn.dataset.loadingText = text;
   }
 
   function stopShimmer(btn) {
     btn.classList.remove('loading');
-    delete btn.dataset.loadingText;
+  }
+
+  function showProcessingOverlay(show) {
+    processingOverlay.classList.toggle('open', !!show);
   }
 
   checkoutBtn.addEventListener('click', async () => {
-    // Phase 1: Proceed to Checkout (guest or logged-in)
+    // If not logged in and not guest, open auth with guest option
+    if (!isLoggedIn && !isGuestCheckout) {
+      showAuthView('guest');
+      toggleLogin(true);
+      return;
+    }
+
+    // Phase 1: Proceed to Checkout
     if (checkoutPhase === 1) {
       startShimmer(checkoutBtn, 'Processing Order...');
+      showProcessingOverlay(true);
       let result;
 
       try {
@@ -2313,8 +2542,8 @@
 
           const payload = {
             user: {
-              email: currentUser.email || null,
-              name: currentUser.name || 'Guest',
+              email: currentUser.email,
+              name: currentUser.name,
               rewards: currentUser.rewards || 0
             },
             items: cart.map(i => ({
@@ -2360,6 +2589,7 @@
         });
       } finally {
         stopShimmer(checkoutBtn);
+        showProcessingOverlay(false);
       }
 
       if (result?.ok && result?.payload) {
@@ -2377,13 +2607,13 @@
           pointsRedeemed: Number(raw.pointsRedeemed) || 0
         };
 
-        currentUser.name = raw.billingName || currentUser.name || 'Guest';
-        currentUser.email = raw.billingEmail || currentUser.email || '';
-        currentUser.addressLine1 = raw.billingLine1 || '';
-        currentUser.city = raw.billingCity || '';
-        currentUser.state = raw.billingState || '';
-        currentUser.zip = raw.billingPostal || '';
-        currentUser.country = raw.billingCountry || 'US';
+        currentUser.name = raw.billingName || currentUser.name;
+        currentUser.email = raw.billingEmail || currentUser.email;
+        currentUser.addressLine1 = raw.billingLine1 || currentUser.addressLine1 || '';
+        currentUser.city = raw.billingCity || currentUser.city || '';
+        currentUser.state = raw.billingState || currentUser.state || '';
+        currentUser.zip = raw.billingPostal || currentUser.zip || '';
+        currentUser.country = raw.billingCountry || currentUser.country || 'US';
 
         const orderNumberEl = document.getElementById('order-number');
         const shippingCostEl = document.getElementById('shipping-cost');
@@ -2435,7 +2665,7 @@
           let countdownEl = document.createElement('div');
           countdownEl.style.marginTop = '0.5rem';
           countdownEl.style.fontSize = '0.9rem';
-          countdownEl.style.color = '#a76e28';
+          countdownEl.style.color = '#f7b15a';
           countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
           checkoutBtn.insertAdjacentElement('afterend', countdownEl);
 
@@ -2492,7 +2722,6 @@
       }
 
       startShimmer(checkoutBtn, 'Confirming...');
-
       try {
         const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
           payment_method: {
@@ -2534,7 +2763,7 @@
           let countdownEl = document.createElement('div');
           countdownEl.style.marginTop = '0.5rem';
           countdownEl.style.fontSize = '0.9rem';
-          countdownEl.style.color = '#a76e28';
+          countdownEl.style.color = '#f7b15a';
           countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
           checkoutBtn.insertAdjacentElement('afterend', countdownEl);
           checkoutBtn.disabled = false;
@@ -2565,7 +2794,7 @@
     }
   });
 
-  // Rewards live input
+  // Rewards input live updates
   document.addEventListener('input', (e) => {
     if (e.target.id === 'rewards-input') {
       updateRewardsUI();
@@ -2579,7 +2808,7 @@
 
       const usablePoints = Math.max(
         0,
-        Math.min(rawPoints, currentUser.rewards, maxPointsBySubtotal)
+        Math.min(rawPoints, currentUser.rewards || 0, maxPointsBySubtotal)
       );
 
       let applied = usablePoints / 1000;
@@ -2605,7 +2834,7 @@
 
     const usablePoints = Math.max(
       0,
-      Math.min(rawPoints, currentUser.rewards, maxPointsBySubtotal)
+      Math.min(rawPoints, currentUser.rewards || 0, maxPointsBySubtotal)
     );
 
     let applied = usablePoints / 1000;
@@ -2616,30 +2845,10 @@
     document.getElementById('cart-total-value').textContent = (subtotal - appliedRounded).toFixed(2);
   }
 
-  (function enhanceStateSelect() {
-    const select = document.getElementById('signup-state');
-    const btn = document.querySelector('.state-dropdown-btn');
-    if (!select || !btn) return;
-
-    function openNativeDropdown() {
-      if (typeof select.showPicker === 'function') {
-        select.showPicker();
-      } else {
-        select.focus();
-        const ev = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
-        select.dispatchEvent(ev);
-      }
-    }
-
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      openNativeDropdown();
-    });
-  })();
-
   function signOut() {
     cart = [];
     isLoggedIn = false;
+    isGuestCheckout = false;
     currentUser = { email: '', name: '', rewards: 0 };
     checkoutPhase = 1;
     confirmStep = false;
@@ -2659,36 +2868,36 @@
     checkoutBtn.style.cursor = 'pointer';
 
     document.getElementById('payment-section').style.display = 'none';
-
     document.getElementById('order-info-row').style.display = 'none';
     document.getElementById('shipping-row').style.display = 'none';
     document.getElementById('tax-row').style.display = 'none';
+    document.getElementById('rewards-row').style.display = 'none';
 
     document.getElementById('cart-total-value').textContent = '0.00';
-
     checkoutBtn.dataset.orderData = '';
 
     renderCart();
   }
 
-  /* ===========================
-     Confirm-on-exit + persist cart
-     =========================== */
+  // Confirm-on-exit
   window.addEventListener('beforeunload', (e) => {
-    sessionStorage.setItem('cart', JSON.stringify(cart));
-    e.preventDefault();
-    e.returnValue = '';
+    if (cart.length || isLoggedIn || isGuestCheckout) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
   });
 
   window.addEventListener('pagehide', () => {
-    if (isLoggedIn) {
+    if (isLoggedIn || isGuestCheckout) {
       signOut();
     }
   });
 
-  /* ===========================
-     Init
-     =========================== */
+  // Persist cart
+  window.addEventListener('beforeunload', () => {
+    sessionStorage.setItem('cart', JSON.stringify(cart));
+  });
+
   document.addEventListener('DOMContentLoaded', () => {
     const saved = sessionStorage.getItem('cart');
     if (saved) {
