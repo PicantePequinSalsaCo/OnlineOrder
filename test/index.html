@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -562,6 +562,7 @@
       font-weight: bold;
     }
 
+
     /* API button states */
     .api-btn {
       position: relative;
@@ -654,6 +655,34 @@
   border-color: rgba(255,255,255,0.15);
 }
 
+/* Hold-to-activate progress overlay */
+#checkout-btn .hold-progress,
+#cancel-order-btn .hold-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(6px);
+  border-radius: inherit;
+  pointer-events: none;
+  transition: width 0.15s linear;
+}
+
+/* Frosted look during hold */
+#checkout-btn.hold-mode {
+  background: rgba(255,255,255,0.15) !important;
+  border-color: rgba(255,255,255,0.25) !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.6) !important;
+}
+
+#cancel-order-btn.hold-mode {
+  background: rgba(255,255,255,0.18) !important;
+  border-color: rgba(255,255,255,0.3) !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.6) !important;
+}
+    
     @keyframes shimmer {
       0% { background-position: -200% 0; }
       100% { background-position: 200% 0; }
@@ -1195,8 +1224,15 @@
           <div id="card-errors" role="alert"></div>
         </section>
 
-        <button id="checkout-btn" class="api-btn" data-loading-text="Processing Order" disabled>Sign In to Checkout</button>
-        <button id="cancel-order-btn" class="api-btn" style="margin-top:10px; display:none;" data-loading-text="Canceling Order"> Cancel Order</button>    
+        <button id="checkout-btn" class="api-btn" data-loading-text="Processing Order" disabled>
+          Sign In to Checkout
+          <div class="hold-progress"></div>
+        </button>
+
+        <button id="cancel-order-btn" class="api-btn" style="margin-top:10px; display:none;" data-loading-text="Canceling Order">
+          Cancel Order
+          <div class="hold-progress"></div>
+        </button>   
       </div>
     </div>
   </aside>
@@ -1602,6 +1638,66 @@
     /* ===========================
        Utilities
        =========================== */
+
+    let holdTimer = null;
+let holdActive = false;
+const HOLD_DURATION = 900; // ms
+
+const checkoutProgress = document.querySelector('#checkout-btn .hold-progress');
+
+function startCheckoutHold(e) {
+  // Only allow hold in Phase 1
+  if (checkoutPhase !== 1) return;
+  if (checkoutBtn.disabled) return;
+
+  holdActive = true;
+
+  // Enter frosted hold mode
+  checkoutBtn.classList.add('hold-mode');
+
+  // Animate progress fill
+  checkoutProgress.style.transition = `width ${HOLD_DURATION}ms linear`;
+  checkoutProgress.style.width = '100%';
+
+  holdTimer = setTimeout(() => {
+    if (!holdActive) return;
+
+    // Reset visuals
+    checkoutProgress.style.width = '0%';
+    checkoutBtn.classList.remove('hold-mode');
+
+    holdActive = false;
+    holdTimer = null;
+
+    // Trigger your existing checkout logic
+    checkoutBtn.click();
+  }, HOLD_DURATION);
+}
+
+function cancelCheckoutHold() {
+  if (!holdActive) return;
+
+  holdActive = false;
+  clearTimeout(holdTimer);
+  holdTimer = null;
+
+  // Reset visuals
+  checkoutBtn.classList.remove('hold-mode');
+  checkoutProgress.style.transition = 'width 150ms ease-out';
+  checkoutProgress.style.width = '0%';
+}
+
+// Desktop
+checkoutBtn.addEventListener('mousedown', startCheckoutHold);
+checkoutBtn.addEventListener('mouseup', cancelCheckoutHold);
+checkoutBtn.addEventListener('mouseleave', cancelCheckoutHold);
+
+// Mobile
+checkoutBtn.addEventListener('touchstart', startCheckoutHold);
+checkoutBtn.addEventListener('touchend', cancelCheckoutHold);
+checkoutBtn.addEventListener('touchcancel', cancelCheckoutHold);
+
+    
     function refreshSid() {
       sessionStorage.removeItem('sid');
       const newSid = crypto.randomUUID();
