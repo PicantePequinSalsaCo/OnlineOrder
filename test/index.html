@@ -1167,6 +1167,12 @@
         </section>
 
         <button id="checkout-btn" class="api-btn" data-loading-text="Processing Order" disabled>Sign In to Checkout</button>
+        <button id="cancel-order-btn"
+        class="api-btn"
+        style="margin-top:10px; display:none;"
+        data-loading-text="Canceling Order">
+  Cancel Order
+</button>
       </div>
     </div>
   </aside>
@@ -1812,6 +1818,7 @@
   const rewardsInput   = document.getElementById('rewards-input');
 
   const paymentSection = document.getElementById('payment-section');
+  const cancelOrderBtn = document.getElementById('cancel-order-btn');
   const cardErrorsEl   = document.getElementById('card-errors');
 
   const signoutConfirm = document.getElementById('signout-confirm');
@@ -1819,6 +1826,43 @@
   const confirmSignout = document.getElementById('confirm-signout');
 
   let smsConsent = false;
+
+  cancelOrderBtn.addEventListener('click', async () => {
+  const btn = cancelOrderBtn;
+
+  if (btn.disabled) return;
+
+  setButtonState(btn, 'loading');
+
+  try {
+    // Simulated cancel — abandon the PaymentIntent
+    // and reset the UI state.
+
+    // Unlock cart
+    cartLocked = false;
+    renderCart();
+
+    // Hide payment UI
+    paymentSection.style.display = 'none';
+    cancelOrderBtn.style.display = 'none';
+
+    // Clear order info
+    orderInfoRow.style.display = 'none';
+    orderNumberEl.textContent = '';
+
+    // Reset checkout button
+    checkoutBtn.disabled = cart.length === 0 || (!isLoggedIn && !isGuestCheckout);
+    checkoutBtn.textContent = isLoggedIn || isGuestCheckout ? 'Checkout' : 'Sign In to Checkout';
+
+    showMessage('Order canceled. Cart unlocked.', 'info');
+
+  } catch (err) {
+    console.error(err);
+    showMessage('Unable to cancel order. Try again.', 'error');
+  } finally {
+    setButtonState(btn, '');
+  }
+});
 
   [signupSmsConsentEl, resetSmsConsentEl, guestSmsConsentEl].forEach(el => {
     if (el) {
@@ -2763,7 +2807,7 @@
     }
 
     if (!isLoggedIn && !isGuestCheckout) {
-      setAuthView('login');
+      setAuthView('guest');
       toggleLogin(true);
       return;
     }
@@ -2827,6 +2871,7 @@
 
       if (paymentIntent && paymentIntent.status === 'succeeded') {
         cartLocked = true;
+        document.getElementById('cancel-order-btn').style.display = '';
         currentUser.rewards = remainingRewards > 0 ? remainingRewards : 0;
         currentUser.pointsRedeemed = (currentUser.pointsRedeemed || 0) + rewardsToApply;
 
