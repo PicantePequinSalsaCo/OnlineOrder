@@ -3173,11 +3173,11 @@ guestForm.addEventListener('submit', e => {
         checkoutPhase === 1 &&
         (label.includes('checkout') || label.includes('proceed'));
 
-      if (isCheckoutAction && !holdCompleted) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        return;
-      }   
+      if (isCheckoutAction && holdActive) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return;
+    }  
 
       // Phase 1: Proceed to Checkout (backend shipping/tax calc)
       if (checkoutPhase === 1) {
