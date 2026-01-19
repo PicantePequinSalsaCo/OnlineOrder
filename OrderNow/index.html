@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -390,6 +390,28 @@
     #login-container.open {
       display: flex;
     }
+    /* LOGIN BUTTON ICON */
+#login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  position: relative;
+}
+
+#login-btn .login-icon-svg {
+  width: 22px;
+  height: 22px;
+  stroke: var(--ink);
+  pointer-events: none;
+  transition: transform 0.15s ease;
+  margin-top: 1px; /* matches your cart icon alignment */
+}
+
+/* Hover animation (same style as cart icon) */
+#login-btn:hover .login-icon-svg {
+  transform: scale(1.08);
+}
 
     .modal-panel {
       width: 100%;
@@ -504,6 +526,52 @@
       background: rgba(5,5,15,0.9);
       color: var(--ink);
     }
+
+    #cart-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+}
+
+#cart-icon .cart-icon-svg {
+  width: 22px;
+  height: 22px;
+  stroke: var(--ink); /* matches your theme */
+  pointer-events: none; /* prevents accidental selection */
+}
+    #cart-icon .cart-icon-svg {
+  margin-top: 1px;
+}
+    #cart-icon:hover .cart-icon-svg {
+  transform: scale(1.08);
+  transition: transform 0.15s ease;
+}
+    #cart-icon {
+  position: relative;
+}
+
+#cart-count-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  background: #ffb74d;
+  color: black;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  box-shadow: 0 0 6px rgba(0,0,0,0.35);
+}
 
     #checkout-btn {
       margin-top: 0.75rem;
@@ -771,6 +839,17 @@
       padding: 0;
     }
 
+    .auth-switch.locked {
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.auth-switch.locked button {
+  cursor: default;
+  text-decoration: none;
+  color: var(--muted);
+}
+
     .state-select-wrapper {
       position: relative;
       display: flex;
@@ -1009,6 +1088,25 @@
       color: var(--muted);
     }
 
+    .loader-arc {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 4px solid transparent;
+  border-top-color: #ffb347; /* your accent */
+  border-right-color: rgba(255,255,255,0.25);
+  border-bottom-color: rgba(255,255,255,0.15);
+  border-left-color: rgba(255,255,255,0.05);
+  animation: arcspin 0.85s cubic-bezier(0.6, 0.15, 0.4, 0.85) infinite;
+  margin: 16px auto 0;
+  filter: drop-shadow(0 0 6px rgba(255, 179, 71, 0.45));
+}
+
+@keyframes arcspin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
     footer {
       text-align: center;
       color: var(--muted);
@@ -1041,7 +1139,6 @@
     .cart-qty-input[type=number],
     .cart-qty-input.disabled {
   opacity: 0.5;
-  cursor: not-allowed;
 }
     #rewards-input[type=number] {
       -moz-appearance: textfield;
@@ -1212,6 +1309,19 @@
   background: linear-gradient(135deg, var(--accent-orange), #ffb74d);
   transition: width 0.2s linear;
 }
+ .cancel-bar {
+  background: linear-gradient(135deg, #ff4d4d, #ff6b6b);
+}
+
+button,
+button * {
+  -webkit-touch-callout: none; /* Disable iOS copy/paste menu */
+  -webkit-user-select: none;   /* Disable text selection on iOS */
+  -moz-user-select: none;      /* Firefox */
+  -ms-user-select: none;       /* IE/Edge */
+  user-select: none;           /* Standard */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
+}
   </style>
 </head>
 
@@ -1231,8 +1341,26 @@
       </div>
       <nav aria-label="Primary">
         <ul>
-          <li><button id="cart-icon" class="cta" aria-label="Toggle Cart">Cart</button></li>
-          <li><button id="login-btn" class="cta">Sign In</button></li>
+          <li>
+            <button id="cart-icon" class="cta" aria-label="Toggle Cart">
+              <svg class="cart-icon-svg" viewBox="-0.5 0 25 25" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18.5996 21.57C19.7042 21.57 20.5996 20.6746 20.5996 19.57C20.5996 18.4654 19.7042 17.57 18.5996 17.57C17.495 17.57 16.5996 18.4654 16.5996 19.57C16.5996 20.6746 17.495 21.57 18.5996 21.57Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8.59961 21.57C9.70418 21.57 10.5996 20.6746 10.5996 19.57C10.5996 18.4654 9.70418 17.57 8.59961 17.57C7.49504 17.57 6.59961 18.4654 6.59961 19.57C6.59961 20.6746 7.49504 21.57 8.59961 21.57Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 3.55997C2 3.55997 6.64 3.49997 6 7.55997L5.31006 11.62C5.20774 12.1068 5.21778 12.6105 5.33954 13.0929C5.46129 13.5752 5.69152 14.0234 6.01263 14.4034C6.33375 14.7833 6.73733 15.0849 7.19263 15.2854C7.64793 15.4858 8.14294 15.5797 8.64001 15.56H16.64C17.7479 15.5271 18.8119 15.1196 19.6583 14.404C20.5046 13.6884 21.0834 12.7069 21.3 11.62L21.9901 7.50998C22.0993 7.0177 22.0939 6.50689 21.9744 6.017C21.8548 5.52712 21.6242 5.07126 21.3005 4.68467C20.9767 4.29807 20.5684 3.99107 20.1071 3.78739C19.6458 3.58371 19.1438 3.48881 18.64 3.50998H9.94" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span id="cart-count-badge"></span>
+            </button>
+          </li>
+          <li>
+            <button id="login-btn" class="cta" aria-label="Sign In">
+              <svg class="login-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12.1992 12C14.9606 12 17.1992 9.76142 17.1992 7C17.1992 4.23858 14.9606 2 12.1992 2C9.43779 2 7.19922 4.23858 7.19922 7C7.19922 9.76142 9.43779 12 12.1992 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M3 22C3.57038 20.0332 4.74795 18.2971 6.36438 17.0399C7.98081 15.7827 9.95335 15.0687 12 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M19 22V14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M15 18H23" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </li>
         </ul>
       </nav>
     </div>
@@ -1298,22 +1426,29 @@
           <div id="card-errors" role="alert"></div>
         </section>
 
-<div class="checkout-wrapper">
-  <button id="checkout-btn" class="api-btn" data-loading-text="Processing Order">
-    Sign In to Checkout
-    <div class="hold-progress"></div>
-  </button>
+        <div class="checkout-wrapper">
+          <button id="checkout-btn" class="api-btn" data-loading-text="Processing Order">
+            Sign In to Checkout
+            <div class="hold-progress"></div>
+          </button>
 
-  <div id="hold-toast" class="hold-toast">
-    <div class="hold-toast-message">Hold to Confirm</div>
-    <div class="hold-toast-bar"></div>
-  </div>
-</div>
+          <div id="hold-toast" class="hold-toast">
+            <div class="hold-toast-message">Hold to Confirm</div>
+            <div class="hold-toast-bar"></div>
+          </div>
+        </div>
 
-        <button id="cancel-order-btn" class="api-btn" style="margin-top:10px; display:none;" data-loading-text="Canceling Order">
-          Cancel Order
-          <div class="hold-progress"></div>
-        </button>   
+            <div class="checkout-wrapper">
+              <button id="cancel-order-btn" class="api-btn" style="margin-top:10px; display:none;" data-loading-text="Canceling Order">
+                Cancel Order
+                <div class="hold-progress"></div>
+              </button>
+
+              <div id="cancel-hold-toast" class="hold-toast">
+                <div class="hold-toast-message">Hold to Cancel</div>
+                <div class="hold-toast-bar cancel-bar"></div>
+              </div>
+            </div>
       </div>
     </div>
   </aside>
@@ -1690,7 +1825,8 @@
   <div id="processing-overlay">
     <div class="processing-panel">
       <h3>Calculating Shipping & Taxes…</h3>
-      <p>Please do not refresh or close this page while we finalize your order details.</p>
+      <div class="loader-arc"></div>
+      <p>Calculating Shipping & Tax, please do not refresh or close this page...</p>
     </div>
   </div>
 
@@ -1898,9 +2034,9 @@
     /* ===========================
        App state
        =========================== */
-    let cart = [];
-    let isLoggedIn = false;
-    let currentUser = { email: '', name: '', rewards: 0, pointsRedeemed: 0 };
+    let cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
+    let isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+    let currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{"email":"","name":"","rewards":0,"pointsRedeemed":0}');
 
     /* ===========================
        DOM refs
@@ -1955,8 +2091,15 @@
     let smsConsent = false;
     console.log("checkoutProgress:", checkoutProgress);
 
-cancelOrderBtn.addEventListener('click', async () => {
+cancelOrderBtn.addEventListener('click', async (e) => {
   const btn = cancelOrderBtn;
+
+      // HOLD GATE — block cancel until hold finishes
+  if (!cancelHoldFinished) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    return;
+  }
 
   if (btn.disabled) return;
 
@@ -2000,7 +2143,7 @@ cancelOrderBtn.addEventListener('click', async () => {
 
     /* 9. Reset checkout button */
     checkoutBtn.disabled = cart.length === 0 || (!isLoggedIn && !isGuest);
-    checkoutBtn.textContent = isLoggedIn || isGuest ? 'Checkout' : 'Sign In to Checkout';
+ 
 
     /* 10. Re-render cart (restores rewards UI + unlocks inputs) */
     renderCart();
@@ -2008,6 +2151,8 @@ cancelOrderBtn.addEventListener('click', async () => {
     /* 11. Reset internal flags */
     checkoutPhase = 1;
     confirmStep = false;
+    sessionStorage.setItem('checkoutPhase', '1');
+    sessionStorage.setItem('confirmStep', 'false');
 
     showMessage('Order canceled. Cart unlocked.', 'info');
 
@@ -2106,7 +2251,15 @@ const HOLD_DURATION = 1200;
 
 // Start hold (mousedown / touchstart)
 function startHoldToast(e) {
-  if (checkoutPhase !== 1) return;
+  // Only allow hold when the button is in true Checkout mode
+  const label = checkoutBtn.textContent.trim();
+
+  const isRealCheckout =
+    checkoutPhase === 1 &&
+    (label === 'Proceed to Checkout' || label.startsWith('Proceed')) &&
+    (isLoggedIn || currentUser.email);
+
+  if (!isRealCheckout) return;
 
   // Reset finished flag
   holdFinished = false;
@@ -2179,6 +2332,105 @@ checkoutBtn.addEventListener('touchstart', startHoldToast);
 checkoutBtn.addEventListener('touchend', cancelHoldToast);
 checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
 
+      // Cancel Toast elements
+const cancelToast = document.getElementById('cancel-hold-toast');
+const cancelToastBar = document.querySelector('#cancel-hold-toast .cancel-bar');
+
+// Cancel hold state
+let cancelHoldTimer = null;
+let cancelHoldActive = false;
+let cancelHoldFinished = false;
+const CANCEL_HOLD_DURATION = 1200;
+
+// Start cancel hold (mousedown / touchstart)
+function startCancelHoldToast(e) {
+  // Only allow hold when cancel button is visible and active
+  if (cancelOrderBtn.style.display === 'none' || cancelOrderBtn.disabled) return;
+
+  // Reset finished flag
+  cancelHoldFinished = false;
+
+  // Mark hold active
+  cancelHoldActive = true;
+
+  // Frost the button
+  cancelOrderBtn.classList.add('hold-mode');
+
+  // Show toast
+  cancelToast.classList.add('show');
+
+  // Animate bar
+  cancelToastBar.style.transition = `width ${CANCEL_HOLD_DURATION}ms linear`;
+  cancelToastBar.style.width = '100%';
+
+  // Timer for full hold
+  cancelHoldTimer = setTimeout(() => {
+    if (!cancelHoldActive) return;
+
+    cancelHoldActive = false;
+    cancelHoldFinished = true;
+
+    // Hide toast
+    cancelToast.classList.remove('show');
+    cancelToastBar.style.width = '0%';
+
+    // Remove frost
+    cancelOrderBtn.classList.remove('hold-mode');
+
+    // Trigger cancel
+    cancelOrderBtn.click();
+
+  }, CANCEL_HOLD_DURATION);
+}
+
+// Cancel cancel-hold (mouseup / touchend / mouseleave)
+function cancelCancelHoldToast(e) {
+  if (!cancelHoldActive) return;
+
+  cancelHoldActive = false;
+  clearTimeout(cancelHoldTimer);
+
+  // Reset bar
+  cancelToastBar.style.transition = 'width 150ms ease-out';
+  cancelToastBar.style.width = '0%';
+
+  // Hide toast
+  cancelToast.classList.remove('show');
+
+  // Remove frost
+  cancelOrderBtn.classList.remove('hold-mode');
+
+  // HOLD GATE — BLOCK EARLY CLICKS
+  if (!cancelHoldFinished) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    return;
+  }
+}
+
+// Desktop
+cancelOrderBtn.addEventListener('mousedown', startCancelHoldToast);
+cancelOrderBtn.addEventListener('mouseup', cancelCancelHoldToast);
+cancelOrderBtn.addEventListener('mouseleave', cancelCancelHoldToast);
+
+// Mobile
+cancelOrderBtn.addEventListener('touchstart', startCancelHoldToast);
+cancelOrderBtn.addEventListener('touchend', cancelCancelHoldToast);
+cancelOrderBtn.addEventListener('touchcancel', cancelCancelHoldToast);
+
+      // UX Lock During API function
+function lockAuthSwitches() {
+  document.querySelectorAll('.auth-switch').forEach(el => {
+    el.classList.add('locked');
+  });
+}
+
+function unlockAuthSwitches() {
+  document.querySelectorAll('.auth-switch').forEach(el => {
+    el.classList.remove('locked');
+  });
+}
+    
     
     /* ===========================
        Live validators
@@ -2194,6 +2446,8 @@ checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
 
       btn.addEventListener('click', async () => {
         if (btn.dataset.codeSent === 'true') return;
+
+        lockAuthSwitches();
 
         const sid = refreshSid();
         const email = emailInput ? emailInput.value.trim() : undefined;
@@ -2217,6 +2471,8 @@ checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
         } else {
           showMessage('Failed to send verification code. Try again.', 'error');
         }
+
+        unlockAuthSwitches();
       });
     }
 
@@ -2622,6 +2878,19 @@ checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
         `;
 
         if (!cartLocked) {
+            // UNLOCK BUTTONS
+            li.querySelectorAll('.qty-btn').forEach(btn => {
+              btn.disabled = false;            // remove disabled attribute
+              btn.classList.remove('disabled'); // remove disabled styling
+            });
+
+            // UNLOCK INPUT
+            const qtyInput = li.querySelector('.cart-qty-input');
+            qtyInput.disabled = false;         // remove disabled attribute
+            qtyInput.readOnly = false;         // remove readonly attribute
+            qtyInput.classList.remove('disabled'); // remove disabled styling
+
+            // NORMAL INTERACTION HANDLERS
           li.querySelector('.qty-btn.minus').onclick = () => {
             if (item.qty > 1) {
               item.qty--;
@@ -2638,26 +2907,25 @@ checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
             updateRewardsUI();
           };
 
-          const qtyInput = li.querySelector('.cart-qty-input');
-          qtyInput.addEventListener('input', () => {
-            const raw = qtyInput.value;
-            if (raw === '') return;
+            qtyInput.addEventListener('input', () => {
+          const raw = qtyInput.value;
+          if (raw === '') return;
 
-            let qty = parseInt(raw, 10);
-            if (isNaN(qty) || qty < 0) qty = 0;
+          let qty = parseInt(raw, 10);
+          if (isNaN(qty) || qty < 0) qty = 0;
 
-            qtyInput.value = qty;
-            item.qty = qty;
+          qtyInput.value = qty;
+          item.qty = qty;
 
-            if (qty === 0) {
-              li.classList.add('removing');
-              setTimeout(() => removeFromCart(item.id), 300);
-            } else {
-              renderCart();
-              updateRewardsUI();
-            }
-          });
-        } else {
+          if (qty === 0) {
+            li.classList.add('removing');
+            setTimeout(() => removeFromCart(item.id), 300);
+          } else {
+            renderCart();
+            updateRewardsUI();
+         }
+     });
+} else {
           li.querySelectorAll('.qty-btn').forEach(btn => {
             btn.disabled = true;
             btn.classList.add('disabled');
@@ -2709,11 +2977,36 @@ checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
 
         if (!isLoggedIn) {
           checkoutBtn.disabled = cart.length === 0;
-          checkoutBtn.textContent = cart.length === 0 ? 'Cart is Empty' : 'Checkout as Guest';
+
+          //  Guest with saved info should see "Proceed to Checkout"
+          if (currentUser?.guest && currentUser?.email) {
+            checkoutBtn.textContent = cart.length === 0
+              ? 'Cart is Empty'
+              : 'Proceed to Checkout';
+          } else {
+            checkoutBtn.textContent = cart.length === 0
+              ? 'Cart is Empty'
+              : 'Checkout as Guest';
+          }
+
         } else {
           checkoutBtn.disabled = cart.length === 0;
-          checkoutBtn.textContent = cart.length === 0 ? 'Cart is Empty' : 'Proceed to Checkout';
+          checkoutBtn.textContent = cart.length === 0
+            ? 'Cart is Empty'
+            : 'Proceed to Checkout';
         }
+      }
+            // --- UPDATE CART BADGE ---
+      const badge = document.getElementById('cart-count-badge');
+      const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+
+      if (totalQty > 0) {
+        badge.textContent = totalQty;
+        badge.style.opacity = '1';
+        badge.style.transform = 'scale(1)';
+      } else {
+        badge.style.opacity = '0';
+        badge.style.transform = 'scale(0.6)';
       }
     }
 
@@ -2808,6 +3101,8 @@ checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
     loginForm.addEventListener('submit', async e => {
       e.preventDefault();
       const btn = loginForm.querySelector('button[type="submit"]');
+      
+      lockAuthSwitches();
 
       const result = await handleApiButton(btn, async () => {
         const email = document.getElementById('login-username').value.trim();
@@ -2858,14 +3153,20 @@ checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
           rewards: data.rewards ?? 0,
           pointsRedeemed: 0
         };
+
+          sessionStorage.setItem('isLoggedIn', 'true');
+          sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+
         if (data.token) sessionStorage.setItem('authToken', data.token);
 
         usernameDisplay.textContent = currentUser.name || 'Customer';
         rewardsDisplay.textContent = currentUser.rewards;
+        
         const rewardsRow = document.getElementById('rewards-row');
         const rewardsInput = document.getElementById('rewards-input');
         const pointsRedeemed = parseInt(rewardsInput?.value || "0", 10);
         currentUser.pointsRedeemed = pointsRedeemed;
+        
         if (currentUser.rewards > 0) {
           rewardsRow.style.display = 'flex';
           rewardsInput.max = currentUser.rewards;
@@ -2874,22 +3175,33 @@ checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
         } else {
           rewardsRow.style.display = 'none';
         }
-        loginBtn.textContent = 'Sign Out';
-        loginBtn.classList.add('logout');
+        
+          // Show "Sign Out" text instead of the icon
+          loginBtn.innerHTML = 'Sign Out';
+          loginBtn.setAttribute('aria-label', 'Sign Out');
+          loginBtn.classList.add('logout');
+        
         checkoutBtn.disabled = cart.length === 0;
         checkoutBtn.textContent = cart.length === 0 ? 'Cart is Empty' : 'Proceed to Checkout';
+        
         loginForm.reset();
         toggleLogin(false);
         showMessage(data?.message || 'Signed in', 'success');
+        
+        
         renderCart();
         updateRewardsUI();
       }
+
+      unlockAuthSwitches();
     });
 
     // Reset Password
     resetForm.addEventListener('submit', async e => {
       e.preventDefault();
       const btn = resetForm.querySelector('button[type="submit"]');
+
+      lockAuthSwitches();
 
       const result = await handleApiButton(btn, async () => {
         const email    = document.getElementById('reset-email').value.trim();
@@ -2969,12 +3281,16 @@ checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
           }
         }, 50);
       }
+
+      unlockAuthSwitches();
     });
 
     // Create Account
     signupForm.addEventListener('submit', async e => {
       e.preventDefault();
       const btn = signupForm.querySelector('button[type="submit"]');
+
+      lockAuthSwitches();
 
       const result = await handleApiButton(btn, async () => {
         const fn   = document.getElementById('signup-firstname').value.trim();
@@ -3075,11 +3391,14 @@ checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
           }
         }, 50);
       }
+      unlockAuthSwitches();
     });
 
 // Guest Checkout Form
 guestForm.addEventListener('submit', e => {
   e.preventDefault();
+
+  lockAuthSwitches();
 
   const fullName = document.getElementById('guest-name').value.trim();
   const email    = document.getElementById('guest-email').value.trim();
@@ -3099,6 +3418,7 @@ guestForm.addEventListener('submit', e => {
 
   if (!fullName || !email || !address || !city || !state || !zip) {
     showMessage('Please complete all required fields.', 'error');
+    unlockAuthSwitches();
     return;
   }
 
@@ -3142,10 +3462,14 @@ guestForm.addEventListener('submit', e => {
     smsConsent
   };
 
+  sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+
   usernameDisplay.textContent = fullName;
   rewardsDisplay.textContent = '0';
 
   isLoggedIn = false; // still guest, but allowed to checkout
+  sessionStorage.setItem('isLoggedIn', 'false');
+
 
   toggleLogin(false);
   showMessage('Guest details saved. You can now complete checkout.', 'success');
@@ -3153,7 +3477,9 @@ guestForm.addEventListener('submit', e => {
   checkoutBtn.disabled = cart.length === 0;
   checkoutBtn.textContent = cart.length === 0
     ? 'Cart is Empty'
-    : 'Checkout as Guest';
+    : 'Proceed to Checkout';
+
+  unlockAuthSwitches();
 });
 
     /* ===========================
@@ -3319,6 +3645,8 @@ guestForm.addEventListener('submit', e => {
           currentUser.state = raw.billingState || currentUser.state || '';
           currentUser.zip = raw.billingPostal || currentUser.zip || '';
           currentUser.country = raw.billingCountry || currentUser.country || 'US';
+
+         sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
 
           const orderNumberEl = document.getElementById('order-number');
           const shippingCostEl = document.getElementById('shipping-cost');
@@ -3590,7 +3918,18 @@ guestForm.addEventListener('submit', e => {
 
       usernameDisplay.textContent = 'Guest';
       rewardsDisplay.textContent = '0';
-      loginBtn.textContent = 'Sign In';
+      // Restore login button to icon-only state
+       loginBtn.innerHTML = `
+         <svg class="login-icon-svg" viewBox="0 0 24 24">
+           <path d="M12.1992 12C14.9606 12 17.1992 9.76142 17.1992 7C17.1992 4.23858 14.9606 2 12.1992 2C9.43779 2 7.19922 4.23858 7.19922 7C7.19922 9.76142 9.43779 12 12.1992 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+           <path d="M3 22C3.57038 20.0332 4.74795 18.2971 6.36438 17.0399C7.98081 15.7827 9.95335 15.0687 12 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+           <path d="M19 22V14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+           <path d="M15 18H23" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+         </svg>
+       `;
+      loginBtn.setAttribute('aria-label', 'Sign In');
+      loginBtn.classList.remove('logout');
+      loginBtn.setAttribute('aria-label', 'Sign In');
       loginBtn.classList.remove('logout');
 
       checkoutBtn.disabled = true;
@@ -3612,34 +3951,65 @@ guestForm.addEventListener('submit', e => {
     }
 
     /* ===========================
-       Confirm-on-exit
-       =========================== */
-    window.addEventListener('beforeunload', (e) => {
-      e.preventDefault();
-      e.returnValue = '';
-    });
-
-    window.addEventListener('pagehide', () => {
-      if (isLoggedIn) {
-        signOut();
-      }
-    });
-
-    /* ===========================
        Persist cart and init
        =========================== */
     window.addEventListener('beforeunload', () => {
       sessionStorage.setItem('cart', JSON.stringify(cart));
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const saved = sessionStorage.getItem('cart');
-      if (saved) {
-        cart = JSON.parse(saved);
-        renderCart();
-      }
-      renderProducts();
-    });
+document.addEventListener('DOMContentLoaded', () => {
+  /* Restore cart */
+  const savedCart = sessionStorage.getItem('cart');
+  if (savedCart) {
+    cart = JSON.parse(savedCart);
+    renderCart();
+  }
+
+  /* Restore user session */
+  const savedUser = sessionStorage.getItem('currentUser');
+  const savedLogin = sessionStorage.getItem('isLoggedIn');
+
+  if (savedUser) {
+    currentUser = JSON.parse(savedUser);
+  }
+
+  if (savedLogin === 'true') {
+    isLoggedIn = true;
+  } else {
+    isLoggedIn = false;
+  }
+
+  /* Restore header UI */
+const usernameDisplay = document.getElementById('username-display');
+const rewardsDisplay = document.getElementById('rewards-display');
+const loginBtn = document.getElementById('login-btn');
+
+if (currentUser && currentUser.email) {
+  usernameDisplay.textContent = currentUser.name || 'Customer';
+  rewardsDisplay.textContent = currentUser.rewards ?? 0;
+
+  if (isLoggedIn) {
+    // Logged IN → show text
+    loginBtn.innerHTML = 'Sign Out';
+    loginBtn.setAttribute('aria-label', 'Sign Out');
+    loginBtn.classList.add('logout');
+  } else {
+    // Logged OUT → show icon
+    loginBtn.innerHTML = `
+      <svg class="login-icon-svg" viewBox="0 0 24 24">
+        <path d="M12.1992 12C14.9606 12 17.1992 9.76142 17.1992 7C17.1992 4.23858 14.9606 2 12.1992 2C9.43779 2 7.19922 4.23858 7.19922 7C7.19922 9.76142 9.43779 12 12.1992 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M3 22C3.57038 20.0332 4.74795 18.2971 6.36438 17.0399C7.98081 15.7827 9.95335 15.0687 12 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M19 22V14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M15 18H23" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    `;
+    loginBtn.setAttribute('aria-label', 'Sign In');
+    loginBtn.classList.remove('logout');
+  }
+}
+
+renderProducts();
+});
   </script>
 </body>
 </html>
