@@ -683,6 +683,11 @@
   opacity: 0.35;
   z-index: 2;
 }
+
+#checkout-btn .hold-progress,
+#cancel-order-btn .hold-progress {
+  transition: none !important;
+}
     
 /* Frosted look during hold */
 #checkout-btn.hold-mode {
@@ -701,7 +706,9 @@
  #cancel-order-btn {
   position: relative;
   z-index: 1;
-}
+} 
+    
+
     
     @keyframes shimmer {
       0% { background-position: -200% 0; }
@@ -2042,6 +2049,7 @@ function startCheckoutHold(e) {
 
   // Start the fill animation
   checkoutProgress.style.transition = `width ${HOLD_DURATION}ms linear`;
+  void checkoutProgress.offsetWidth;
   checkoutProgress.style.width = '100%';
 
   holdTimer = setTimeout(() => {
