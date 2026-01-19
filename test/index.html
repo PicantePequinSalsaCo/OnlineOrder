@@ -3079,10 +3079,11 @@ guestForm.addEventListener('submit', e => {
         document.getElementById('guest-name').focus();
         return;
       }
-// Only block clicks when the button is actually in Checkout mode
+// Now apply the hold gate only for real checkout actions
+const label = checkoutBtn.textContent.trim();
 const isCheckoutAction =
   checkoutPhase === 1 &&
-  checkoutBtn.textContent.trim() === 'Checkout';
+  label.startsWith('Checkout');
 
 if (isCheckoutAction && !holdCompleted) {
   return;
