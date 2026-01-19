@@ -1172,10 +1172,14 @@
         transition: none !important;
       }
     }
-
-    .hold-toast {
-  position: fixed;
-  bottom: 90px;
+    
+.checkout-wrapper {
+  position: relative;
+}
+    
+.hold-toast {
+  position: absolute;
+  bottom: calc(100% + 12px); /* 12px above the button */
   left: 50%;
   transform: translateX(-50%);
   min-width: 240px;
@@ -1233,11 +1237,6 @@
       </nav>
     </div>
   </header>
-
-  <div id="hold-toast" class="hold-toast">
-  <div class="hold-toast-message">Hold to Confirm</div>
-  <div class="hold-toast-bar"></div>
-</div>
 
   <main>
     <section id="product-gallery" class="vertical-gallery" role="region" aria-label="Product Catalog">
@@ -1299,10 +1298,17 @@
           <div id="card-errors" role="alert"></div>
         </section>
 
-        <button id="checkout-btn" class="api-btn" data-loading-text="Processing Order" disabled>
-          Sign In to Checkout
-          <div class="hold-progress"></div>
-        </button>
+<div class="checkout-wrapper">
+  <button id="checkout-btn" class="api-btn" data-loading-text="Processing Order">
+    Sign In to Checkout
+    <div class="hold-progress"></div>
+  </button>
+
+  <div id="hold-toast" class="hold-toast">
+    <div class="hold-toast-message">Hold to Confirm</div>
+    <div class="hold-toast-bar"></div>
+  </div>
+</div>
 
         <button id="cancel-order-btn" class="api-btn" style="margin-top:10px; display:none;" data-loading-text="Canceling Order">
           Cancel Order
