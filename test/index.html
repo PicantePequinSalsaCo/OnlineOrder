@@ -3066,10 +3066,6 @@ guestForm.addEventListener('submit', e => {
     }
 
     checkoutBtn.addEventListener('click', async () => {
-        // Prevent instant clicks in Phase 1
-  if (checkoutPhase === 1 && !holdCompleted) {
-    return;
-  }
 
       if (!cart.length) {
         showMessage('Your cart is empty.', 'error');
@@ -3083,6 +3079,10 @@ guestForm.addEventListener('submit', e => {
         document.getElementById('guest-name').focus();
         return;
       }
+              // Prevent instant clicks in Phase 1
+  if (checkoutPhase === 1 && !holdCompleted) {
+    return;
+  }
 
       // Phase 1: Proceed to Checkout (backend shipping/tax calc)
       if (checkoutPhase === 1) {
