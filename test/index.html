@@ -691,9 +691,16 @@
     
 /* Frosted look during hold */
 #checkout-btn.hold-mode {
-  background: rgba(255,255,255,0.15) !important;
-  border-color: rgba(255,255,255,0.25) !important;
-  box-shadow: 0 10px 24px rgba(0,0,0,0.6) !important;
+  background: none !important;
+}
+    #checkout-btn.hold-mode::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.15);
+  border-radius: inherit;
+  z-index: 1; /* frost layer */
+  pointer-events: none;
 }
 
 #cancel-order-btn.hold-mode {
