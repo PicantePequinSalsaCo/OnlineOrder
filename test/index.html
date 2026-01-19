@@ -2048,9 +2048,7 @@ let holdCompleted = false;
 const HOLD_DURATION = 900;
 
 function startCheckoutHold(e) {
-  if (checkoutPhase !== 1) return;
-  if (checkoutBtn.disabled) return;
-  checkoutBtn.disabled = false;
+  if (checkoutPhase !== 1) return; 
 
   holdActive = true;
   checkoutBtn.classList.add('hold-mode');
