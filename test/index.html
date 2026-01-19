@@ -1222,6 +1222,9 @@
   background: linear-gradient(135deg, var(--accent-orange), #ffb74d);
   transition: width 0.2s linear;
 }
+ .cancel-bar {
+  background: linear-gradient(135deg, #ff4d4d, #ff6b6b);
+}
   </style>
 </head>
 
@@ -1308,22 +1311,27 @@
           <div id="card-errors" role="alert"></div>
         </section>
 
-<div class="checkout-wrapper">
-  <button id="checkout-btn" class="api-btn" data-loading-text="Processing Order">
-    Sign In to Checkout
-    <div class="hold-progress"></div>
-  </button>
+        <div class="checkout-wrapper">
+          <button id="checkout-btn" class="api-btn" data-loading-text="Processing Order">
+            Sign In to Checkout
+            <div class="hold-progress"></div>
+          </button>
 
-  <div id="hold-toast" class="hold-toast">
-    <div class="hold-toast-message">Hold to Confirm</div>
-    <div class="hold-toast-bar"></div>
-  </div>
-</div>
+          <div id="hold-toast" class="hold-toast">
+            <div class="hold-toast-message">Hold to Confirm</div>
+            <div class="hold-toast-bar"></div>
+          </div>
+        </div>
 
         <button id="cancel-order-btn" class="api-btn" style="margin-top:10px; display:none;" data-loading-text="Canceling Order">
           Cancel Order
           <div class="hold-progress"></div>
-        </button>   
+        </button>
+
+          <div id="cancel-hold-toast" class="hold-toast">
+          <div class="hold-toast-message">Hold to Cancel</div>
+          <div class="hold-toast-bar cancel-bar"></div>
+        </div>
       </div>
     </div>
   </aside>
@@ -1968,6 +1976,13 @@
 cancelOrderBtn.addEventListener('click', async () => {
   const btn = cancelOrderBtn;
 
+      // HOLD GATE — block cancel until hold finishes
+  if (!cancelHoldFinished) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    return;
+  }
+
   if (btn.disabled) return;
 
   setButtonState(btn, 'loading');
@@ -2197,6 +2212,93 @@ checkoutBtn.addEventListener('touchstart', startHoldToast);
 checkoutBtn.addEventListener('touchend', cancelHoldToast);
 checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
 
+      // Cancel Toast elements
+const cancelToast = document.getElementById('cancel-hold-toast');
+const cancelToastBar = document.querySelector('#cancel-hold-toast .cancel-bar');
+
+// Cancel hold state
+let cancelHoldTimer = null;
+let cancelHoldActive = false;
+let cancelHoldFinished = false;
+const CANCEL_HOLD_DURATION = 1200;
+
+// Start cancel hold (mousedown / touchstart)
+function startCancelHoldToast(e) {
+  // Only allow hold when cancel button is visible and active
+  if (cancelOrderBtn.style.display === 'none' || cancelOrderBtn.disabled) return;
+
+  // Reset finished flag
+  cancelHoldFinished = false;
+
+  // Mark hold active
+  cancelHoldActive = true;
+
+  // Frost the button
+  cancelOrderBtn.classList.add('hold-mode');
+
+  // Show toast
+  cancelToast.classList.add('show');
+
+  // Animate bar
+  cancelToastBar.style.transition = `width ${CANCEL_HOLD_DURATION}ms linear`;
+  cancelToastBar.style.width = '100%';
+
+  // Timer for full hold
+  cancelHoldTimer = setTimeout(() => {
+    if (!cancelHoldActive) return;
+
+    cancelHoldActive = false;
+    cancelHoldFinished = true;
+
+    // Hide toast
+    cancelToast.classList.remove('show');
+    cancelToastBar.style.width = '0%';
+
+    // Remove frost
+    cancelOrderBtn.classList.remove('hold-mode');
+
+    // Trigger cancel
+    cancelOrderBtn.click();
+
+  }, CANCEL_HOLD_DURATION);
+}
+
+// Cancel cancel-hold (mouseup / touchend / mouseleave)
+function cancelCancelHoldToast(e) {
+  if (!cancelHoldActive) return;
+
+  cancelHoldActive = false;
+  clearTimeout(cancelHoldTimer);
+
+  // Reset bar
+  cancelToastBar.style.transition = 'width 150ms ease-out';
+  cancelToastBar.style.width = '0%';
+
+  // Hide toast
+  cancelToast.classList.remove('show');
+
+  // Remove frost
+  cancelOrderBtn.classList.remove('hold-mode');
+
+  // HOLD GATE — BLOCK EARLY CLICKS
+  if (!cancelHoldFinished) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    return;
+  }
+}
+
+// Desktop
+cancelOrderBtn.addEventListener('mousedown', startCancelHoldToast);
+cancelOrderBtn.addEventListener('mouseup', cancelCancelHoldToast);
+cancelOrderBtn.addEventListener('mouseleave', cancelCancelHoldToast);
+
+// Mobile
+cancelOrderBtn.addEventListener('touchstart', startCancelHoldToast);
+cancelOrderBtn.addEventListener('touchend', cancelCancelHoldToast);
+cancelOrderBtn.addEventListener('touchcancel', cancelCancelHoldToast);
+
+      // UX Lock During API function
 function lockAuthSwitches() {
   document.querySelectorAll('.auth-switch').forEach(el => {
     el.classList.add('locked');
