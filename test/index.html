@@ -3816,14 +3816,48 @@ guestForm.addEventListener('submit', e => {
       sessionStorage.setItem('cart', JSON.stringify(cart));
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const saved = sessionStorage.getItem('cart');
-      if (saved) {
-        cart = JSON.parse(saved);
-        renderCart();
-      }
-      renderProducts();
-    });
+document.addEventListener('DOMContentLoaded', () => {
+  /* Restore cart */
+  const savedCart = sessionStorage.getItem('cart');
+  if (savedCart) {
+    cart = JSON.parse(savedCart);
+    renderCart();
+  }
+
+  /* Restore user session */
+  const savedUser = sessionStorage.getItem('currentUser');
+  const savedLogin = sessionStorage.getItem('isLoggedIn');
+
+  if (savedUser) {
+    currentUser = JSON.parse(savedUser);
+  }
+
+  if (savedLogin === 'true') {
+    isLoggedIn = true;
+  } else {
+    isLoggedIn = false;
+  }
+
+  /* Restore header UI */
+  const usernameDisplay = document.getElementById('username-display');
+  const rewardsDisplay = document.getElementById('rewards-display');
+  const loginBtn = document.getElementById('login-btn');
+
+  if (currentUser && currentUser.email) {
+    usernameDisplay.textContent = currentUser.name || 'Customer';
+    rewardsDisplay.textContent = currentUser.rewards ?? 0;
+
+    if (isLoggedIn) {
+      loginBtn.textContent = 'Sign Out';
+      loginBtn.classList.add('logout');
+    } else {
+      loginBtn.textContent = 'Sign In';
+      loginBtn.classList.remove('logout');
+    }
+  }
+
+  renderProducts();
+});
   </script>
 </body>
 </html>
