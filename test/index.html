@@ -2106,7 +2106,15 @@ const HOLD_DURATION = 1200;
 
 // Start hold (mousedown / touchstart)
 function startHoldToast(e) {
-  if (checkoutPhase !== 1) return;
+  // Only allow hold when the button is in true Checkout mode
+  const label = checkoutBtn.textContent.trim();
+
+  const isRealCheckout =
+    checkoutPhase === 1 &&
+    (label === 'Proceed to Checkout' || label.startsWith('Proceed')) &&
+    (isLoggedIn || currentUser.email);
+
+  if (!isRealCheckout) return;
 
   // Reset finished flag
   holdFinished = false;
@@ -3153,7 +3161,7 @@ guestForm.addEventListener('submit', e => {
   checkoutBtn.disabled = cart.length === 0;
   checkoutBtn.textContent = cart.length === 0
     ? 'Cart is Empty'
-    : 'Checkout as Guest';
+    : 'Proceed to Checkout';
 });
 
     /* ===========================
