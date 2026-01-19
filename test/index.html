@@ -2054,6 +2054,16 @@ function cancelCheckoutHold() {
   checkoutProgress.style.transition = 'width 150ms ease-out';
   checkoutProgress.style.width = '0%';
 }
+
+        // Desktop
+checkoutBtn.addEventListener('mousedown', startCheckoutHold);
+checkoutBtn.addEventListener('mouseup', cancelCheckoutHold);
+checkoutBtn.addEventListener('mouseleave', cancelCheckoutHold);
+
+// Mobile
+checkoutBtn.addEventListener('touchstart', startCheckoutHold);
+checkoutBtn.addEventListener('touchend', cancelCheckoutHold);
+checkoutBtn.addEventListener('touchcancel', cancelCheckoutHold);
     /* ===========================
        Live validators
        =========================== */
@@ -3065,7 +3075,7 @@ guestForm.addEventListener('submit', e => {
       });
     }
 
-    checkoutBtn.addEventListener('click', async () => {
+    checkoutBtn.addEventListener('click', async (e) => {
 
       if (!cart.length) {
         showMessage('Your cart is empty.', 'error');
@@ -3079,15 +3089,18 @@ guestForm.addEventListener('submit', e => {
         document.getElementById('guest-name').focus();
         return;
       }
-// Now apply the hold gate only for real checkout actions
-const label = checkoutBtn.textContent.trim();
-const isCheckoutAction =
-  checkoutPhase === 1 &&
-  label.startsWith('Checkout');
-
-if (isCheckoutAction && !holdCompleted) {
-  return;
-}
+      
+        // Hold gate
+      const label = checkoutBtn.textContent.trim();
+      const isCheckoutAction =
+        checkoutPhase === 1 &&
+        label.startsWith('Checkout');
+    
+      if (isCheckoutAction && !holdCompleted) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        return;
+      }    
 
       // Phase 1: Proceed to Checkout (backend shipping/tax calc)
       if (checkoutPhase === 1) {
