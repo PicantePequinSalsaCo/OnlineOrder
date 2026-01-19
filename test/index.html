@@ -1838,14 +1838,9 @@ cancelOrderBtn.addEventListener('click', async () => {
   try {
     // Unlock cart
     cartLocked = false;
-    renderCart();
-    unlockAllProductCards();
 
-    // Restore rewards UI
-    const rewardsBox = document.getElementById('rewards-box');
-    const rewardsInput = document.getElementById('rewards-input');
-    if (rewardsBox) rewardsBox.style.display = '';
-    if (rewardsInput) rewardsInput.disabled = false;
+    // Unlock product cards
+    unlockAllProductCards();
 
     // Hide checkout-only rows
     orderInfoRow.style.display = 'none';
@@ -1856,17 +1851,20 @@ cancelOrderBtn.addEventListener('click', async () => {
     // Clear order number
     orderNumberEl.textContent = '';
 
-    // Reset checkout button
-    checkoutBtn.disabled = cart.length === 0 || (!isLoggedIn && !isGuestCheckout);
-    checkoutBtn.textContent = isLoggedIn || isGuestCheckout ? 'Checkout' : 'Sign In to Checkout';
+    // Hide cancel button
+    cancelOrderBtn.style.display = 'none';
 
     // Re-enable login button
     const loginBtn = document.getElementById('login-btn');
     loginBtn.disabled = false;
     loginBtn.classList.remove('disabled');
 
-    // Hide cancel button
-    cancelOrderBtn.style.display = 'none';
+    // Reset checkout button
+    checkoutBtn.disabled = cart.length === 0 || (!isLoggedIn && !isGuestCheckout);
+    checkoutBtn.textContent = isLoggedIn || isGuestCheckout ? 'Checkout' : 'Sign In to Checkout';
+
+    // Re-render cart (this restores rewards UI correctly)
+    renderCart();
 
     // Reset internal flags
     checkoutPhase = 1;
