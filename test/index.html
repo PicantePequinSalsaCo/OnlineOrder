@@ -1794,6 +1794,13 @@
     const closeCart       = document.getElementById('close-cart');
     const cartIcon        = document.getElementById('cart-icon');
 
+    const orderInfoRow   = document.getElementById('order-info-row');
+    const subtotalRow    = document.getElementById('subtotal-row');
+    const shippingRow    = document.getElementById('shipping-row');
+    const rewardsRow     = document.getElementById('rewards-row');
+    const taxRow         = document.getElementById('tax-row');
+    const orderNumberEl  = document.getElementById('order-number');
+
     const loginBtn        = document.getElementById('login-btn');
     const loginOverlay    = document.getElementById('login-container');
     const closeLogin      = document.getElementById('close-login');
@@ -1836,37 +1843,72 @@ cancelOrderBtn.addEventListener('click', async () => {
   setButtonState(btn, 'loading');
 
   try {
-    // Unlock cart
-    cartLocked = false;
+    /* ---------------------------------------------------------
+       1. Unmount Stripe Elements if user clicked "Pay for Order"
+       --------------------------------------------------------- */
+    if (cardMounted && card && typeof card.unmount === 'function') {
+      try {
+        card.unmount();
+      } catch (e) {
+        console.warn('Stripe unmount failed:', e);
+      }
+      cardMounted = false;
+    }
 
-    // Unlock product cards
+    /* ---------------------------------------------------------
+       2. Hide payment section (Phase‑1 never shows it)
+       --------------------------------------------------------- */
+    const paymentSection = document.getElementById('payment-section');
+    if (paymentSection) paymentSection.style.display = 'none';
+
+    /* ---------------------------------------------------------
+       3. Unlock cart + product cards
+       --------------------------------------------------------- */
+    cartLocked = false;
     unlockAllProductCards();
 
-    // Hide checkout-only rows
+    /* ---------------------------------------------------------
+       4. Hide all checkout‑only rows (Phase‑2 UI)
+       --------------------------------------------------------- */
     orderInfoRow.style.display = 'none';
     subtotalRow.style.display = 'none';
     shippingRow.style.display = 'none';
     taxRow.style.display = 'none';
+    rewardsRow.style.display = 'none'; // Phase‑1 always hides this
 
-    // Clear order number
+    /* ---------------------------------------------------------
+       5. Clear order number
+       --------------------------------------------------------- */
     orderNumberEl.textContent = '';
 
-    // Hide cancel button
+    /* ---------------------------------------------------------
+       6. Hide Cancel button
+       --------------------------------------------------------- */
     cancelOrderBtn.style.display = 'none';
 
-    // Re-enable login button
+    /* ---------------------------------------------------------
+       7. Re-enable login button (Phase‑1 behavior)
+       --------------------------------------------------------- */
     const loginBtn = document.getElementById('login-btn');
     loginBtn.disabled = false;
     loginBtn.classList.remove('disabled');
 
-    // Reset checkout button
+    /* ---------------------------------------------------------
+       8. Reset checkout button to Phase‑1 state
+       --------------------------------------------------------- */
     checkoutBtn.disabled = cart.length === 0 || (!isLoggedIn && !isGuestCheckout);
-    checkoutBtn.textContent = isLoggedIn || isGuestCheckout ? 'Checkout' : 'Sign In to Checkout';
+    checkoutBtn.textContent = isLoggedIn || isGuestCheckout
+      ? 'Checkout'
+      : 'Sign In to Checkout';
 
-    // Re-render cart (this restores rewards UI correctly)
+    /* ---------------------------------------------------------
+       9. Re-render cart (restores rewards UI correctly)
+       --------------------------------------------------------- */
     renderCart();
 
-    // Reset internal flags
+    /* ---------------------------------------------------------
+       10. Reset internal state machine
+       --------------------------------------------------------- */
     checkoutPhase = 1;
     confirmStep = false;
 
