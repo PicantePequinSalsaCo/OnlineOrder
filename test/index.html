@@ -3079,10 +3079,14 @@ guestForm.addEventListener('submit', e => {
         document.getElementById('guest-name').focus();
         return;
       }
-              // Prevent instant clicks in Phase 1
-  if (checkoutPhase === 1 && !holdCompleted) {
-    return;
-  }
+// Only block clicks when the button is actually in Checkout mode
+const isCheckoutAction =
+  checkoutPhase === 1 &&
+  checkoutBtn.textContent.trim() === 'Checkout';
+
+if (isCheckoutAction && !holdCompleted) {
+  return;
+}
 
       // Phase 1: Proceed to Checkout (backend shipping/tax calc)
       if (checkoutPhase === 1) {
