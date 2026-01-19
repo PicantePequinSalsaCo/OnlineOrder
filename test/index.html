@@ -625,6 +625,35 @@
       color: #fff;
     }
 
+    #cancel-order-btn {
+  margin-top: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 14px 30px rgba(0,0,0,0.8);
+  border: 1px solid rgba(255,255,255,0.25);
+  backdrop-filter: blur(16px);
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  background: rgba(255,255,255,0.12); /* frosted neutral */
+  color: #fff;
+}
+
+#cancel-order-btn:hover:not([disabled]) {
+  background: rgba(255,255,255,0.22);
+  transform: translateY(-1px);
+  box-shadow: 0 18px 36px rgba(0,0,0,0.9);
+  border-color: rgba(255,255,255,0.35);
+}
+
+#cancel-order-btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+  border-color: rgba(255,255,255,0.15);
+}
+
     @keyframes shimmer {
       0% { background-position: -200% 0; }
       100% { background-position: 200% 0; }
@@ -1799,7 +1828,7 @@
 
     let smsConsent = false;
 
-    cancelOrderBtn.addEventListener('click', async () => {
+cancelOrderBtn.addEventListener('click', async () => {
   const btn = cancelOrderBtn;
 
   if (btn.disabled) return;
@@ -1807,23 +1836,41 @@
   setButtonState(btn, 'loading');
 
   try {
-    // Simulated cancel — abandon the PaymentIntent
-    // and reset the UI state.
-
     // Unlock cart
     cartLocked = false;
     renderCart();
+    unlockAllProductCards();
 
-    // Hide payment UI
-    cancelOrderBtn.style.display = 'none';
+    // Restore rewards UI
+    const rewardsBox = document.getElementById('rewards-box');
+    const rewardsInput = document.getElementById('rewards-input');
+    if (rewardsBox) rewardsBox.style.display = '';
+    if (rewardsInput) rewardsInput.disabled = false;
 
-    // Clear order info
+    // Hide checkout-only rows
     orderInfoRow.style.display = 'none';
+    subtotalRow.style.display = 'none';
+    shippingRow.style.display = 'none';
+    taxRow.style.display = 'none';
+
+    // Clear order number
     orderNumberEl.textContent = '';
 
     // Reset checkout button
     checkoutBtn.disabled = cart.length === 0 || (!isLoggedIn && !isGuestCheckout);
     checkoutBtn.textContent = isLoggedIn || isGuestCheckout ? 'Checkout' : 'Sign In to Checkout';
+
+    // Re-enable login button
+    const loginBtn = document.getElementById('login-btn');
+    loginBtn.disabled = false;
+    loginBtn.classList.remove('disabled');
+
+    // Hide cancel button
+    cancelOrderBtn.style.display = 'none';
+
+    // Reset internal flags
+    checkoutPhase = 1;
+    confirmStep = false;
 
     showMessage('Order canceled. Cart unlocked.', 'info');
 
