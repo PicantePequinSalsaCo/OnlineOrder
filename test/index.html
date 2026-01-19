@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -2657,6 +2657,19 @@ function unlockAuthSwitches() {
         `;
 
         if (!cartLocked) {
+            // UNLOCK BUTTONS
+            li.querySelectorAll('.qty-btn').forEach(btn => {
+              btn.disabled = false;            // remove disabled attribute
+              btn.classList.remove('disabled'); // remove disabled styling
+            });
+
+            // UNLOCK INPUT
+            const qtyInput = li.querySelector('.cart-qty-input');
+            qtyInput.disabled = false;         // remove disabled attribute
+            qtyInput.readOnly = false;         // remove readonly attribute
+            qtyInput.classList.remove('disabled'); // remove disabled styling
+
+            // NORMAL INTERACTION HANDLERS
           li.querySelector('.qty-btn.minus').onclick = () => {
             if (item.qty > 1) {
               item.qty--;
@@ -2673,26 +2686,25 @@ function unlockAuthSwitches() {
             updateRewardsUI();
           };
 
-          const qtyInput = li.querySelector('.cart-qty-input');
-          qtyInput.addEventListener('input', () => {
-            const raw = qtyInput.value;
-            if (raw === '') return;
+            qtyInput.addEventListener('input', () => {
+          const raw = qtyInput.value;
+          if (raw === '') return;
 
-            let qty = parseInt(raw, 10);
-            if (isNaN(qty) || qty < 0) qty = 0;
+          let qty = parseInt(raw, 10);
+          if (isNaN(qty) || qty < 0) qty = 0;
 
-            qtyInput.value = qty;
-            item.qty = qty;
+          qtyInput.value = qty;
+          item.qty = qty;
 
-            if (qty === 0) {
-              li.classList.add('removing');
-              setTimeout(() => removeFromCart(item.id), 300);
-            } else {
-              renderCart();
-              updateRewardsUI();
-            }
-          });
-        } else {
+          if (qty === 0) {
+            li.classList.add('removing');
+            setTimeout(() => removeFromCart(item.id), 300);
+          } else {
+            renderCart();
+            updateRewardsUI();
+         }
+     });
+} else {
           li.querySelectorAll('.qty-btn').forEach(btn => {
             btn.disabled = true;
             btn.classList.add('disabled');
