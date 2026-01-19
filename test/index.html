@@ -771,6 +771,17 @@
       padding: 0;
     }
 
+    .auth-switch.locked {
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.auth-switch.locked button {
+  cursor: default;
+  text-decoration: none;
+  color: var(--muted);
+}
+
     .state-select-wrapper {
       position: relative;
       display: flex;
@@ -2187,6 +2198,18 @@ checkoutBtn.addEventListener('touchstart', startHoldToast);
 checkoutBtn.addEventListener('touchend', cancelHoldToast);
 checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
 
+function lockAuthSwitches() {
+  document.querySelectorAll('.auth-switch').forEach(el => {
+    el.classList.add('locked');
+  });
+}
+
+function unlockAuthSwitches() {
+  document.querySelectorAll('.auth-switch').forEach(el => {
+    el.classList.remove('locked');
+  });
+}
+    
     
     /* ===========================
        Live validators
@@ -2816,6 +2839,8 @@ checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
     loginForm.addEventListener('submit', async e => {
       e.preventDefault();
       const btn = loginForm.querySelector('button[type="submit"]');
+      
+      lockAuthSwitches();
 
       const result = await handleApiButton(btn, async () => {
         const email = document.getElementById('login-username').value.trim();
@@ -2870,10 +2895,12 @@ checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
 
         usernameDisplay.textContent = currentUser.name || 'Customer';
         rewardsDisplay.textContent = currentUser.rewards;
+        
         const rewardsRow = document.getElementById('rewards-row');
         const rewardsInput = document.getElementById('rewards-input');
         const pointsRedeemed = parseInt(rewardsInput?.value || "0", 10);
         currentUser.pointsRedeemed = pointsRedeemed;
+        
         if (currentUser.rewards > 0) {
           rewardsRow.style.display = 'flex';
           rewardsInput.max = currentUser.rewards;
@@ -2882,22 +2909,31 @@ checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
         } else {
           rewardsRow.style.display = 'none';
         }
+        
         loginBtn.textContent = 'Sign Out';
         loginBtn.classList.add('logout');
+        
         checkoutBtn.disabled = cart.length === 0;
         checkoutBtn.textContent = cart.length === 0 ? 'Cart is Empty' : 'Proceed to Checkout';
+        
         loginForm.reset();
         toggleLogin(false);
         showMessage(data?.message || 'Signed in', 'success');
+        
+        
         renderCart();
         updateRewardsUI();
       }
+
+      unlockAuthSwitches();
     });
 
     // Reset Password
     resetForm.addEventListener('submit', async e => {
       e.preventDefault();
       const btn = resetForm.querySelector('button[type="submit"]');
+
+      lockAuthSwitches();
 
       const result = await handleApiButton(btn, async () => {
         const email    = document.getElementById('reset-email').value.trim();
@@ -2977,12 +3013,16 @@ checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
           }
         }, 50);
       }
+
+      unlockAuthSwitches();
     });
 
     // Create Account
     signupForm.addEventListener('submit', async e => {
       e.preventDefault();
       const btn = signupForm.querySelector('button[type="submit"]');
+
+      lockAuthSwitches();
 
       const result = await handleApiButton(btn, async () => {
         const fn   = document.getElementById('signup-firstname').value.trim();
@@ -3083,11 +3123,14 @@ checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
           }
         }, 50);
       }
+      unlockAuthSwitches();
     });
 
 // Guest Checkout Form
 guestForm.addEventListener('submit', e => {
   e.preventDefault();
+
+  lockAuthSwitches();
 
   const fullName = document.getElementById('guest-name').value.trim();
   const email    = document.getElementById('guest-email').value.trim();
@@ -3107,6 +3150,7 @@ guestForm.addEventListener('submit', e => {
 
   if (!fullName || !email || !address || !city || !state || !zip) {
     showMessage('Please complete all required fields.', 'error');
+    unlockAuthSwitches();
     return;
   }
 
@@ -3162,6 +3206,8 @@ guestForm.addEventListener('submit', e => {
   checkoutBtn.textContent = cart.length === 0
     ? 'Cart is Empty'
     : 'Proceed to Checkout';
+
+  unlockAuthSwitches();
 });
 
     /* ===========================
