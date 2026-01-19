@@ -3129,17 +3129,18 @@ guestForm.addEventListener('submit', e => {
         return;
       }
       
-        // Hold gate
-      const label = checkoutBtn.textContent.trim();
+      // Hold gate
+      const label = checkoutBtn.textContent.trim().toLowerCase();
+
       const isCheckoutAction =
         checkoutPhase === 1 &&
-        label.startsWith('Checkout');
-    
+        (label.includes('checkout') || label.includes('proceed'));
+
       if (isCheckoutAction && !holdCompleted) {
         e.preventDefault();
         e.stopImmediatePropagation();
         return;
-      }    
+      }   
 
       // Phase 1: Proceed to Checkout (backend shipping/tax calc)
       if (checkoutPhase === 1) {
