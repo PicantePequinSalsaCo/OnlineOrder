@@ -1175,7 +1175,7 @@
 
     .hold-toast {
   position: fixed;
-  bottom: 24px;
+  bottom: calc(100% + 20px);
   left: 50%;
   transform: translateX(-50%);
   min-width: 240px;
@@ -2084,17 +2084,28 @@ cancelOrderBtn.addEventListener('click', async () => {
     });
     
 
+// Toast elements
 const toast = document.getElementById('hold-toast');
 const toastBar = document.querySelector('#hold-toast .hold-toast-bar');
 
+// Hold state
 let holdTimer = null;
 let holdActive = false;
+let holdFinished = false; // replaces holdCompleted
 const HOLD_DURATION = 900;
 
-function startHoldToast() {
-  if (holdActive) return;
+// Start hold (mousedown / touchstart)
+function startHoldToast(e) {
+  if (checkoutPhase !== 1) return;
 
+  // Reset finished flag
+  holdFinished = false;
+
+  // Mark hold active
   holdActive = true;
+
+  // Frost the button (you wanted this)
+  checkoutBtn.classList.add('hold-mode');
 
   // Show toast
   toast.classList.add('show');
@@ -2103,32 +2114,53 @@ function startHoldToast() {
   toastBar.style.transition = `width ${HOLD_DURATION}ms linear`;
   toastBar.style.width = '100%';
 
+  // Timer for full hold
   holdTimer = setTimeout(() => {
     if (!holdActive) return;
 
     holdActive = false;
+    holdFinished = true;
+
+    // Hide toast
     toast.classList.remove('show');
     toastBar.style.width = '0%';
 
-    // Trigger your checkout logic
+    // Remove frost
+    checkoutBtn.classList.remove('hold-mode');
+
+    // Trigger checkout
     checkoutBtn.click();
 
   }, HOLD_DURATION);
 }
 
-function cancelHoldToast() {
+// Cancel hold (mouseup / touchend / mouseleave)
+function cancelHoldToast(e) {
   if (!holdActive) return;
 
   holdActive = false;
   clearTimeout(holdTimer);
 
+  // Reset bar
   toastBar.style.transition = 'width 150ms ease-out';
   toastBar.style.width = '0%';
 
+  // Hide toast
   toast.classList.remove('show');
+
+  // Remove frost
+  checkoutBtn.classList.remove('hold-mode');
+
+  // HOLD GATE — THIS IS THE FIX
+  // If user released early, block the click
+  if (!holdFinished) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    return;
+  }
 }
 
-    // Desktop
+// Desktop
 checkoutBtn.addEventListener('mousedown', startHoldToast);
 checkoutBtn.addEventListener('mouseup', cancelHoldToast);
 checkoutBtn.addEventListener('mouseleave', cancelHoldToast);
@@ -3166,18 +3198,6 @@ guestForm.addEventListener('submit', e => {
         return;
       }
       
-      // Hold gate
-      const label = checkoutBtn.textContent.trim().toLowerCase();
-
-      const isCheckoutAction =
-        checkoutPhase === 1 &&
-        (label.includes('checkout') || label.includes('proceed'));
-
-      if (isCheckoutAction && holdActive) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      return;
-    }  
 
       // Phase 1: Proceed to Checkout (backend shipping/tax calc)
       if (checkoutPhase === 1) {
