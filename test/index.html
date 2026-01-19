@@ -1638,65 +1638,6 @@
     /* ===========================
        Utilities
        =========================== */
-
-    let holdTimer = null;
-let holdActive = false;
-const HOLD_DURATION = 900; // ms
-
-const checkoutProgress = document.querySelector('#checkout-btn .hold-progress');
-
-function startCheckoutHold(e) {
-  // Only allow hold in Phase 1
-  if (checkoutPhase !== 1) return;
-  if (checkoutBtn.disabled) return;
-
-  holdActive = true;
-
-  // Enter frosted hold mode
-  checkoutBtn.classList.add('hold-mode');
-
-  // Animate progress fill
-  checkoutProgress.style.transition = `width ${HOLD_DURATION}ms linear`;
-  checkoutProgress.style.width = '100%';
-
-  holdTimer = setTimeout(() => {
-    if (!holdActive) return;
-
-    // Reset visuals
-    checkoutProgress.style.width = '0%';
-    checkoutBtn.classList.remove('hold-mode');
-
-    holdActive = false;
-    holdTimer = null;
-
-    // Trigger your existing checkout logic
-    checkoutBtn.click();
-  }, HOLD_DURATION);
-}
-
-function cancelCheckoutHold() {
-  if (!holdActive) return;
-
-  holdActive = false;
-  clearTimeout(holdTimer);
-  holdTimer = null;
-
-  // Reset visuals
-  checkoutBtn.classList.remove('hold-mode');
-  checkoutProgress.style.transition = 'width 150ms ease-out';
-  checkoutProgress.style.width = '0%';
-}
-
-// Desktop
-checkoutBtn.addEventListener('mousedown', startCheckoutHold);
-checkoutBtn.addEventListener('mouseup', cancelCheckoutHold);
-checkoutBtn.addEventListener('mouseleave', cancelCheckoutHold);
-
-// Mobile
-checkoutBtn.addEventListener('touchstart', startCheckoutHold);
-checkoutBtn.addEventListener('touchend', cancelCheckoutHold);
-checkoutBtn.addEventListener('touchcancel', cancelCheckoutHold);
-
     
     function refreshSid() {
       sessionStorage.removeItem('sid');
@@ -2064,7 +2005,63 @@ cancelOrderBtn.addEventListener('click', async () => {
         btn.textContent = isHidden ? '🪇' : '🪅';
       });
     });
+let holdTimer = null;
+let holdActive = false;
+const HOLD_DURATION = 900; // ms
 
+const checkoutProgress = document.querySelector('#checkout-btn .hold-progress');
+
+function startCheckoutHold(e) {
+  // Only allow hold in Phase 1
+  if (checkoutPhase !== 1) return;
+  if (checkoutBtn.disabled) return;
+
+  holdActive = true;
+
+  // Enter frosted hold mode
+  checkoutBtn.classList.add('hold-mode');
+
+  // Animate progress fill
+  checkoutProgress.style.transition = `width ${HOLD_DURATION}ms linear`;
+  checkoutProgress.style.width = '100%';
+
+  holdTimer = setTimeout(() => {
+    if (!holdActive) return;
+
+    // Reset visuals
+    checkoutProgress.style.width = '0%';
+    checkoutBtn.classList.remove('hold-mode');
+
+    holdActive = false;
+    holdTimer = null;
+
+    // Trigger your existing checkout logic
+    checkoutBtn.click();
+  }, HOLD_DURATION);
+}
+
+function cancelCheckoutHold() {
+  if (!holdActive) return;
+
+  holdActive = false;
+  clearTimeout(holdTimer);
+  holdTimer = null;
+
+  // Reset visuals
+  checkoutBtn.classList.remove('hold-mode');
+  checkoutProgress.style.transition = 'width 150ms ease-out';
+  checkoutProgress.style.width = '0%';
+}
+
+// Desktop
+checkoutBtn.addEventListener('mousedown', startCheckoutHold);
+checkoutBtn.addEventListener('mouseup', cancelCheckoutHold);
+checkoutBtn.addEventListener('mouseleave', cancelCheckoutHold);
+
+// Mobile
+checkoutBtn.addEventListener('touchstart', startCheckoutHold);
+checkoutBtn.addEventListener('touchend', cancelCheckoutHold);
+checkoutBtn.addEventListener('touchcancel', cancelCheckoutHold);
     /* ===========================
        Live validators
        =========================== */
