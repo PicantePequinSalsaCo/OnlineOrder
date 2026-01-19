@@ -1843,72 +1843,49 @@ cancelOrderBtn.addEventListener('click', async () => {
   setButtonState(btn, 'loading');
 
   try {
-    /* ---------------------------------------------------------
-       1. Unmount Stripe Elements if user clicked "Pay for Order"
-       --------------------------------------------------------- */
+    /* 1. Unmount Stripe Elements */
     if (cardMounted && card && typeof card.unmount === 'function') {
-      try {
-        card.unmount();
-      } catch (e) {
-        console.warn('Stripe unmount failed:', e);
-      }
+      try { card.unmount(); } catch (e) {}
       cardMounted = false;
     }
 
-    /* ---------------------------------------------------------
-       2. Hide payment section (Phase‑1 never shows it)
-       --------------------------------------------------------- */
+    /* 2. Hide payment section */
     const paymentSection = document.getElementById('payment-section');
     if (paymentSection) paymentSection.style.display = 'none';
 
-    /* ---------------------------------------------------------
-       3. Unlock cart + product cards
-       --------------------------------------------------------- */
+    /* 3. Unlock cart + product cards */
     cartLocked = false;
     unlockAllProductCards();
 
-    /* ---------------------------------------------------------
-       4. Hide all checkout‑only rows (Phase‑2 UI)
-       --------------------------------------------------------- */
+    /* 4. Hide checkout-only rows */
     orderInfoRow.style.display = 'none';
     subtotalRow.style.display = 'none';
     shippingRow.style.display = 'none';
     taxRow.style.display = 'none';
-    rewardsRow.style.display = 'none'; // Phase‑1 always hides this
+    rewardsRow.style.display = 'none';
 
-    /* ---------------------------------------------------------
-       5. Clear order number
-       --------------------------------------------------------- */
+    /* 5. Clear order number */
     orderNumberEl.textContent = '';
 
-    /* ---------------------------------------------------------
-       6. Hide Cancel button
-       --------------------------------------------------------- */
+    /* 6. Hide cancel button */
     cancelOrderBtn.style.display = 'none';
 
-    /* ---------------------------------------------------------
-       7. Re-enable login button (Phase‑1 behavior)
-       --------------------------------------------------------- */
+    /* 7. Re-enable login button */
     const loginBtn = document.getElementById('login-btn');
     loginBtn.disabled = false;
     loginBtn.classList.remove('disabled');
 
-    /* ---------------------------------------------------------
-       8. Reset checkout button to Phase‑1 state
-       --------------------------------------------------------- */
-    checkoutBtn.disabled = cart.length === 0 || (!isLoggedIn && !isGuestCheckout);
-    checkoutBtn.textContent = isLoggedIn || isGuestCheckout
-      ? 'Checkout'
-      : 'Sign In to Checkout';
+    /* 8. Fix guest/member logic */
+    const isGuest = !!currentUser.guest;
 
-    /* ---------------------------------------------------------
-       9. Re-render cart (restores rewards UI correctly)
-       --------------------------------------------------------- */
+    /* 9. Reset checkout button */
+    checkoutBtn.disabled = cart.length === 0 || (!isLoggedIn && !isGuest);
+    checkoutBtn.textContent = isLoggedIn || isGuest ? 'Checkout' : 'Sign In to Checkout';
+
+    /* 10. Re-render cart (restores rewards UI + unlocks inputs) */
     renderCart();
 
-    /* ---------------------------------------------------------
-       10. Reset internal state machine
-       --------------------------------------------------------- */
+    /* 11. Reset internal flags */
     checkoutPhase = 1;
     confirmStep = false;
 
@@ -1921,7 +1898,7 @@ cancelOrderBtn.addEventListener('click', async () => {
     setButtonState(btn, '');
   }
 });
-
+    
     [signupSmsConsentEl, resetSmsConsentEl, guestSmsConsentEl].forEach(el => {
       if (el) {
         el.addEventListener('change', () => {
