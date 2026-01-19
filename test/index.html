@@ -2084,6 +2084,10 @@ cancelOrderBtn.addEventListener('click', async () => {
     });
     
 
+// ===============================
+// TOAST + HOLD SYSTEM (FULL BLOCK)
+// ===============================
+
 // Toast elements
 const toast = document.getElementById('hold-toast');
 const toastBar = document.querySelector('#hold-toast .hold-toast-bar');
@@ -2091,7 +2095,7 @@ const toastBar = document.querySelector('#hold-toast .hold-toast-bar');
 // Hold state
 let holdTimer = null;
 let holdActive = false;
-let holdFinished = false; // replaces holdCompleted
+let holdFinished = false;
 const HOLD_DURATION = 900;
 
 // Start hold (mousedown / touchstart)
@@ -2151,8 +2155,7 @@ function cancelHoldToast(e) {
   // Remove frost
   checkoutBtn.classList.remove('hold-mode');
 
-  // HOLD GATE — THIS IS THE FIX
-  // If user released early, block the click
+  // HOLD GATE — BLOCK EARLY CLICKS
   if (!holdFinished) {
     e.preventDefault();
     e.stopImmediatePropagation();
@@ -2169,7 +2172,6 @@ checkoutBtn.addEventListener('mouseleave', cancelHoldToast);
 checkoutBtn.addEventListener('touchstart', startHoldToast);
 checkoutBtn.addEventListener('touchend', cancelHoldToast);
 checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
-
 
     
     /* ===========================
