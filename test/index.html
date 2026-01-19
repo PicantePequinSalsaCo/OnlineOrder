@@ -3199,6 +3199,13 @@ guestForm.addEventListener('submit', e => {
         document.getElementById('guest-name').focus();
         return;
       }
+
+          // HOLD GATE — block backend until toast hold finishes
+      if (checkoutPhase === 1 && !holdFinished) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        return;
+      }
       
 
       // Phase 1: Proceed to Checkout (backend shipping/tax calc)
