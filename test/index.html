@@ -1167,6 +1167,7 @@
         </section>
 
         <button id="checkout-btn" class="api-btn" data-loading-text="Processing Order" disabled>Sign In to Checkout</button>
+        <button id="cancel-order-btn" class="api-btn" style="margin-top:10px; display:none;" data-loading-text="Canceling Order"> Cancel Order</button>    
       </div>
     </div>
   </aside>
@@ -1794,8 +1795,45 @@
     const guestSmsConsentEl  = document.getElementById('guest-smsConsent');
 
     const processingOverlay = document.getElementById('processing-overlay');
+    const cancelOrderBtn = document.getElementById('cancel-order-btn');
 
     let smsConsent = false;
+
+    cancelOrderBtn.addEventListener('click', async () => {
+  const btn = cancelOrderBtn;
+
+  if (btn.disabled) return;
+
+  setButtonState(btn, 'loading');
+
+  try {
+    // Simulated cancel — abandon the PaymentIntent
+    // and reset the UI state.
+
+    // Unlock cart
+    cartLocked = false;
+    renderCart();
+
+    // Hide payment UI
+    cancelOrderBtn.style.display = 'none';
+
+    // Clear order info
+    orderInfoRow.style.display = 'none';
+    orderNumberEl.textContent = '';
+
+    // Reset checkout button
+    checkoutBtn.disabled = cart.length === 0 || (!isLoggedIn && !isGuestCheckout);
+    checkoutBtn.textContent = isLoggedIn || isGuestCheckout ? 'Checkout' : 'Sign In to Checkout';
+
+    showMessage('Order canceled. Cart unlocked.', 'info');
+
+  } catch (err) {
+    console.error(err);
+    showMessage('Unable to cancel order. Try again.', 'error');
+  } finally {
+    setButtonState(btn, '');
+  }
+});
 
     [signupSmsConsentEl, resetSmsConsentEl, guestSmsConsentEl].forEach(el => {
       if (el) {
@@ -3037,6 +3075,7 @@ guestForm.addEventListener('submit', e => {
 
             checkoutBtn.textContent = 'Payment Successful';
             checkoutBtn.disabled = true;
+            cancelOrderBtn.style.display = 'none';
             checkoutBtn.style.backgroundColor = '#28a745';
             checkoutBtn.style.cursor = 'default';
 
@@ -3058,6 +3097,7 @@ guestForm.addEventListener('submit', e => {
               if (countdownSeconds <= 0) {
                 clearInterval(countdownTimer);
                 checkoutBtn.disabled = true;
+                cancelOrderBtn.style.display = 'none';
                 checkoutBtn.style.cursor = 'default';
                 countdownEl.style.transition = 'opacity 0.5s ease';
                 countdownEl.style.opacity = '0';
@@ -3080,6 +3120,7 @@ guestForm.addEventListener('submit', e => {
           lockAllProductCards();
 
           checkoutBtn.textContent = 'Pay for Order';
+          cancelOrderBtn.style.display = '';          
           checkoutPhase = 2;
           confirmStep = false;
           return;
@@ -3145,6 +3186,8 @@ guestForm.addEventListener('submit', e => {
             document.getElementById('payment-section').style.display = 'none';
             checkoutBtn.textContent = 'Payment Successful';
             checkoutBtn.disabled = true;
+            cancelOrderBtn.style.display = 'none';
+            cancelOrderBtn.style.display = 'none';
             checkoutBtn.style.backgroundColor = '#28a745';
             checkoutBtn.style.cursor = 'default';
             checkoutPhase = 1;
