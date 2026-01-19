@@ -1020,6 +1020,25 @@
       color: var(--muted);
     }
 
+    .loader-arc {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 4px solid transparent;
+  border-top-color: #ffb347; /* your accent */
+  border-right-color: rgba(255,255,255,0.25);
+  border-bottom-color: rgba(255,255,255,0.15);
+  border-left-color: rgba(255,255,255,0.05);
+  animation: arcspin 0.85s cubic-bezier(0.6, 0.15, 0.4, 0.85) infinite;
+  margin: 16px auto 0;
+  filter: drop-shadow(0 0 6px rgba(255, 179, 71, 0.45));
+}
+
+@keyframes arcspin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
     footer {
       text-align: center;
       color: var(--muted);
@@ -1710,7 +1729,8 @@
   <div id="processing-overlay">
     <div class="processing-panel">
       <h3>Calculating Shipping & Taxes…</h3>
-      <p>Please do not refresh or close this page while we finalize your order details.</p>
+      <div class="loader-arc"></div>
+      <p>Calculating Shipping & Tax, please do not refresh or close this page...</p>
     </div>
   </div>
 
