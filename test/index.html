@@ -1172,6 +1172,42 @@
         transition: none !important;
       }
     }
+
+    .hold-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 240px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  color: #fff;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 9999;
+}
+
+.hold-toast.show {
+  opacity: 1;
+}
+
+.hold-toast-message {
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.hold-toast-bar {
+  height: 6px;
+  width: 0%;
+  border-radius: 4px;
+  background: linear-gradient(135deg, var(--accent-orange), #ffb74d);
+  transition: width 0.2s linear;
+}
   </style>
 </head>
 
@@ -1197,6 +1233,11 @@
       </nav>
     </div>
   </header>
+
+  <div id="hold-toast" class="hold-toast">
+  <div class="hold-toast-message">Hold to Confirm</div>
+  <div class="hold-toast-bar"></div>
+</div>
 
   <main>
     <section id="product-gallery" class="vertical-gallery" role="region" aria-label="Product Catalog">
@@ -2102,6 +2143,63 @@ checkoutBtn.addEventListener('mouseleave', cancelCheckoutHold);
 checkoutBtn.addEventListener('touchstart', startCheckoutHold);
 checkoutBtn.addEventListener('touchend', cancelCheckoutHold);
 checkoutBtn.addEventListener('touchcancel', cancelCheckoutHold);
+
+
+const toast = document.getElementById('hold-toast');
+const toastBar = document.querySelector('#hold-toast .hold-toast-bar');
+
+let holdTimer = null;
+let holdActive = false;
+const HOLD_DURATION = 900;
+
+function startHoldToast() {
+  if (holdActive) return;
+
+  holdActive = true;
+
+  // Show toast
+  toast.classList.add('show');
+
+  // Animate bar
+  toastBar.style.transition = `width ${HOLD_DURATION}ms linear`;
+  toastBar.style.width = '100%';
+
+  holdTimer = setTimeout(() => {
+    if (!holdActive) return;
+
+    holdActive = false;
+    toast.classList.remove('show');
+    toastBar.style.width = '0%';
+
+    // Trigger your checkout logic
+    checkoutBtn.click();
+
+  }, HOLD_DURATION);
+}
+
+function cancelHoldToast() {
+  if (!holdActive) return;
+
+  holdActive = false;
+  clearTimeout(holdTimer);
+
+  toastBar.style.transition = 'width 150ms ease-out';
+  toastBar.style.width = '0%';
+
+  toast.classList.remove('show');
+}
+
+    // Desktop
+checkoutBtn.addEventListener('mousedown', startHoldToast);
+checkoutBtn.addEventListener('mouseup', cancelHoldToast);
+checkoutBtn.addEventListener('mouseleave', cancelHoldToast);
+
+// Mobile
+checkoutBtn.addEventListener('touchstart', startHoldToast);
+checkoutBtn.addEventListener('touchend', cancelHoldToast);
+checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
+
+
     
     /* ===========================
        Live validators
