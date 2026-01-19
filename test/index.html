@@ -2226,6 +2226,8 @@ function unlockAuthSwitches() {
       btn.addEventListener('click', async () => {
         if (btn.dataset.codeSent === 'true') return;
 
+        lockAuthSwitches();
+
         const sid = refreshSid();
         const email = emailInput ? emailInput.value.trim() : undefined;
         const phsms = document.getElementById('signup-phone')?.value.trim()
@@ -2248,6 +2250,8 @@ function unlockAuthSwitches() {
         } else {
           showMessage('Failed to send verification code. Try again.', 'error');
         }
+
+        unlockAuthSwitches();
       });
     }
 
