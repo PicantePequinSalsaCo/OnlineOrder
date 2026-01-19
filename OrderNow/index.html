@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -519,6 +519,7 @@
       border: 1px solid rgba(255,255,255,0.25);
       transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease, border-color 0.15s ease;
       backdrop-filter: blur(16px);
+      overflow: hidden;
     }
     #checkout-btn:hover:not([disabled]) {
       background: linear-gradient(135deg, #ff9800, #ffe082);
@@ -561,6 +562,7 @@
       color: #fff;
       font-weight: bold;
     }
+
 
     /* API button states */
     .api-btn {
@@ -625,6 +627,96 @@
       color: #fff;
     }
 
+    #cancel-order-btn {
+  margin-top: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 14px 30px rgba(0,0,0,0.8);
+  border: 1px solid rgba(255,255,255,0.25);
+  backdrop-filter: blur(16px);
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  background: rgba(255,255,255,0.12); /* frosted neutral */
+  color: #fff;
+  overflow: hidden;
+}
+
+#cancel-order-btn:hover:not([disabled]) {
+  background: rgba(255,255,255,0.22);
+  transform: translateY(-1px);
+  box-shadow: 0 18px 36px rgba(0,0,0,0.9);
+  border-color: rgba(255,255,255,0.35);
+}
+
+#cancel-order-btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+  border-color: rgba(255,255,255,0.15);
+}
+
+/* Hold-to-activate progress overlay */
+#checkout-btn .hold-progress,
+#cancel-order-btn .hold-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(6px);
+  border-radius: inherit;
+  pointer-events: none;
+  transition: width 0.15s linear;
+}
+    
+#checkout-btn .hold-progress {
+  background: linear-gradient(135deg, var(--accent-orange), #ffb74d);
+  opacity: 0.35;
+  z-index: 2;
+}
+
+  #cancel-order-btn .hold-progress {
+  background: linear-gradient(135deg, #ff4d4d, #ff6b6b);
+  opacity: 0.35;
+  z-index: 2;
+}
+
+#checkout-btn .hold-progress,
+#cancel-order-btn .hold-progress {
+  transition: none !important;
+}
+    
+/* Frosted look during hold */
+#checkout-btn.hold-mode {
+  background: none !important;
+}
+    #checkout-btn.hold-mode::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.15);
+  border-radius: inherit;
+  z-index: 1; /* frost layer */
+  pointer-events: none;
+}
+
+#cancel-order-btn.hold-mode {
+  background: rgba(255,255,255,0.18) !important;
+  border-color: rgba(255,255,255,0.3) !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.6) !important;
+}
+    
+ #checkout-btn,
+ #cancel-order-btn {
+  position: relative;
+  z-index: 1;
+} 
+    
+
+    
     @keyframes shimmer {
       0% { background-position: -200% 0; }
       100% { background-position: 200% 0; }
@@ -1080,6 +1172,46 @@
         transition: none !important;
       }
     }
+    
+.checkout-wrapper {
+  position: relative;
+}
+    
+.hold-toast {
+  position: absolute;
+  bottom: calc(100% + 12px); /* 12px above the button */
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 240px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  color: #fff;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 9999;
+}
+
+.hold-toast.show {
+  opacity: 1;
+}
+
+.hold-toast-message {
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.hold-toast-bar {
+  height: 6px;
+  width: 0%;
+  border-radius: 4px;
+  background: linear-gradient(135deg, var(--accent-orange), #ffb74d);
+  transition: width 0.2s linear;
+}
   </style>
 </head>
 
@@ -1166,7 +1298,22 @@
           <div id="card-errors" role="alert"></div>
         </section>
 
-        <button id="checkout-btn" class="api-btn" data-loading-text="Processing Order" disabled>Sign In to Checkout</button>
+<div class="checkout-wrapper">
+  <button id="checkout-btn" class="api-btn" data-loading-text="Processing Order">
+    Sign In to Checkout
+    <div class="hold-progress"></div>
+  </button>
+
+  <div id="hold-toast" class="hold-toast">
+    <div class="hold-toast-message">Hold to Confirm</div>
+    <div class="hold-toast-bar"></div>
+  </div>
+</div>
+
+        <button id="cancel-order-btn" class="api-btn" style="margin-top:10px; display:none;" data-loading-text="Canceling Order">
+          Cancel Order
+          <div class="hold-progress"></div>
+        </button>   
       </div>
     </div>
   </aside>
@@ -1572,6 +1719,7 @@
     /* ===========================
        Utilities
        =========================== */
+    
     function refreshSid() {
       sessionStorage.removeItem('sid');
       const newSid = crypto.randomUUID();
@@ -1761,8 +1909,16 @@
     const cartOverlay     = document.getElementById('cart-container');
     const cartItemsEl     = document.getElementById('cart-items');
     const checkoutBtn     = document.getElementById('checkout-btn');
+    const checkoutProgress = document.querySelector('#checkout-btn .hold-progress');
     const closeCart       = document.getElementById('close-cart');
     const cartIcon        = document.getElementById('cart-icon');
+
+    const orderInfoRow   = document.getElementById('order-info-row');
+    const subtotalRow    = document.getElementById('subtotal-row');
+    const shippingRow    = document.getElementById('shipping-row');
+    const rewardsRow     = document.getElementById('rewards-row');
+    const taxRow         = document.getElementById('tax-row');
+    const orderNumberEl  = document.getElementById('order-number');
 
     const loginBtn        = document.getElementById('login-btn');
     const loginOverlay    = document.getElementById('login-container');
@@ -1794,9 +1950,75 @@
     const guestSmsConsentEl  = document.getElementById('guest-smsConsent');
 
     const processingOverlay = document.getElementById('processing-overlay');
+    const cancelOrderBtn = document.getElementById('cancel-order-btn');
 
     let smsConsent = false;
+    console.log("checkoutProgress:", checkoutProgress);
 
+cancelOrderBtn.addEventListener('click', async () => {
+  const btn = cancelOrderBtn;
+
+  if (btn.disabled) return;
+
+  setButtonState(btn, 'loading');
+
+  try {
+    /* 1. Unmount Stripe Elements */
+    if (cardMounted && card && typeof card.unmount === 'function') {
+      try { card.unmount(); } catch (e) {}
+      cardMounted = false;
+    }
+
+    /* 2. Hide payment section */
+    const paymentSection = document.getElementById('payment-section');
+    if (paymentSection) paymentSection.style.display = 'none';
+
+    /* 3. Unlock cart + product cards */
+    cartLocked = false;
+    unlockAllProductCards();
+
+    /* 4. Hide checkout-only rows */
+    orderInfoRow.style.display = 'none';
+    subtotalRow.style.display = 'none';
+    shippingRow.style.display = 'none';
+    taxRow.style.display = 'none';
+    rewardsRow.style.display = 'none';
+
+    /* 5. Clear order number */
+    orderNumberEl.textContent = '';
+
+    /* 6. Hide cancel button */
+    cancelOrderBtn.style.display = 'none';
+
+    /* 7. Re-enable login button */
+    const loginBtn = document.getElementById('login-btn');
+    loginBtn.disabled = false;
+    loginBtn.classList.remove('disabled');
+
+    /* 8. Fix guest/member logic */
+    const isGuest = !!currentUser.guest;
+
+    /* 9. Reset checkout button */
+    checkoutBtn.disabled = cart.length === 0 || (!isLoggedIn && !isGuest);
+    checkoutBtn.textContent = isLoggedIn || isGuest ? 'Checkout' : 'Sign In to Checkout';
+
+    /* 10. Re-render cart (restores rewards UI + unlocks inputs) */
+    renderCart();
+
+    /* 11. Reset internal flags */
+    checkoutPhase = 1;
+    confirmStep = false;
+
+    showMessage('Order canceled. Cart unlocked.', 'info');
+
+  } catch (err) {
+    console.error(err);
+    showMessage('Unable to cancel order. Try again.', 'error');
+  } finally {
+    setButtonState(btn, '');
+  }
+});
+    
     [signupSmsConsentEl, resetSmsConsentEl, guestSmsConsentEl].forEach(el => {
       if (el) {
         el.addEventListener('change', () => {
@@ -1866,7 +2088,98 @@
         btn.textContent = isHidden ? '🪇' : '🪅';
       });
     });
+    
 
+// ===============================
+// TOAST + HOLD SYSTEM (FULL BLOCK)
+// ===============================
+
+// Toast elements
+const toast = document.getElementById('hold-toast');
+const toastBar = document.querySelector('#hold-toast .hold-toast-bar');
+
+// Hold state
+let holdTimer = null;
+let holdActive = false;
+let holdFinished = false;
+const HOLD_DURATION = 1200;
+
+// Start hold (mousedown / touchstart)
+function startHoldToast(e) {
+  if (checkoutPhase !== 1) return;
+
+  // Reset finished flag
+  holdFinished = false;
+
+  // Mark hold active
+  holdActive = true;
+
+  // Frost the button (you wanted this)
+  checkoutBtn.classList.add('hold-mode');
+
+  // Show toast
+  toast.classList.add('show');
+
+  // Animate bar
+  toastBar.style.transition = `width ${HOLD_DURATION}ms linear`;
+  toastBar.style.width = '100%';
+
+  // Timer for full hold
+  holdTimer = setTimeout(() => {
+    if (!holdActive) return;
+
+    holdActive = false;
+    holdFinished = true;
+
+    // Hide toast
+    toast.classList.remove('show');
+    toastBar.style.width = '0%';
+
+    // Remove frost
+    checkoutBtn.classList.remove('hold-mode');
+
+    // Trigger checkout
+    checkoutBtn.click();
+
+  }, HOLD_DURATION);
+}
+
+// Cancel hold (mouseup / touchend / mouseleave)
+function cancelHoldToast(e) {
+  if (!holdActive) return;
+
+  holdActive = false;
+  clearTimeout(holdTimer);
+
+  // Reset bar
+  toastBar.style.transition = 'width 150ms ease-out';
+  toastBar.style.width = '0%';
+
+  // Hide toast
+  toast.classList.remove('show');
+
+  // Remove frost
+  checkoutBtn.classList.remove('hold-mode');
+
+  // HOLD GATE — BLOCK EARLY CLICKS
+  if (!holdFinished) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    return;
+  }
+}
+
+// Desktop
+checkoutBtn.addEventListener('mousedown', startHoldToast);
+checkoutBtn.addEventListener('mouseup', cancelHoldToast);
+checkoutBtn.addEventListener('mouseleave', cancelHoldToast);
+
+// Mobile
+checkoutBtn.addEventListener('touchstart', startHoldToast);
+checkoutBtn.addEventListener('touchend', cancelHoldToast);
+checkoutBtn.addEventListener('touchcancel', cancelHoldToast);
+
+    
     /* ===========================
        Live validators
        =========================== */
@@ -2878,7 +3191,8 @@ guestForm.addEventListener('submit', e => {
       });
     }
 
-    checkoutBtn.addEventListener('click', async () => {
+    checkoutBtn.addEventListener('click', async (e) => {
+
       if (!cart.length) {
         showMessage('Your cart is empty.', 'error');
         return;
@@ -2891,6 +3205,14 @@ guestForm.addEventListener('submit', e => {
         document.getElementById('guest-name').focus();
         return;
       }
+
+          // HOLD GATE — block backend until toast hold finishes
+      if (checkoutPhase === 1 && !holdFinished) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        return;
+      }
+      
 
       // Phase 1: Proceed to Checkout (backend shipping/tax calc)
       if (checkoutPhase === 1) {
@@ -3037,6 +3359,7 @@ guestForm.addEventListener('submit', e => {
 
             checkoutBtn.textContent = 'Payment Successful';
             checkoutBtn.disabled = true;
+            cancelOrderBtn.style.display = 'none';
             checkoutBtn.style.backgroundColor = '#28a745';
             checkoutBtn.style.cursor = 'default';
 
@@ -3058,6 +3381,7 @@ guestForm.addEventListener('submit', e => {
               if (countdownSeconds <= 0) {
                 clearInterval(countdownTimer);
                 checkoutBtn.disabled = true;
+                cancelOrderBtn.style.display = 'none';
                 checkoutBtn.style.cursor = 'default';
                 countdownEl.style.transition = 'opacity 0.5s ease';
                 countdownEl.style.opacity = '0';
@@ -3080,6 +3404,7 @@ guestForm.addEventListener('submit', e => {
           lockAllProductCards();
 
           checkoutBtn.textContent = 'Pay for Order';
+          cancelOrderBtn.style.display = '';          
           checkoutPhase = 2;
           confirmStep = false;
           return;
@@ -3145,6 +3470,8 @@ guestForm.addEventListener('submit', e => {
             document.getElementById('payment-section').style.display = 'none';
             checkoutBtn.textContent = 'Payment Successful';
             checkoutBtn.disabled = true;
+            cancelOrderBtn.style.display = 'none';
+            cancelOrderBtn.style.display = 'none';
             checkoutBtn.style.backgroundColor = '#28a745';
             checkoutBtn.style.cursor = 'default';
             checkoutPhase = 1;
