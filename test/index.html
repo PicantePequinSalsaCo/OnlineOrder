@@ -669,7 +669,19 @@
   pointer-events: none;
   transition: width 0.15s linear;
 }
+    
+#checkout-btn .hold-progress {
+  background: linear-gradient(135deg, var(--accent-orange), #ffb74d);
+  opacity: 0.35;
+  z-index: 2;
+}
 
+  #cancel-order-btn .hold-progress {
+  background: linear-gradient(135deg, #ff4d4d, #ff6b6b);
+  opacity: 0.35;
+  z-index: 2;
+}
+    
 /* Frosted look during hold */
 #checkout-btn.hold-mode {
   background: rgba(255,255,255,0.15) !important;
