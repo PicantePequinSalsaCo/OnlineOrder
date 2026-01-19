@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -390,6 +390,28 @@
     #login-container.open {
       display: flex;
     }
+    /* LOGIN BUTTON ICON */
+#login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  position: relative;
+}
+
+#login-btn .login-icon-svg {
+  width: 22px;
+  height: 22px;
+  stroke: var(--ink);
+  pointer-events: none;
+  transition: transform 0.15s ease;
+  margin-top: 1px; /* matches your cart icon alignment */
+}
+
+/* Hover animation (same style as cart icon) */
+#login-btn:hover .login-icon-svg {
+  transform: scale(1.08);
+}
 
     .modal-panel {
       width: 100%;
@@ -536,8 +558,8 @@
   min-width: 18px;
   height: 18px;
   padding: 0 4px;
-  background: #ff4d4d;
-  color: white;
+  background: #ffb74d;
+  color: black;
   font-size: 0.7rem;
   font-weight: 600;
   border-radius: 50%;
@@ -1329,7 +1351,16 @@ button * {
               <span id="cart-count-badge"></span>
             </button>
           </li>
-          <li><button id="login-btn" class="cta">Sign In</button></li>
+          <li>
+            <button id="login-btn" class="cta" aria-label="Sign In">
+              <svg class="login-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12.1992 12C14.9606 12 17.1992 9.76142 17.1992 7C17.1992 4.23858 14.9606 2 12.1992 2C9.43779 2 7.19922 4.23858 7.19922 7C7.19922 9.76142 9.43779 12 12.1992 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M3 22C3.57038 20.0332 4.74795 18.2971 6.36438 17.0399C7.98081 15.7827 9.95335 15.0687 12 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M19 22V14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M15 18H23" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </li>
         </ul>
       </nav>
     </div>
