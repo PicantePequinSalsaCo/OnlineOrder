@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -1918,9 +1918,9 @@
     /* ===========================
        App state
        =========================== */
-    let cart = [];
-    let isLoggedIn = false;
-    let currentUser = { email: '', name: '', rewards: 0, pointsRedeemed: 0 };
+    let cart = JSON.parse(sessionStorage.getItem('cart') || '[]');
+    let isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+    let currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{"email":"","name":"","rewards":0,"pointsRedeemed":0}');
 
     /* ===========================
        DOM refs
@@ -2035,6 +2035,8 @@ cancelOrderBtn.addEventListener('click', async (e) => {
     /* 11. Reset internal flags */
     checkoutPhase = 1;
     confirmStep = false;
+    sessionStorage.setItem('checkoutPhase', '1');
+    sessionStorage.setItem('confirmStep', 'false');
 
     showMessage('Order canceled. Cart unlocked.', 'info');
 
@@ -2859,10 +2861,23 @@ function unlockAuthSwitches() {
 
         if (!isLoggedIn) {
           checkoutBtn.disabled = cart.length === 0;
-          checkoutBtn.textContent = cart.length === 0 ? 'Cart is Empty' : 'Checkout as Guest';
+
+          //  Guest with saved info should see "Proceed to Checkout"
+          if (currentUser?.guest && currentUser?.email) {
+            checkoutBtn.textContent = cart.length === 0
+              ? 'Cart is Empty'
+              : 'Proceed to Checkout';
+          } else {
+            checkoutBtn.textContent = cart.length === 0
+              ? 'Cart is Empty'
+              : 'Checkout as Guest';
+          }
+
         } else {
           checkoutBtn.disabled = cart.length === 0;
-          checkoutBtn.textContent = cart.length === 0 ? 'Cart is Empty' : 'Proceed to Checkout';
+          checkoutBtn.textContent = cart.length === 0
+            ? 'Cart is Empty'
+            : 'Proceed to Checkout';
         }
       }
     }
@@ -3010,6 +3025,10 @@ function unlockAuthSwitches() {
           rewards: data.rewards ?? 0,
           pointsRedeemed: 0
         };
+
+          sessionStorage.setItem('isLoggedIn', 'true');
+          sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+
         if (data.token) sessionStorage.setItem('authToken', data.token);
 
         usernameDisplay.textContent = currentUser.name || 'Customer';
@@ -3313,10 +3332,14 @@ guestForm.addEventListener('submit', e => {
     smsConsent
   };
 
+  sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+
   usernameDisplay.textContent = fullName;
   rewardsDisplay.textContent = '0';
 
   isLoggedIn = false; // still guest, but allowed to checkout
+  sessionStorage.setItem('isLoggedIn', 'false');
+
 
   toggleLogin(false);
   showMessage('Guest details saved. You can now complete checkout.', 'success');
@@ -3492,6 +3515,8 @@ guestForm.addEventListener('submit', e => {
           currentUser.state = raw.billingState || currentUser.state || '';
           currentUser.zip = raw.billingPostal || currentUser.zip || '';
           currentUser.country = raw.billingCountry || currentUser.country || 'US';
+
+         sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
 
           const orderNumberEl = document.getElementById('order-number');
           const shippingCostEl = document.getElementById('shipping-cost');
@@ -3783,20 +3808,6 @@ guestForm.addEventListener('submit', e => {
 
       renderCart();
     }
-
-    /* ===========================
-       Confirm-on-exit
-       =========================== */
-    window.addEventListener('beforeunload', (e) => {
-      e.preventDefault();
-      e.returnValue = '';
-    });
-
-    window.addEventListener('pagehide', () => {
-      if (isLoggedIn) {
-        signOut();
-      }
-    });
 
     /* ===========================
        Persist cart and init
