@@ -2603,7 +2603,7 @@ function showPostCheckoutPopup({ orderNumber, orderTotal, pointsEarned, isReward
   }
 
   // --- COUNTDOWN ---
-  let remaining = 5;
+  let remaining = 10;
   countdownEl.textContent = remaining;
 
   if (postCheckoutTimer) clearInterval(postCheckoutTimer);
@@ -2623,8 +2623,14 @@ function showPostCheckoutPopup({ orderNumber, orderTotal, pointsEarned, isReward
       overlay.setAttribute('aria-hidden', 'true');
 
       // Final UI reset
-      cart = [];
-      renderCart();
+  const cartDrawer = document.getElementById('cart');
+  if (cartDrawer) cartDrawer.classList.remove('open');
+
+  // Sign out user + reset UI (your full reset logic)
+  signOut();
+  sessionStorage.clear();
+  window.location.href = 'https://picantepequinsalsaco.com/';
+
       // checkoutPhase = 1; confirmStep = false; cartLocked = false; etc.
     }
   }, 1000);
