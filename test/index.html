@@ -417,6 +417,30 @@
     border-color: rgba(255,255,255,0.35);
   }
 
+      .btn.secondary {
+    background: linear-gradient(135deg, #ff5e00, #ffc720f3);
+    color: #1b1308;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.25);
+    box-shadow: 0 14px 30px rgb(0, 0, 0);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    backdrop-filter: blur(16px);
+    transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+
+  .btn.secondary:hover {
+    background: linear-gradient(185deg,  #ff9800, #ffe082);
+    transform: translateY(-1px);
+    box-shadow: 0 18px 36px rgba(0,0,0,0.9);
+    border-color: rgba(255,255,255,0.35);
+  }
+
   /* Gallery */
   .hero-gallery {
     align-self: stretch;
@@ -1346,7 +1370,7 @@
           <li><a class="link" href="https://picantepequinsalsaco.com/ShippingPolicy">Shipping</a></li>
           <li><a class="link" href="https://picantepequinsalsaco.com/PrivacyPolicy">Privacy</a></li>
           <li><a class="link" href="https://picantepequinsalsaco.com/TradingPost">Rewards</a></li>
-          <li><a class="header-cta" href="https://picantepequinsalsaco.com/OrderNow/">Order Now</a></li>
+          <li><a class="header-cta" href="https://picantepequinsalsaco.com/OrderNow/">Order Now!</a></li>
         </ul>
       </nav>
     </div>
@@ -1575,7 +1599,7 @@
 
     <!-- Leave a Review Button -->
     <div class="review-actions">
-      <button id="leaveReviewBtn" class="btn primary">Leave a Review</button>
+      <button id="leaveReviewBtn" class="btn secondary">Leave a Review</button>
     </div>
   </div>
 </section>
