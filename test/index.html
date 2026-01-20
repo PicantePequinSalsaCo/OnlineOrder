@@ -831,7 +831,7 @@
       gap: 6px;
     }
     nav ul li {
-      display: flex;
+      width: 100%;
       justify-content: center;
     }
     .hero-card {
@@ -844,16 +844,17 @@
       padding: 18px;
     }
     .header-cta {
-    display: flex;          /* full-row flex button */
-    flex: 1 1 100%;         /* take full width of its line */
-    width: 100%;
+    width: 100%;        /* now this actually works */
+    flex: 1 1 100%;
     max-width: 100%;
+
+    padding: 14px 18px;
+    border-radius: 12px;
+    min-width: unset;
+
+    display: flex;
     justify-content: center;
     align-items: center;
-
-    padding: 12px 18px;     /* a bit taller for mobile */
-    border-radius: 12px;    /* rectangle with rounded corners */
-    min-width: unset;       /* drop desktop min-width */
     }
   }
 
@@ -1316,7 +1317,7 @@
         <ul>
           <li><a class="link" href="https://picantepequinsalsaco.com/ShippingPolicy">Shipping</a></li>
           <li><a class="link" href="https://picantepequinsalsaco.com/PrivacyPolicy">Privacy</a></li>
-          <li><a class="link" href="https://picantepequinsalsaco.com/TradingPost">Rewards Trading Post</a></li>
+          <li><a class="link" href="https://picantepequinsalsaco.com/TradingPost">Rewards</a></li>
           <li><a class="header-cta" href="https://picantepequinsalsaco.com/OrderNow/">Order Now</a></li>
         </ul>
       </nav>
