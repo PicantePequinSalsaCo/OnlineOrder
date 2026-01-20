@@ -1322,6 +1322,44 @@ button * {
   user-select: none;           /* Standard */
   -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
 }
+
+    #post-checkout-popup.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+#post-checkout-popup.popup-overlay.active {
+  display: flex;
+}
+
+#post-checkout-popup .popup-card {
+  background: rgba(20, 20, 30, 0.9);
+  backdrop-filter: blur(14px);
+  border-radius: 14px;
+  padding: 20px 24px;
+  max-width: 360px;
+  width: 90%;
+  color: var(--ink, #fff);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+}
+
+#post-checkout-popup .popup-title {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+#post-checkout-popup .popup-order,
+#post-checkout-popup .popup-points,
+#post-checkout-popup .popup-countdown {
+  margin: 4px 0;
+  font-size: 0.9rem;
+}
   </style>
 </head>
 
@@ -1829,6 +1867,17 @@ button * {
       <p>Calculating Shipping & Tax, please do not refresh or close this page...</p>
     </div>
   </div>
+ <!-- Order Success -->
+  <div id="post-checkout-popup" class="popup-overlay" aria-hidden="true">
+  <div class="popup-card">
+    <h2 class="popup-title">Thank you for your order!</h2>
+    <p class="popup-order" id="popup-order-number"></p>
+    <p class="popup-points" id="popup-points-earned"></p>
+    <p class="popup-countdown">
+      This window will close in <span id="popup-countdown-value">5</span> seconds.
+    </p>
+  </div>
+</div>
 
   <footer>
     <div>&copy; <span id="y"></span> Picante Pequin Salsa Co</div>
@@ -2430,7 +2479,57 @@ function unlockAuthSwitches() {
     el.classList.remove('locked');
   });
 }
-    
+
+
+  let postCheckoutTimer = null;
+
+  function showPostCheckoutPopup({ orderNumber, pointsEarned, isRewardsMember }) {
+  const overlay = document.getElementById('post-checkout-popup');
+  const orderEl = document.getElementById('popup-order-number');
+  const pointsEl = document.getElementById('popup-points-earned');
+  const countdownEl = document.getElementById('popup-countdown-value');
+
+  // Order line
+  orderEl.textContent = orderNumber
+    ? `Order Number: ${orderNumber}`
+    : '';
+
+  // Points line (only for rewards members)
+  if (isRewardsMember && typeof pointsEarned === 'number') {
+    pointsEl.style.display = 'block';
+    pointsEl.textContent = `Points Earned: ${pointsEarned}`;
+  } else {
+    pointsEl.style.display = 'none';
+    pointsEl.textContent = '';
+  }
+
+  // Start countdown
+  let remaining = 5;
+  countdownEl.textContent = remaining;
+
+  if (postCheckoutTimer) clearInterval(postCheckoutTimer);
+
+  overlay.classList.add('active');
+  overlay.setAttribute('aria-hidden', 'false');
+
+  postCheckoutTimer = setInterval(() => {
+    remaining -= 1;
+    countdownEl.textContent = remaining;
+
+    if (remaining <= 0) {
+      clearInterval(postCheckoutTimer);
+      postCheckoutTimer = null;
+      overlay.classList.remove('active');
+      overlay.setAttribute('aria-hidden', 'true');
+
+      // Resolve frontend: clear cart + reset UI
+      cart = [];
+      renderCart();
+      // if you want to also reset phases, do it here:
+      // checkoutPhase = 1; confirmStep = false; cartLocked = false; etc.
+    }
+  }, 1000);
+}
     
     /* ===========================
        Live validators
@@ -3695,33 +3794,16 @@ guestForm.addEventListener('submit', e => {
             confirmStep = false;
             sessionStorage.removeItem('sid');
 
-            let countdownSeconds = 5;
-            let countdownEl = document.createElement('div');
-            countdownEl.style.marginTop = '0.5rem';
-            countdownEl.style.fontSize = '0.9rem';
-            countdownEl.style.color = '#a76e28';
-            countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
-            checkoutBtn.insertAdjacentElement('afterend', countdownEl);
+                // POPUP HANDLER 
+            showPostCheckoutPopup({
+              orderNumber: data.orderNumber,
+              pointsEarned: data.totalAmount,
+              isRewardsMember: isLoggedIn
+            });
 
-            let countdownTimer = setInterval(() => {
-              countdownSeconds--;
-              countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
-              if (countdownSeconds <= 0) {
-                clearInterval(countdownTimer);
-                checkoutBtn.disabled = true;
-                cancelOrderBtn.style.display = 'none';
-                checkoutBtn.style.cursor = 'default';
-                countdownEl.style.transition = 'opacity 0.5s ease';
-                countdownEl.style.opacity = '0';
-                setTimeout(() => countdownEl.remove(), 500);
-                signOut();
-                window.location.href = 'https://picantepequinsalsaco.com/';
-              }
-            }, 1000);
-
-            return;
+            return; // IMPORTANT — stop here
           }
-
+          
           checkoutBtn.dataset.orderData = JSON.stringify(data);
           document.getElementById('cart-total-value').textContent = (data.totalAmount / 100).toFixed(2);
           document.getElementById('login-btn').disabled = true;
@@ -3806,30 +3888,13 @@ guestForm.addEventListener('submit', e => {
             confirmStep = false;
             sessionStorage.removeItem('sid');
 
-            let countdownSeconds = 5;
-            let countdownEl = document.createElement('div');
-            countdownEl.style.marginTop = '0.5rem';
-            countdownEl.style.fontSize = '0.9rem';
-            countdownEl.style.color = '#a76e28';
-            countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
-            checkoutBtn.insertAdjacentElement('afterend', countdownEl);
-            checkoutBtn.disabled = false;
-            checkoutBtn.style.cursor = 'pointer';
+            // POPUP HANDLER 
+          showPostCheckoutPopup({
+            orderNumber: data.orderNumber,
+            pointsEarned: data.totalAmount,
+            isRewardsMember: isLoggedIn
+          });
 
-            let countdownTimer = setInterval(() => {
-              countdownSeconds--;
-              countdownEl.textContent = `Redirecting Home in ${countdownSeconds}...`;
-              if (countdownSeconds <= 0) {
-                clearInterval(countdownTimer);
-                checkoutBtn.disabled = true;
-                checkoutBtn.style.cursor = 'default';
-                countdownEl.style.transition = 'opacity 0.5s ease';
-                countdownEl.style.opacity = '0';
-                setTimeout(() => countdownEl.remove(), 500);
-                signOut();
-                window.location.href = 'https://picantepequinsalsaco.com/';
-              }
-            }, 1000);
           } else {
             showMessage(`Payment status: ${paymentIntent?.status || 'unknown'}`, 'info');
           }
