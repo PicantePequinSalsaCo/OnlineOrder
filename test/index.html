@@ -831,9 +831,14 @@
       gap: 6px;
     }
     nav ul li {
-      width: 100%;
-      justify-content: center;
+      width: auto;
+      flex: 0 0 auto;
     }
+     /* make ONLY the CTA full width */
+  nav ul li:last-child {
+    width: 100%;
+  }
+
     .hero-card {
       padding: 20px 16px;
     }
@@ -1198,7 +1203,7 @@
 .review-toast {
   position: absolute;
   left: 50%;
-  bottom: calc(100% + 20px); /* place it ABOVE the slider area */
+  bottom: calc(50% + 20px); /* place it ABOVE the slider area */
   transform: translateX(-50%) translateY(8px) scale(0.98);
   opacity: 0;
 
