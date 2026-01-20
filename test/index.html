@@ -1378,24 +1378,41 @@ button * {
   color: #ddd;
 }
 
-/* Points (we will add gradient + shimmer later) */
 #post-checkout-popup .popup-points {
   margin: 8px 0 16px;
   font-size: 1.3rem;
   font-weight: 700;
+  text-align: center;
+
+  /* Gold gradient */
+  background: linear-gradient(90deg, #c47a1f, #e8b04c, #ffcf70, #e8b04c, #c47a1f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  /* Shimmer */
+  background-size: 250% auto;
+  animation: pointsShimmer 2.5s linear infinite;
+
+  /* Soft glow */
+  position: relative;
+}
+
+@keyframes pointsShimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
 }
 
 /* Countdown */
 #post-checkout-popup .popup-countdown {
   margin-top: 10px;
-  font-size: 0.9rem;
-  opacity: 0.85;
+  font-size: 0.8rem;
+  opacity: 0.45;
 }
     .checkmark {
   width: 64px;
   height: 64px;
-  stroke-width: 3;
-  stroke: #28a745;
+  stroke-width: 6;
+  stroke: #e8b04c;
   fill: none;
   margin: 0 auto 12px;
   display: block;
