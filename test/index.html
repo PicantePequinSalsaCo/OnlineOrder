@@ -3896,6 +3896,7 @@ guestForm.addEventListener('submit', e => {
                 // POPUP HANDLER 
             showPostCheckoutPopup({
               orderNumber: data.orderNumber,
+              orderTotal: data.totalAmount,
               pointsEarned: data.totalAmount,
               isRewardsMember: isLoggedIn
             });
@@ -3990,6 +3991,7 @@ guestForm.addEventListener('submit', e => {
             // POPUP HANDLER 
           showPostCheckoutPopup({
             orderNumber: data.orderNumber,
+            orderTotal: data.totalAmount,
             pointsEarned: data.totalAmount,
             isRewardsMember: isLoggedIn
           });
