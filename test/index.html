@@ -993,6 +993,11 @@
    =========================== */
    
 /* REVIEW SECTION */
+
+.reviews {
+  overflow-x: visible;
+}
+  
 .reviews .card {
   overflow-x: visible;
 }
@@ -1005,7 +1010,7 @@
 
   overflow-x: auto !important;          /* enables horizontal scroll */
   overflow-y: hidden;         /* prevents vertical clipping */
-  width: 100%;
+  width: max-content;
   -webkit-overflow-scrolling: touch; /* smooth mobile scroll */
 
   scroll-snap-type: x mandatory;
