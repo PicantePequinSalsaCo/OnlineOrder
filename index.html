@@ -2326,11 +2326,6 @@ function showSpinner() {
           }, 300);
       }, 3600);
 
-        // restore spinner AFTER reload (or remove entirely)
-      setTimeout(() => {
-        showSpinner();
-      }, 1000);
-
     } catch (err) {
       console.error(err);
 
@@ -2438,5 +2433,6 @@ function showSpinner() {
 </script>
 </body>
 </html>
+
 
 
