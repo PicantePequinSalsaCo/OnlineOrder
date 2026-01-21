@@ -1012,8 +1012,9 @@
   overflow-y: hidden;
 
   scroll-snap-type: x mandatory;
-  padding: 10px 4px;
+  padding: 10px 4px
 
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -1821,6 +1822,25 @@
     pause();
     step(1);
   });
+  
+
+  const reviewRail = document.getElementById('reviewRail');
+let reviewIndex = 0;
+
+function autoScrollReviews() {
+  const cards = reviewRail.children;
+  if (!cards.length) return;
+
+  reviewIndex = (reviewIndex + 1) % cards.length;
+  const card = cards[reviewIndex];
+
+  reviewRail.scrollTo({
+    left: card.offsetLeft - reviewRail.offsetLeft,
+    behavior: 'smooth'
+  });
+}
+
+setInterval(autoScrollReviews, 4000);
 
   /* ===========================
    REVIEW COMMENT COUNTER
