@@ -2321,11 +2321,17 @@ function showSpinner() {
         hideToast();
 
           // restore spinner for next time
-          showSpinner();
           setTimeout(() => {
           window.location.reload(true);
           }, 300);
       }, 3600);
+
+        // restore spinner AFTER reload (or remove entirely)
+      setTimeout(() => {
+        showSpinner();
+      }, 1000);
+
+    }, 3600);
 
     } catch (err) {
       console.error(err);
@@ -2434,3 +2440,4 @@ function showSpinner() {
 </script>
 </body>
 </html>
+
