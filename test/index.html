@@ -1823,7 +1823,9 @@
     step(1);
   });
   
-
+  /* ===========================
+   REVIEW SCROLLER
+   =========================== */
   const reviewRail = document.getElementById('reviewRail');
 let reviewIndex = 0;
 
@@ -1840,7 +1842,7 @@ function autoScrollReviews() {
   });
 }
 
-setInterval(autoScrollReviews, 4000);
+setInterval(autoScrollReviews, 2750);
 
   /* ===========================
    REVIEW COMMENT COUNTER
@@ -2295,8 +2297,9 @@ async function getOmniTok(act) {
           // restore spinner for next time
         if (spinner) spinner.style.display = 'inline-block';
         if (check) check.style.display = 'none';
-
-
+          setTimeout(() => {
+          window.location.reload(true);
+          }, 300);
       }, 3600);
 
     } catch (err) {
