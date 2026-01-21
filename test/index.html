@@ -2183,7 +2183,7 @@ async function getOmniTok(act) {
     handle.style.transform = `translateX(${currentX}px)`;
     fill.style.width = `${currentX + handle.offsetWidth}px`;
 
-    if (currentX >= maxX) {
+    if (currentX >= maxX && !slider.classList.contains('filled')) {
       completeSlide();
     }
   });
