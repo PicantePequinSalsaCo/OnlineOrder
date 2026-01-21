@@ -994,19 +994,18 @@
    
 /* REVIEW SECTION */
 .reviews .card {
-  overflow: visible;
-  margin-top: 40px;
+  overflow-x: visible;
 }
 
 /* Horizontal review rail */
 .review-rail {
   display: flex;
-  flex-direction: row;
   flex-wrap: nowrap;          /* keeps all cards in one row */
   gap: 14px;
 
-  overflow-x: auto;           /* enables horizontal scroll */
+  overflow-x: auto !important;          /* enables horizontal scroll */
   overflow-y: hidden;         /* prevents vertical clipping */
+  width: 100%;
   -webkit-overflow-scrolling: touch; /* smooth mobile scroll */
 
   scroll-snap-type: x mandatory;
