@@ -1245,7 +1245,7 @@
   touch-action: none;
 }
 
-/* when fully filled, make the fill cover the whole track and style label/handle */
+/* when fully filled */
 .review-slider.filled .slider-fill {
   width: 100%;
   border-radius: 12px;
@@ -1255,7 +1255,6 @@
   color: #fff;
 }
 
-/* when filled, expand the handle to become the full button */
 .review-slider.filled .slider-handle {
   left: 0;
   transform: translateX(0);
@@ -1281,7 +1280,7 @@
 .review-toast {
   position: absolute;
   left: 50%;
-  bottom: calc(50% + 20px); /* place it ABOVE the slider area */
+  bottom: calc(50% + 20px);
   transform: translateX(-50%) translateY(8px) scale(0.98);
   opacity: 0;
 
@@ -1300,8 +1299,8 @@
 .review-toast-card {
   pointer-events: auto;
   display: flex;
-  flex-direction: column;        /* vertical layout */
-  align-items: center;           /* center horizontally */
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
   gap: 10px;
 
@@ -1314,6 +1313,7 @@
   color: var(--ink);
   min-width: 240px;
 }
+
 .toast-title {
   font-size: 1rem;
   font-weight: 600;
@@ -1321,7 +1321,23 @@
   text-align: center;
 }
 
-/* Spinner (modern ring) */
+/* ICON WRAPPER — FIXES YOUR ISSUE */
+.toast-icon {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+/* Stack spinner + checkmark */
+.toast-icon .toast-spinner,
+.toast-icon .toast-checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: opacity 120ms ease;
+}
+
+/* Spinner */
 .toast-spinner {
   width: 24px;
   height: 24px;
@@ -1335,17 +1351,15 @@
   to { transform: rotate(360deg); }
 }
 
-/* ===========================
-   Animated Checkmark (Success)
-   =========================== */
-
+/* Checkmark */
 .toast-checkmark {
   width: 24px;
   height: 24px;
   border-radius: 50%;
   border: none;
   display: inline-block;
-  position: relative;
+  position: absolute;
+  opacity: 0;
   animation: toast-check-spin 1.2s ease forwards;
 }
 
@@ -1355,16 +1369,7 @@
   100% { transform: rotate(360deg) scale(1); opacity: 1; }
 }
 
-.toast-spinner,
-.toast-checkmark {
-  transition: opacity 120ms ease;
-}
-
-.toast-checkmark {
-  opacity: 0; /* hidden by default */
-}
-
-/* The checkmark stroke */
+/* Checkmark stroke */
 .toast-checkmark::after {
   content: "";
   position: absolute;
@@ -1383,25 +1388,31 @@
   to { transform: rotate(45deg) scale(1); }
 }
 
-
 /* Toast visible state */
 .review-toast.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0) scale(1);
 }
 
-
 /* Success / error variants */
-.review-toast-card.success { border-color: rgba(0,200,120,0.18); background: rgba(10,30,10,0.55); color: #eafff0; }
-.review-toast-card.error   { border-color: rgba(255,80,80,0.18); background: rgba(40,10,10,0.55); color: #ffecec; }
+.review-toast-card.success {
+  border-color: rgba(0,200,120,0.18);
+  background: rgba(10,30,10,0.55);
+  color: #eafff0;
+}
+
+.review-toast-card.error {
+  border-color: rgba(255,80,80,0.18);
+  background: rgba(40,10,10,0.55);
+  color: #ffecec;
+}
 
 /* small label color change while submitting */
 .review-slider.filling .slider-label { color: #fff; }
 
 /* ensure handle z-index while expanding */
 .review-slider .slider-handle { z-index: 6; }
-
-
+  
 /* ===========================
    FIRE RATING WIDGET
    =========================== */
@@ -1544,8 +1555,10 @@
         <div id="reviewToast" class="review-toast review-toast-hidden" role="status" aria-live="polite">
           <div class="review-toast-card">
             <div class="toast-title">Submit Review</div>
-            <div class="toast-spinner"></div>   <!-- stays for default + error -->
-            <div class="toast-checkmark"></div> <!-- NEW -->
+              <div class="toast-icon">
+                <div class="toast-spinner"></div>   <!-- stays for default + error -->
+                <div class="toast-checkmark"></div> <!-- NEW -->
+              </div>
             <div class="toast-text">Submitting review…</div>
           </div>
         </div>
@@ -2433,6 +2446,7 @@ function showSpinner() {
 </script>
 </body>
 </html>
+
 
 
 
