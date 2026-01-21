@@ -1000,10 +1000,17 @@
 /* Horizontal review rail */
 .review-rail {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;          /* keeps all cards in one row */
   gap: 14px;
-  overflow-x: auto;
+
+  overflow-x: auto;           /* enables horizontal scroll */
+  overflow-y: hidden;         /* prevents vertical clipping */
+  -webkit-overflow-scrolling: touch; /* smooth mobile scroll */
+
   scroll-snap-type: x mandatory;
   padding: 10px 4px;
+
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -1016,7 +1023,9 @@
 /* Review card */
 .review-item {
   flex: 0 0 260px; /* card width */
+  min-width: 260px;
   scroll-snap-align: start;
+
 
   background: rgba(45, 45, 46, 0.267);
   border: 1px solid rgba(99, 99, 100, 0.267);
@@ -2255,6 +2264,7 @@ async function getOmniTok(act) {
 
       setTimeout(() => {
         closeReviewModal();
+        document.body.style.overflow = '';
         resetForm();
         resetSliderVisual();
         hideToast();
@@ -2264,7 +2274,7 @@ async function getOmniTok(act) {
         if (check) check.style.display = 'none';
 
 
-      }, 1400);
+      }, 3600);
 
     } catch (err) {
       console.error(err);
