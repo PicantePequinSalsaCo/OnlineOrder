@@ -2191,6 +2191,8 @@ async function getOmniTok(act) {
       toastCard.classList.remove('success', 'error');
     }, 260);
   }
+  window.showToast = showToast;
+  window.hideToast = hideToast;
 
   /* ---------------------------
      Slider Pointer Events
@@ -2395,3 +2397,4 @@ async function getOmniTok(act) {
 </script>
 </body>
 </html>
+
