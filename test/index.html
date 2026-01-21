@@ -991,27 +991,23 @@
 /* ===========================
    REVIEW GALLERY (HORIZONTAL CARDS)
    =========================== */
-   
-/* REVIEW SECTION */
 
-.reviews {
-  overflow-x: visible;
-}
-  
-.reviews .card {
-  overflow-x: visible;
+/* Allow the section itself to scroll horizontally */
+.section.reviews {
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
 /* Horizontal review rail */
 .review-rail {
   display: flex;
-  flex-wrap: nowrap;          /* keeps all cards in one row */
+  flex-wrap: nowrap;
   gap: 14px;
 
-  overflow-x: auto !important;          /* enables horizontal scroll */
-  overflow-y: hidden;         /* prevents vertical clipping */
+  overflow-x: auto;
+  overflow-y: hidden;
   width: max-content;
-  -webkit-overflow-scrolling: touch; /* smooth mobile scroll */
+  -webkit-overflow-scrolling: touch;
 
   scroll-snap-type: x mandatory;
   padding: 10px 4px;
