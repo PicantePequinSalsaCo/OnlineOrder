@@ -1066,8 +1066,15 @@
   font-size: 1rem;
   color: var(--ink);
 }
+/* Review date (third line) */
+.review-date {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: -2px;
+  margin-bottom: 6px;
+}
 
-/* Review text (third line) */
+/* Review text (fourth line) */
 .review-text {
   font-size: 0.95rem;
   color: var(--muted);
@@ -1246,6 +1253,12 @@
   z-index: 5;
 }
 
+.slider-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+  filter: grayscale(0.6);
+}
+
 /* Toast container (glass style) */
 .review-toast {
   position: absolute;
@@ -1302,6 +1315,49 @@
 
 @keyframes toast-spin {
   to { transform: rotate(360deg); }
+}
+
+/* ===========================
+   Animated Checkmark (Success)
+   =========================== */
+
+.toast-checkmark {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: var(--accent-orange);
+  border-right-color: #ffb74d;
+  border-left-color: #ff9800;
+  border-bottom-color: #ffb74d;
+  display: inline-block;
+  position: relative;
+  animation: toast-check-spin 0.6s ease forwards;
+}
+
+@keyframes toast-check-spin {
+  0%   { transform: rotate(0deg) scale(0.6); opacity: 0; }
+  50%  { transform: rotate(180deg) scale(1.05); opacity: 1; }
+  100% { transform: rotate(360deg) scale(1); opacity: 1; }
+}
+
+/* The checkmark stroke */
+.toast-checkmark::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 10px;
+  height: 18px;
+  border-right: 3px solid #ffe9c2;
+  border-bottom: 3px solid #ffe9c2;
+  transform: rotate(45deg) scale(0);
+  transform-origin: center;
+  animation: toast-check-draw 0.35s ease 0.45s forwards;
+}
+
+@keyframes toast-check-draw {
+  to { transform: rotate(45deg) scale(1); }
 }
 
 /* Toast visible state */
@@ -1442,7 +1498,10 @@
     <!-- Comment -->
     <label class="review-label">
       Your Review
-      <textarea id="reviewComment" class="review-input" rows="4" maxlength="500" placeholder="Tell us what you thought..."></textarea>
+      <textarea id="reviewComment" class="review-input" rows="4" maxlength="250" placeholder="Tell us what you thought..."></textarea>
+      <div id="reviewCounter" class="small" style="text-align:right; opacity:0.7;">
+        0 / 250
+      </div>
     </label>
 
     <!-- Actions -->
@@ -1457,12 +1516,13 @@
     </div>
     </div>
     </div>
-    <!-- Toast container (hidden by default) -->
+             <!-- Toast container (hidden by default) -->
         <div id="reviewToast" class="review-toast review-toast-hidden" role="status" aria-live="polite">
-         <div class="review-toast-card">
-           <div class="toast-title">Submit Review</div>
-           <div class="toast-spinner"></div>
-          <div class="toast-text">Submitting review…</div>
+          <div class="review-toast-card">
+            <div class="toast-title">Submit Review</div>
+            <div class="toast-spinner"></div>   <!-- stays for default + error -->
+            <div class="toast-checkmark" style="display:none;"></div> <!-- NEW -->
+            <div class="toast-text">Submitting review…</div>
           </div>
         </div>
     </div>
@@ -1750,6 +1810,25 @@
     step(1);
   });
 
+  /* ===========================
+   REVIEW COMMENT COUNTER
+   =========================== */
+
+  (function() {
+  const comment = document.getElementById('reviewComment');
+  const counter = document.getElementById('reviewCounter');
+  if (!comment || !counter) return;
+
+  const max = comment.getAttribute('maxlength') || 250;
+
+  function updateCount() {
+    const len = comment.value.length;
+    counter.textContent = `${len} / ${max}`;
+  }
+
+  comment.addEventListener('input', updateCount);
+  updateCount();
+})();
 
   /* ===========================
      Contact Modal
@@ -1852,9 +1931,21 @@ function renderReviews(list) {
 
     const rating = renderRating(r.rating);
 
+    // Format date if present
+    let dateStr = '';
+    if (r.created_at) {
+      const d = new Date(r.created_at);
+      dateStr = d.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+
     card.innerHTML = `
       <div class="review-rating">${rating}</div>
       <div class="review-name">${r.name}</div>
+      ${dateStr ? `<div class="review-date">${dateStr}</div>` : ''}
       <p class="review-text">${r.comment}</p>
     `;
 
@@ -1926,11 +2017,83 @@ loadReviews();
 
 
 /* ===========================
-   SLIDE TO SUBMIT LOGIC (OmniTok + toast) - FIXED
+   OmniTok Helper (canonical)
+   =========================== */
+
+const API = {
+  issueOmniTok: 'https://default6eda43f3fbf04e2b9978b543d9dd31.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/e3755ec03d8241c09ddb4d73a1c2bb86/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=9t0-qJP8VJW4G9_COUvGJxmFKL6IWjUBeEq4GYZj3kQ'
+};
+
+async function getOmniTok(act) {
+  let sid = sessionStorage.getItem('sid');
+  if (!sid) {
+    sid = crypto.randomUUID();
+    sessionStorage.setItem('sid', sid);
+  }
+
+  let body;
+  if (typeof act === 'string') {
+    body = { act, sid };
+  } else if (act && typeof act === 'object') {
+    body = { sid, ...act };
+  } else {
+    throw new Error('Invalid getOmniTok argument');
+  }
+
+  const res = await fetch(API.issueOmniTok, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+
+  if (!res.ok) throw new Error(`Failed to get OmniTok config for ${body.act}`);
+
+  const data = await res.json();
+  return { ...data, sid };
+}
+/* ===========================
+   SLIDER DISABLE LOGIC
+   =========================== */
+
+(function() {
+  const slider = document.getElementById('reviewSlider');
+  const nameInput = document.getElementById('reviewName');
+  const ratingInput = document.getElementById('reviewRating');
+  const commentInput = document.getElementById('reviewComment');
+
+  if (!slider) return;
+
+  function isValid() {
+    return (
+      nameInput.value.trim().length > 0 &&
+      commentInput.value.trim().length > 0 &&
+      Number(ratingInput.value) >= 1 &&
+      Number(ratingInput.value) <= 5
+    );
+  }
+
+  function updateSliderState() {
+    if (isValid()) {
+      slider.classList.remove('slider-disabled');
+    } else {
+      slider.classList.add('slider-disabled');
+    }
+  }
+
+  nameInput.addEventListener('input', updateSliderState);
+  commentInput.addEventListener('input', updateSliderState);
+  ratingInput.addEventListener('change', updateSliderState);
+
+  updateSliderState();
+})();
+
+/* ===========================
+   SLIDE TO SUBMIT (OmniTok integrated)
    =========================== */
 (function() {
   const slider = document.getElementById('reviewSlider');
   if (!slider) return;
+
   const handle = slider.querySelector('.slider-handle');
   const fill = slider.querySelector('.slider-fill');
   const label = slider.querySelector('.slider-label');
@@ -1940,12 +2103,8 @@ loadReviews();
   const commentInput = document.getElementById('reviewComment');
 
   const toast = document.getElementById('reviewToast');
-  const toastCard = toast ? toast.querySelector('.review-toast-card') : null;
-  const toastText = toast ? toast.querySelector('.toast-text') : null;
-
-  // CONFIG: replace with your OmniTok gatekeeper URL or adapt getOmniTok()
-  const OMNITOK_URL = '/api/omnitok'; // <-- replace if needed
-  const OMNITOK_API_KEY = null; // optional header if you use one
+  const toastCard = toast.querySelector('.review-toast-card');
+  const toastText = toast.querySelector('.toast-text');
 
   let isDragging = false;
   let startX = 0;
@@ -1953,28 +2112,45 @@ loadReviews();
   let maxX = 0;
 
   function recalcSliderBounds() {
-    if (!slider || !handle) { maxX = 0; return; }
     maxX = slider.offsetWidth - handle.offsetWidth;
-    if (fill) fill.style.width = `${handle.offsetWidth}px`;
+    fill.style.width = `${handle.offsetWidth}px`;
   }
 
-  // Recalculate when modal opens and on resize
-  const openBtn = document.getElementById('leaveReviewBtn');
-  if (openBtn) openBtn.addEventListener('click', recalcSliderBounds);
   window.addEventListener('resize', recalcSliderBounds);
+  document.getElementById('leaveReviewBtn').addEventListener('click', recalcSliderBounds);
 
-  // Toast helpers
-  function showToast({ text = 'Submitting…', variant = 'default' } = {}) {
-    if (!toast || !toastCard || !toastText) return;
+  /* ---------------------------
+     Lock / Unlock Inputs
+     --------------------------- */
+  function lockInputs() {
+    nameInput.disabled = true;
+    commentInput.disabled = true;
+    ratingInput.disabled = true;
+    slider.classList.add('slider-disabled');
+  }
+
+  function unlockInputs() {
+    nameInput.disabled = false;
+    commentInput.disabled = false;
+    ratingInput.disabled = false;
+    slider.classList.remove('slider-disabled');
+  }
+
+  /* ---------------------------
+     Toast Helpers
+     --------------------------- */
+  function showToast({ text, variant }) {
     toastText.textContent = text;
     toastCard.classList.remove('success', 'error');
+
     if (variant === 'success') toastCard.classList.add('success');
     if (variant === 'error') toastCard.classList.add('error');
+
     toast.classList.remove('review-toast-hidden');
     requestAnimationFrame(() => toast.classList.add('show'));
   }
+
   function hideToast() {
-    if (!toast) return;
     toast.classList.remove('show');
     setTimeout(() => {
       toast.classList.add('review-toast-hidden');
@@ -1982,65 +2158,31 @@ loadReviews();
     }, 260);
   }
 
-  // OmniTok helper: request gatekeeper for actor endpoint
-  async function getOmniTokEndpoint(actPayload) {
-    const body = { act: actPayload };
-    const headers = { 'Content-Type': 'application/json' };
-    if (OMNITOK_API_KEY) headers['x-api-key'] = OMNITOK_API_KEY;
-
-    const res = await fetch(OMNITOK_URL, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body),
-      credentials: 'include'
-    });
-    if (!res.ok) {
-      const txt = await res.text().catch(() => res.statusText);
-      throw new Error(`OmniTok gatekeeper error: ${res.status} ${txt}`);
-    }
-    return res.json();
-  }
-
-  // Call the returned actor endpoint with the review payload
-  async function callActorEndpoint(actorUrl, actorAuth, payload) {
-    const headers = { 'Content-Type': 'application/json' };
-    if (actorAuth && actorAuth.token) headers['Authorization'] = `Bearer ${actorAuth.token}`;
-    if (actorAuth && actorAuth['x-api-key']) headers['x-api-key'] = actorAuth['x-api-key'];
-
-    const res = await fetch(actorUrl, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload),
-      credentials: 'include'
-    });
-    if (!res.ok) {
-      const txt = await res.text().catch(() => res.statusText);
-      throw new Error(`Actor endpoint error: ${res.status} ${txt}`);
-    }
-    return res.json();
-  }
-
-  // pointer events for cross-device support
+  /* ---------------------------
+     Slider Pointer Events
+     --------------------------- */
   handle.addEventListener('pointerdown', e => {
+    if (slider.classList.contains('slider-disabled')) return;
+
     isDragging = true;
     startX = e.clientX;
     currentX = 0;
-    slider.classList.remove('filled');
+
     slider.classList.add('filling');
-    handle.setPointerCapture && handle.setPointerCapture(e.pointerId);
-    handle.style.transition = 'transform 0s';
-    fill.style.transition = 'width 0s';
+    handle.setPointerCapture(e.pointerId);
+    handle.style.transition = '0s';
+    fill.style.transition = '0s';
   });
 
   document.addEventListener('pointermove', e => {
     if (!isDragging) return;
+
     const dx = e.clientX - startX;
     currentX = Math.max(0, Math.min(dx, maxX));
+
     handle.style.transform = `translateX(${currentX}px)`;
-    const fillWidth = Math.max(handle.offsetWidth, currentX + handle.offsetWidth);
-    fill.style.width = `${fillWidth}px`;
-    const percent = Math.round((fillWidth / slider.offsetWidth) * 100);
-    slider.setAttribute('aria-valuenow', percent);
+    fill.style.width = `${currentX + handle.offsetWidth}px`;
+
     if (currentX >= maxX) {
       completeSlide();
     }
@@ -2049,27 +2191,28 @@ loadReviews();
   document.addEventListener('pointerup', e => {
     if (!isDragging) return;
     isDragging = false;
-    try { handle.releasePointerCapture && handle.releasePointerCapture(e.pointerId); } catch (err) {}
+
+    handle.releasePointerCapture(e.pointerId);
     handle.style.transition = '';
     fill.style.transition = '';
+
     if (currentX < maxX) {
-      handle.style.transform = `translateX(0px)`;
-      fill.style.width = `${handle.offsetWidth}px`;
-      slider.setAttribute('aria-valuenow', 0);
-      slider.classList.remove('filling');
+      resetSliderVisual();
     }
   });
 
-  // Main completion flow: lock UI, show toast, call OmniTok then actor endpoint
+  /* ---------------------------
+     Main Submission Flow
+     --------------------------- */
   async function completeSlide() {
-    if (slider.classList.contains('filled')) return;
-    isDragging = false;
     slider.classList.add('filled');
     slider.classList.remove('filling');
     fill.style.width = '100%';
     handle.style.transform = 'translateX(0)';
-    label.textContent = "Submitting Review...";
-    slider.setAttribute('aria-valuenow', 100);
+    label.textContent = "Submitting Review…";
+
+    lockInputs();
+    showToast({ text: 'Submitting review…', variant: 'default' });
 
     const reviewPayload = {
       id: `r-${Date.now()}`,
@@ -2079,55 +2222,86 @@ loadReviews();
       created_at: new Date().toISOString()
     };
 
-    showToast({ text: 'Submitting review…' });
-
     try {
-      const act = {
-        action: 'createReview',
-        resource: 'reviews',
+      /* 1. Get OmniTok */
+      const { endpoint, authToken, OmniTok, sid } = await getOmniTok('createReview');
+
+      /* 2. Call actor endpoint */
+      const res = await fetch(endpoint, {
         method: 'POST',
-        meta: { source: 'homepage-review-widget' }
-      };
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': authToken,
+          'X-OmniTok': OmniTok,
+          'X-SID': sid
+        },
+        body: JSON.stringify(reviewPayload)
+      });
 
-      const omniResp = await getOmniTokEndpoint(act);
-      if (!omniResp || !omniResp.endpoint) {
-        throw new Error('OmniTok did not return an endpoint.');
-      }
+      if (!res.ok) throw new Error('Actor endpoint failed');
 
-      const actorUrl = omniResp.endpoint;
-      const actorAuth = omniResp.auth || omniResp.omnitok || null;
+      /* SUCCESS */
+      showToast({
+        text: 'Review submitted — thank you! Please allow a moment for it to appear.',
+        variant: 'success'
+      });
 
-      const actorResult = await callActorEndpoint(actorUrl, actorAuth, reviewPayload);
+      // Swap spinner → checkmark
+        const spinner = toastCard.querySelector('.toast-spinner');
+        const check = toastCard.querySelector('.toast-checkmark');
 
-      showToast({ text: 'Review submitted — thank you!', variant: 'success' });
-      console.log('Review saved:', actorResult);
+        if (spinner) spinner.style.display = 'none';
+        if (check) check.style.display = 'inline-block';
 
       setTimeout(() => {
-        document.getElementById('reviewPopup').classList.add('review-hidden');
+        closeReviewModal();
+        resetForm();
         resetSliderVisual();
         hideToast();
-      }, 900);
+
+          // restore spinner for next time
+        if (spinner) spinner.style.display = 'inline-block';
+        if (check) check.style.display = 'none';
+
+
+      }, 1400);
 
     } catch (err) {
-      console.error('Review submission failed:', err);
-      // <-- FIXED: properly closed showToast call and removed the stray paren
-      showToast({ text: 'Failed submssion, Try Again.', variant: 'error' });
+      console.error(err);
+
+      showToast({
+        text: 'Submission failed. Try again.',
+        variant: 'error'
+      });
+
       setTimeout(() => {
+        unlockInputs();
         resetSliderVisual();
         hideToast();
       }, 1600);
     }
   }
 
+  /* ---------------------------
+     Reset Helpers
+     --------------------------- */
   function resetSliderVisual() {
     slider.classList.remove('filled', 'filling');
     handle.style.transform = 'translateX(0)';
     fill.style.width = `${handle.offsetWidth}px`;
     label.textContent = "Slide to Submit";
-    slider.setAttribute('aria-valuenow', 0);
   }
 
-  // initial bounds
+  function resetForm() {
+    nameInput.value = '';
+    commentInput.value = '';
+    ratingInput.value = 5;
+  }
+
+  function closeReviewModal() {
+    document.getElementById('reviewPopup').classList.add('review-hidden');
+  }
+
   recalcSliderBounds();
 })();
 
