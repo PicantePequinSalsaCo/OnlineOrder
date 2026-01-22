@@ -1311,6 +1311,15 @@ function phonePaste(e) {
   }
   window.showContactForm = showContactForm;
 
+  function showLoginForm() {
+  const login = qs('loginContainer');
+  const contact = qs('contactForm');
+
+  if (contact) contact.classList.add('hidden');
+  if (login) login.classList.remove('hidden');
+}
+window.showLoginForm = showLoginForm;
+
 
 
   /* ---------- Reset contact form ---------- */
@@ -1380,6 +1389,14 @@ window.resetContactForm = resetContactForm;
 
   /* ---------- DOMContentLoaded initialization (single block) ---------- */
   document.addEventListener('DOMContentLoaded', () => {
+
+      const loggedIn = sessionStorage.getItem('loggedIn') === 'true';
+  if (loggedIn) {
+    showContactForm();
+  } else {
+    showLoginForm();
+  }
+
     // set footer year
     const yearEl = qs('y'); if (yearEl) yearEl.textContent = new Date().getFullYear();
 
