@@ -1068,7 +1068,7 @@ meter::-moz-meter-bar {
   <div style="position:relative;">
     <input type="password" id="custPassword" name="password"
            required style="width:100%; padding:8px; margin:6px 0;">
-    <span onclick="togglePassword('custPassword')" 
+    <span onclick="togglePassword('custPassword', this)" 
           style="position:absolute; right:10px; top:50%; transform:translateY(-50%);
                  cursor:pointer; color:var(--muted);">👁</span>
   </div>
@@ -1095,7 +1095,7 @@ meter::-moz-meter-bar {
   <div style="position:relative;">
     <input type="password" id="custConfirmpassword" name="confirm-password"
            required style="width:100%; padding:8px; margin:6px 0;">
-    <span onclick="togglePassword('custConfirmpassword')" 
+    <span onclick="togglePassword('custConfirmpassword', this)" 
           style="position:absolute; right:10px; top:50%; transform:translateY(-50%);
                  cursor:pointer; color:var(--muted);">👁</span>
   </div>
