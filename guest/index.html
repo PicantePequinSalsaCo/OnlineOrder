@@ -1080,11 +1080,11 @@ meter::-moz-meter-bar {
 <div id="passwordCriteria" style="font-size:.9rem; color:var(--muted); margin-top:12px;">
   <strong>Your Password Must Be:</strong>
   <ul style="margin:6px 0 0 18px; padding:0;">
-    <li>At least 8 characters long</li>
-    <li>Include at least one uppercase letter (A–Z)</li>
-    <li>Include at least one number (0–9)</li>
-    <li>Include at least one special character (e.g. !, @, #, $)</li>
-    <li>Match the Confirm Password field exactly</li>
+    <li id="crit-length">At least 8 characters long</li>
+    <li id="crit-uppercase">Include at least one uppercase letter (A–Z)</li>
+    <li id="crit-number">Include at least one number (0–9)</li>
+    <li id="crit-special">Include at least one special character (e.g. !, @, #, $)</li>
+    <li id="crit-match">Match the Confirm Password field exactly</li>
   </ul>
 </div>
 
@@ -1319,8 +1319,40 @@ function phonePaste(e) {
   if (login) login.classList.remove('hidden');
 }
 window.showLoginForm = showLoginForm;
+  
+// Password Informational Messages
+function updatePasswordCriteria() {
+  const val = (qs('custPassword')?.value || '');
+  const conf = (qs('custConfirmpassword')?.value || '');
 
+  // rule checks
+  const rules = {
+    length: val.length >= 8,
+    uppercase: /[A-Z]/.test(val),
+    number: /[0-9]/.test(val),
+    special: /[^A-Za-z0-9]/.test(val),
+    match: val && conf && val === conf
+  };
 
+  // update UI
+  function setCriterion(id, ok) {
+    const el = qs(id);
+    if (!el) return;
+    if (ok) {
+      el.style.color = 'var(--accent-green)';
+      el.textContent = '✔ ' + el.textContent.replace(/^✔\s*/, '');
+    } else {
+      el.style.color = 'var(--muted)';
+      el.textContent = el.textContent.replace(/^✔\s*/, '');
+    }
+  }
+
+  setCriterion('crit-length', rules.length);
+  setCriterion('crit-uppercase', rules.uppercase);
+  setCriterion('crit-number', rules.number);
+  setCriterion('crit-special', rules.special);
+  setCriterion('crit-match', rules.match);
+}
 
   /* ---------- Reset contact form ---------- */
 // Replace or update your resetContactForm with this version
@@ -1689,6 +1721,9 @@ const confirmInput = qs('custConfirmpassword');
 const passwordMessage = qs('passwordMessage');
 const passwordMeter = qs('passwordStrength');
 
+    // --- add these lines right here ---
+if (passwordInput) passwordInput.addEventListener('input', updatePasswordCriteria);
+if (confirmInput) confirmInput.addEventListener('input', updatePasswordCriteria);
 
 // Helper: update match message (runs when either field changes)
 function updatePasswordMatchMessage() {
@@ -1795,6 +1830,11 @@ if (passwordInput && passwordMeter) {
         submitBtn.textContent = '✓ Account Created';
         submitBtn.classList.add('is-success');
         resetContactForm();
+
+        // NEW: refresh password criteria display after reset
+        if (typeof updatePasswordCriteria === 'function') updatePasswordCriteria();
+
+
         setTimeout(() => { submitBtn.disabled = false; submitBtn.textContent = originalText; submitBtn.classList.remove('is-success','btn-loading','enabled'); }, 800);
       } catch (err) {
         console.error('Signup error:', err);
