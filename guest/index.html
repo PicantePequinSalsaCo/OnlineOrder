@@ -1879,6 +1879,14 @@ window.togglePassword = function (inputOrId, evtOrBtn) {
   const makeVisible = input.type === 'password';
   input.type = makeVisible ? 'text' : 'password';
 
+    if (btn) {
+    if (makeVisible) {
+      btn.textContent = '🙈'; // now showing password
+    } else {
+      btn.textContent = '👁'; // now hiding password
+    }
+  }
+
   if (btn && btn.setAttribute) {
     btn.setAttribute('aria-pressed', String(makeVisible));
     btn.setAttribute('aria-label', makeVisible ? 'Hide password' : 'Show password');
